@@ -1,0 +1,259 @@
+@import url("https://fonts.googleapis.com/css2?family=Alegreya+Sans+SC:wght@500&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* @import './styles/animations.css'; */
+
+body {
+  --sb-track-color: transparent;
+  --sb-thumb-color: #0077b5;
+  --sb-size: 6px;
+
+  
+}
+
+body::-webkit-scrollbar {
+  width: var(--sb-size);
+}
+
+body::-webkit-scrollbar-track {
+  background: var(--sb-track-color);
+  border-radius: 1px;
+}
+
+body::-webkit-scrollbar-thumb {
+  background: var(--sb-thumb-color);
+  border-radius: 1px;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  body {
+    scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  }
+}
+
+@layer base {
+  html {
+    font-family: Inter, system-ui, sans-serif;
+  }
+
+  body {
+    @apply bg-[#F3F2EF] text-gray-900 antialiased;
+  }
+}
+
+@layer components {
+  .container-custom {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl;
+  }
+
+  .heading-1 {
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold;
+  }
+
+  .heading-2 {
+    @apply text-3xl md:text-4xl font-bold;
+  }
+
+  .heading-3 {
+    @apply text-2xl md:text-3xl font-semibold;
+  }
+
+  .text-body {
+    @apply text-base text-gray-600;
+  }
+}
+
+@layer utilities {
+  .bg-grid-pattern {
+    background-image: linear-gradient(#0077b5 1px, transparent 1px),
+      linear-gradient(to right, #0077b5 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.1;
+  }
+}
+
+input[type="number"] {
+  -moz-appearance: textfield !important;
+  overflow: hidden;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  padding-right: 0 !important;
+}
+
+.highlight-selected-date {
+  background-color: green !important;
+  color: white !important;
+}
+
+.highlight-available-date {
+  background-color: red !important;
+  color: white !important;
+  pointer-events: none;
+}
+/* Input group layout */
+.react-time-picker__inputGroup {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  width: 100%;
+}
+
+/* Style for the individual input field */
+.react-time-picker__inputGroup__input {
+  width: 100% !important; /* Ensure full width */
+  padding: 0.75rem 1rem; /* Padding for input spacing */
+  font-size: 1rem; /* Set font size */
+  border: 2px solid #d1d5db; /* Gray border */
+  border-radius: 8px; /* Rounded corners */
+  background-color: #fff; /* White background */
+  color: #333; /* Text color */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Focused input field appearance */
+.react-time-picker__inputGroup__input:focus {
+  border-color: #3b82f6; /* Blue border */
+  outline: none;
+  box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); /* Blue shadow */
+}
+
+/* Label styling */
+.react-time-picker__label {
+  font-size: 0.875rem; /* Smaller font size */
+  color: #4b5563; /* Dark gray color */
+  margin-bottom: 0.5rem; /* Margin between label and input */
+  font-weight: 600; /* Bold label */
+}
+
+/* Hover effect for better interactivity */
+.react-time-picker__inputGroup__input:hover {
+  border-color: #60a5fa; /* Light blue border on hover */
+}
+
+/* Responsiveness: Small to Medium Screens */
+@media (max-width: 768px) {
+  .react-time-picker__inputGroup {
+    flex-direction: column; /* Stack inputs on small screens */
+    gap: 15px; /* Increase space between inputs */
+  }
+
+  .react-time-picker__inputGroup__input {
+    font-size: 0.875rem; /* Smaller font size */
+  }
+}
+
+/* Responsiveness: Large Screens */
+@media (min-width: 1024px) {
+  .react-time-picker__inputGroup {
+    flex-direction: row; /* Side by side on large screens */
+  }
+}
+
+.react-time-picker__button {
+  display: none !important;
+}
+#loading {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 160px;
+  height: 160px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  background-color: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 15px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+#loading p {
+  margin-top: 15px;
+  color: #0077b5; /* LinkedIn blue */
+  font-size: 20px;
+  font-family: "Alegreya Sans SC", sans-serif;
+  font-weight: bold;
+  letter-spacing: 1.5px;
+  animation: dots 2s steps(2) infinite;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+@keyframes dots {
+  0% {
+    content: "Loading";
+  }
+  33% {
+    content: "Loading.";
+  }
+  66% {
+    content: "Loading..";
+  }
+  100% {
+    content: "Loading...";
+  }
+}
+
+.loader {
+  width: 60px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(farthest-side, #0077b5 94%, #0000) top/8px 8px
+      no-repeat,
+    conic-gradient(#0000 30%, #0077b5);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 8px), #000 0);
+  animation: l13 1s infinite linear;
+}
+
+@keyframes l13 {
+  100% {
+    transform: rotate(1turn);
+  }
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  #loading {
+    width: 140px;
+    height: 140px;
+    padding: 10px;
+  }
+
+  #loading p {
+    font-size: 16px;
+    margin-top: 10px;
+  }
+
+  .loader {
+    width: 50px;
+  }
+}
+
+@media (max-width: 480px) {
+  #loading {
+    width: 120px;
+    height: 120px;
+    padding: 8px;
+  }
+
+  #loading p {
+    font-size: 14px;
+    margin-top: 8px;
+  }
+
+  .loader {
+    width: 40px;
+  }
+}
+
+
+input[type="checkbox"]:checked{
+  
+}
