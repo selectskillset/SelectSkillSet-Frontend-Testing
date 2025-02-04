@@ -2,6 +2,7 @@ import React, { useRef, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
+import { Notification } from "../ui/Notification";
 
 // Framer Motion variants for mobile menu animations
 const mobileMenuVariants = {
@@ -68,7 +69,6 @@ export const Navbar = () => {
     const baseLinkClass = isMobile
       ? "text-gray-800 hover:text-[#0077B5] text-2xl font-medium transition duration-300"
       : "text-gray-800 hover:text-[#0077B5] text-lg font-medium transition duration-300";
-
     const demoButtonClass = isMobile
       ? "bg-[#0077B5] text-white text-2xl font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300"
       : "bg-[#0077B5] text-white text-lg font-semibold px-5 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300";
@@ -125,18 +125,22 @@ export const Navbar = () => {
             {!userLoggedIn ? (
               renderMenuLinks(false)
             ) : (
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                onClick={handleLogout}
-                className="bg-red-600 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-red-500 transition duration-300"
-              >
-                Logout
-              </motion.button>
+              <>
+                <Notification />
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  onClick={handleLogout}
+                  className="bg-red-600 text-white text-lg font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-red-500 transition duration-300"
+                >
+                  Logout
+                </motion.button>
+              </>
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
+          {/* Mobile Menu Button and Notification */}
+          <div className="md:hidden flex items-center space-x-4">
+            {userLoggedIn && <Notification />}
             <button
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-label="Toggle Menu"
@@ -174,16 +178,18 @@ export const Navbar = () => {
           {!userLoggedIn ? (
             renderMenuLinks(true)
           ) : (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={() => {
-                closeMenu();
-                handleLogout();
-              }}
-              className="bg-red-600 text-white text-2xl font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-red-500 transition duration-300"
-            >
-              Logout
-            </motion.button>
+            <>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={() => {
+                  closeMenu();
+                  handleLogout();
+                }}
+                className="bg-red-600 text-white text-2xl font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-red-500 transition duration-300"
+              >
+                Logout
+              </motion.button>
+            </>
           )}
         </div>
       </motion.div>

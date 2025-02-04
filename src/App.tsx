@@ -27,6 +27,7 @@ import AdminProfiles from "./dashboards/adminDashboard/AdminProfiles";
 import CorporateDashboard from "./dashboards/corporateDashboard/CorporateDashboard";
 import EditCorporateProfile from "./dashboards/corporateDashboard/EditCorporateProfile";
 import FilterCandidates from "./dashboards/corporateDashboard/FilterCandidates";
+import Chatbot from "./components/ui/Chatbot";
 
 function App() {
   return (
@@ -116,6 +117,7 @@ function App() {
               },
             }}
           />
+          <Chatbot/>
           <Footer />
         </div>
       </Router>
