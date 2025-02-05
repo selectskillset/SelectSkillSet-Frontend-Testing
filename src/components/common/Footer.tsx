@@ -24,7 +24,6 @@ const Footer: React.FC = () => {
       "You're 2 steps ahead to login",
       "You're 1 step ahead to login",
     ];
-
     setClickCount((prev) => prev + 1);
 
     if (clickCount >= 9 && clickCount <= 13) {
@@ -38,7 +37,7 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-white text-[#0077B5] shadow-lg py-8 mt-auto ">
+    <footer className="bg-white text-[#0077B5] shadow-lg py-8 mt-auto">
       <div className="container mx-auto px-8">
         {/* Logo with Easter Egg */}
         <div className="flex justify-center mb-8">
@@ -66,18 +65,16 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">About us</h2>
             <ul className="space-y-2">
-              {["Careers", "Employer home", "Sitemap", "Credits"].map(
-                (link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className=" hover:text-[#0077B5] transition-colors duration-300"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
+              {["Careers", "Employer home", "Sitemap", "Credits"].map((link) => (
+                <li key={link}>
+                  <a
+                    href="#"
+                    className="hover:text-[#0077B5] transition-colors duration-300"
+                  >
+                    {link}
+                  </a>
+                </li>
+              ))}
             </ul>
           </div>
 

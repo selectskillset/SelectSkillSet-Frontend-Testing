@@ -1,70 +1,73 @@
-import  { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../common/axiosConfig";
-import { Eye, EyeOff } from "lucide-react"; 
+import { Eye, EyeOff } from "lucide-react";
 
 export const InterviewerLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false); 
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Validation function
-  const validateEmail = (email) => {
+  // Email validation function
+  const validateEmail = (email: string) => {
     const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return regex.test(email);
   };
 
-  const handleSubmit = async (e) => {
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
       toast.error("Please fill in all fields");
       return;
     }
-
     if (!validateEmail(email)) {
       toast.error("Please enter a valid email");
       return;
     }
 
     setIsLoading(true);
-
     try {
       const response = await axiosInstance.post("/interviewer/login", {
         email,
         password,
       });
-
       setIsLoading(false);
+
       if (response.data.success) {
         // Save token in sessionStorage
         sessionStorage.setItem("interviewerToken", response.data.token);
-
         toast.success("Login successful");
         navigate("/interviewer-dashboard");
       } else {
         toast.error(response.data.message || "Login failed");
       }
-    } catch (error) {
+    } catch (error: any) {
       setIsLoading(false);
       const errorMessage =
-        error.response?.data?.message || "An error occurred, please try again later";
+        error.response?.data?.message ||
+        "An error occurred, please try again later";
       toast.error(errorMessage);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#F3F2EF] flex flex-col justify-center items-center py-12">
+    <div className="min-h-screen  flex flex-col justify-center items-center py-12">
+      {/* Login Card */}
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-semibold text-center mb-8 text-gray-800">
+        {/* Heading */}
+        <h2 className="text-3xl font-bold text-center mb-8 text-[#0A66C2]">
           Interviewer Login
         </h2>
-        <form onSubmit={handleSubmit}>
+
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Field */}
-          <div className="mb-6">
+          <div>
             <label
               htmlFor="email"
               className="block text-sm font-medium text-gray-700"
@@ -76,14 +79,14 @@ export const InterviewerLogin = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
               placeholder="Enter your email"
               required
             />
           </div>
 
           {/* Password Field */}
-          <div className="mb-6 relative">
+          <div className="relative">
             <label
               htmlFor="password"
               className="block text-sm font-medium text-gray-700"
@@ -95,22 +98,25 @@ export const InterviewerLogin = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
               placeholder="Enter your password"
               required
             />
-            <div
+            {/* Show/Hide Password Icon */}
+            <button
+              type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 bottom-0 transform -translate-y-1/2 cursor-pointer text-gray-600"
+              className="absolute right-3 top-10 transform -translate-y-1/2 cursor-pointer text-gray-600"
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
-            </div>
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
           </div>
 
           {/* Login Button */}
           <button
             type="submit"
-            className={`w-full bg-blue-500 text-white py-3 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            className={`w-full  text-white py-3 rounded-lg bg-[#0077B5] focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition duration-300 ${
               isLoading ? "cursor-wait" : ""
             }`}
             disabled={isLoading}
@@ -121,17 +127,19 @@ export const InterviewerLogin = () => {
 
         {/* Sign Up Link */}
         <div className="text-center mt-6">
-          <p>
+          <p className="text-sm text-gray-600">
             Don't have an account?{" "}
-            <span
+            <button
               onClick={() => navigate("/interviewer-signup")}
-              className="text-blue-500 cursor-pointer hover:underline"
+              className="text-[#0A66C2] hover:underline font-medium"
             >
               Sign Up
-            </span>
+            </button>
           </p>
         </div>
       </div>
     </div>
   );
 };
+
+export default InterviewerLogin;

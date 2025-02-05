@@ -46,7 +46,7 @@ export const LoginPage = () => {
   const memoizedRoles = useMemo(() => roles, []);
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center py-12 bg-gradient-to-r from-[#0077B5]/10 via-[#004182]/10 to-[#0077B5]/10">
+    <div className="min-h-screen flex flex-col justify-center items-center py-12 ">
       <div className="max-w-screen-xl px-4 sm:px-6 md:px-8 w-full">
         <motion.h1
           initial={{ opacity: 0, y: 50 }}

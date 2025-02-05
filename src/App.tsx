@@ -28,72 +28,79 @@ import CorporateDashboard from "./dashboards/corporateDashboard/CorporateDashboa
 import EditCorporateProfile from "./dashboards/corporateDashboard/EditCorporateProfile";
 import FilterCandidates from "./dashboards/corporateDashboard/FilterCandidates";
 import Chatbot from "./components/ui/Chatbot";
+import FeatureAnimation from "./components/ui/FeatureAnimation";
 
 function App() {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Router>
         <div className="min-h-screen bg-[#F3F2EF]">
           <Navbar />
           <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<HomePage />} />
-            <Route path="/about" element={<AboutUsPage />} />
-            <Route
-              path="/interviewer-profile/:id"
-              element={<InterviewerProfile />}
-            />
-            <Route
-              path="/interviewer-feedback/:candidateId/:interviewRequestId"
-              element={<InterviewEvaluationForm />}
-            />
-            <Route
-              path="/candidate-feedback/:interviewerId/:interviewRequestId"
-              element={<CandidateEvaluationForm />}
-            />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/candidate-login" element={<CandidateLogin />} />
-            <Route path="/candidate-signup" element={<CandidateSignup />} />
-            <Route
-              path="/candidate-dashboard"
-              element={<CandidateDashboard />}
-            />
-            <Route path="/corporate-login" element={<CorporateLogin />} />
-            <Route path="/corporate-signup" element={<CorporateSignup />} />
-            <Route
-              path="/corporate-dashboard"
-              element={<CorporateDashboard />}
-            />
-            <Route
-              path="/corporate/edit-profile"
-              element={<EditCorporateProfile />}
-            />
-            <Route
-              path="/corporate/filter-candidate"
-              element={<FilterCandidates />}
-            />
-            <Route
-              path="/interviewer-dashboard"
-              element={<InterviewerDashboard />}
-            />
-            <Route path="/interviewer-login" element={<InterviewerLogin />} />
-            <Route path="/interviewer-signup" element={<InterviewerSignup />} />
-            <Route
-              path="/edit-candidate-profile"
-              element={<EditCandidateProfile />}
-            />
-            <Route
-              path="/edit-interviewer-profile"
-              element={<EditInterviewerProfile />}
-            />
-            <Route path="/verify-otp" element={<VerifyOtp />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route
-              path="/admin/dashboard/profiles"
-              element={<AdminProfiles />}
-            />
-            <Route path="/admin/login" element={<AdminLogin />} />
-          </Routes>
+          <div className="flex-grow">
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/about" element={<AboutUsPage />} />
+              <Route path="/products" element={<FeatureAnimation />} />
+              <Route
+                path="/interviewer-profile/:id"
+                element={<InterviewerProfile />}
+              />
+              <Route
+                path="/interviewer-feedback/:candidateId/:interviewRequestId"
+                element={<InterviewEvaluationForm />}
+              />
+              <Route
+                path="/candidate-feedback/:interviewerId/:interviewRequestId"
+                element={<CandidateEvaluationForm />}
+              />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/candidate-login" element={<CandidateLogin />} />
+              <Route path="/candidate-signup" element={<CandidateSignup />} />
+              <Route
+                path="/candidate-dashboard"
+                element={<CandidateDashboard />}
+              />
+              <Route path="/corporate-login" element={<CorporateLogin />} />
+              <Route path="/corporate-signup" element={<CorporateSignup />} />
+              <Route
+                path="/corporate-dashboard"
+                element={<CorporateDashboard />}
+              />
+              <Route
+                path="/corporate/edit-profile"
+                element={<EditCorporateProfile />}
+              />
+              <Route
+                path="/corporate/filter-candidate"
+                element={<FilterCandidates />}
+              />
+              <Route
+                path="/interviewer-dashboard"
+                element={<InterviewerDashboard />}
+              />
+              <Route path="/interviewer-login" element={<InterviewerLogin />} />
+              <Route
+                path="/interviewer-signup"
+                element={<InterviewerSignup />}
+              />
+              <Route
+                path="/edit-candidate-profile"
+                element={<EditCandidateProfile />}
+              />
+              <Route
+                path="/edit-interviewer-profile"
+                element={<EditInterviewerProfile />}
+              />
+              <Route path="/verify-otp" element={<VerifyOtp />} />
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+              <Route
+                path="/admin/dashboard/profiles"
+                element={<AdminProfiles />}
+              />
+              <Route path="/admin/login" element={<AdminLogin />} />
+            </Routes>
+          </div>
           <Toaster
             toastOptions={{
               duration: 5000,
@@ -117,11 +124,11 @@ function App() {
               },
             }}
           />
-          <Chatbot/>
+          <Chatbot />
           <Footer />
         </div>
       </Router>
-    </>
+    </div>
   );
 }
 

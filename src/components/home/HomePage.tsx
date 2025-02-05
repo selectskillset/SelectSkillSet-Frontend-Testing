@@ -2,7 +2,7 @@ import { Hero } from "./Hero";
 import { Features } from "./Features";
 
 import { CallToAction } from "./CallToAction";
-import SliderCards from "./SliderCards";
+// import SliderCards from "./SliderCards";
 import AboutUsComponent from "./AboutUsComponent";
 
 export const HomePage = () => {
@@ -11,7 +11,7 @@ export const HomePage = () => {
       <Hero />
       {/*<LandingFeature />*/}
       <AboutUsComponent />
-      <SliderCards />
+      {/* <SliderCards /> */}
       <Features />
       {/* <Statistics /> */}
       <CallToAction />

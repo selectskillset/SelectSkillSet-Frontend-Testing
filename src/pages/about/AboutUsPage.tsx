@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import aboutimg from "../../images/aboutImg.jpg";
+import { Check } from "lucide-react";
 
 // Data for About Us sections
 const aboutUsData = [
@@ -24,7 +25,7 @@ const aboutUsData = [
 
 const AboutUsPage: React.FC = () => {
   return (
-    <div className="bg-secondary py-16">
+    <div className=" py-16">
       <div className="container mx-auto px-6 sm:px-8 lg:px-12">
         {aboutUsData.map((section, index) => (
           <motion.div
@@ -33,58 +34,49 @@ const AboutUsPage: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.3 }}
-            className="bg-white shadow-xl rounded-xl p-8 mb-12 border border-gray-300 transform hover:scale-105 transition duration-300"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white shadow-lg rounded-xl p-8 mb-12"
           >
             {/* Image Section */}
-            <div className="mb-8">
+            <div className="lg:order-1 order-2 flex items-center justify-center">
               <img
                 src={section.imageSrc}
                 alt={section.alt}
-                className="w-full h-80 object-cover rounded-xl shadow-lg hover:opacity-90 transition duration-300"
+                className="w-full h-96 object-cover rounded-xl shadow-md hover:shadow-lg transition duration-300"
               />
             </div>
 
-            {/* Title Section */}
-            <h2 className="text-4xl font-semibold text-center text-linkedin mb-6">
-              {section.title}
-            </h2>
+            {/* Content Section */}
+            <div className="lg:order-2 order-1 flex flex-col justify-center space-y-6">
+              {/* Title Section */}
+              <h2 className="text-4xl font-bold text-[#0A66C2] text-center lg:text-left">
+                {section.title}
+              </h2>
 
-            {/* Description Section */}
-            {section.description.map((text, idx) => (
-              <p
-                key={idx}
-                className="text-lg text-gray-700 mb-6 leading-relaxed"
-              >
-                {text}
-              </p>
-            ))}
-
-            {/* Bullet Points Section */}
-            <ul className="list-disc pl-6 text-lg text-gray-700 mb-6 space-y-4">
-              {section.points.map((point, idx) => (
-                <li key={idx} className="flex items-start space-x-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-linkedin"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      stroke-width="2"
-                      d="M5 13l4 4L19 7"
-                    />
-                  </svg>
-                  <span>{point}</span>
-                </li>
+              {/* Description Section */}
+              {section.description.map((text, idx) => (
+                <p
+                  key={idx}
+                  className="text-lg text-gray-700 leading-relaxed text-center lg:text-left"
+                >
+                  {text}
+                </p>
               ))}
-            </ul>
 
-            <p className="text-lg text-gray-700 leading-relaxed">
-              {section.conclusion}
-            </p>
+              {/* Bullet Points Section */}
+              <ul className="list-disc pl-6 text-lg text-gray-700 space-y-4">
+                {section.points.map((point, idx) => (
+                  <li key={idx} className="flex items-start space-x-2">
+                   <Check className="text-[#0A66C2]"/>
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+
+              {/* Conclusion Section */}
+              <p className="text-lg text-gray-700 leading-relaxed text-center lg:text-left">
+                {section.conclusion}
+              </p>
+            </div>
           </motion.div>
         ))}
       </div>
