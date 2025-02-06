@@ -93,25 +93,31 @@ export const CandidateSignup = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-     sessionStorage.setItem("userData", JSON.stringify(formData));
+    sessionStorage.setItem("userData", JSON.stringify(formData));
+    
     if (!validateForm()) return;
-
+  
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post(
-        "/candidate/register",
-        formData
-      );
-      setIsLoading(false);
+      const response = await axiosInstance.post("/candidate/register", formData);
+      console.log(response.data);
+      
       if (response.data.success) {
         toast.success("Registration successful");
         navigate("/verify-otp");
       } else {
+        // Handle non-success response from server (200 status but success: false)
         toast.error(response.data.message || "Registration failed");
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Handle Axios errors (non-2xx status codes)
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An error occurred, please try again later");
+      }
+    } finally {
       setIsLoading(false);
-      toast.error("An error occurred, please try again later");
     }
   };
 

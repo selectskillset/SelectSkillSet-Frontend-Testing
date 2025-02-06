@@ -256,7 +256,7 @@ const CandidateDashboard: React.FC = () => {
           </div>
 
           {/* Profile Viewers */}
-          <div className="space-y-2">
+          {/* <div className="space-y-2">
             <h3 className="text-lg font-semibold text-gray-800">
               Profile Insights
             </h3>
@@ -278,7 +278,7 @@ const CandidateDashboard: React.FC = () => {
                 Recruiter Actions: <span className="font-medium">45</span>
               </p>
             </div>
-          </div>
+          </div> */}
         </aside>
 
         {/* Main Content */}

@@ -71,30 +71,7 @@ const Footer: React.FC = () => {
                   Careers
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/employer-home"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Employer home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/sitemap"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Sitemap
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/credits"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Credits
-                </Link>
-              </li>
+              
             </ul>
           </div>
 
@@ -102,22 +79,7 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Help center</h2>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/summons-notices"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Summons/Notices
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/grievances"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Grievances
-                </Link>
-              </li>
+              
               <li>
                 <Link
                   to="/report-issue"
@@ -143,20 +105,13 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <Link
-                  to="/fraud-alert"
+                  to="/admin/login"
                   className="hover:text-[#0077B5] transition-colors duration-300"
                 >
-                  Fraud alert
+                  Admin Login
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/trust-safety"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Trust & safety
-                </Link>
-              </li>
+              
             </ul>
           </div>
 

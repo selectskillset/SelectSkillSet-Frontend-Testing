@@ -155,7 +155,7 @@ export const Navbar = () => {
               renderMenuLinks(false)
             ) : (
               <>
-                <Notification />
+                {/* <Notification /> */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   onClick={handleLogout}
@@ -169,7 +169,7 @@ export const Navbar = () => {
 
           {/* phoneNumber Menu Button and Notification */}
           <div className="md:hidden flex items-center space-x-4">
-            {userLoggedIn && <Notification />}
+            {/* {userLoggedIn && <Notification />} */}
             <button
               onClick={() => setIsMenuOpen((prev) => !prev)}
               aria-label="Toggle Menu"
