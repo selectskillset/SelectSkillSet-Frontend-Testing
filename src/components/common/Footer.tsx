@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Linkedin, Twitter, Mail } from "lucide-react"; // Lucide icons
 
@@ -25,11 +25,9 @@ const Footer: React.FC = () => {
       "You're 1 step ahead to login",
     ];
     setClickCount((prev) => prev + 1);
-
     if (clickCount >= 9 && clickCount <= 13) {
       toast(messages[clickCount - 9]);
     }
-
     if (clickCount === 14) {
       toast("Redirecting...", { icon: "🚀" });
       setTimeout(() => navigate("/admin/login"), 1000);
@@ -65,16 +63,38 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">About us</h2>
             <ul className="space-y-2">
-              {["Careers", "Employer home", "Sitemap", "Credits"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className="hover:text-[#0077B5] transition-colors duration-300"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link
+                  to="/careers"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/employer-home"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Employer home
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/sitemap"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Sitemap
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/credits"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Credits
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -82,16 +102,30 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Help center</h2>
             <ul className="space-y-2">
-              {["Summons/Notices", "Grievances", "Report issue"].map((link) => (
-                <li key={link}>
-                  <a
-                    href="#"
-                    className="hover:text-[#0077B5] transition-colors duration-300"
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link
+                  to="/summons-notices"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Summons/Notices
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/grievances"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Grievances
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/report-issue"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Report issue
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -99,18 +133,30 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Privacy policy</h2>
             <ul className="space-y-2">
-              {["Terms & conditions", "Fraud alert", "Trust & safety"].map(
-                (link) => (
-                  <li key={link}>
-                    <a
-                      href="#"
-                      className="hover:text-[#0077B5] transition-colors duration-300"
-                    >
-                      {link}
-                    </a>
-                  </li>
-                )
-              )}
+              <li>
+                <Link
+                  to="/terms-and-conditions"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Terms & conditions
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/fraud-alert"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Fraud alert
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/trust-safety"
+                  className="hover:text-[#0077B5] transition-colors duration-300"
+                >
+                  Trust & safety
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -118,28 +164,28 @@ const Footer: React.FC = () => {
           <div>
             <h2 className="text-lg font-semibold mb-4">Connect with us</h2>
             <div className="flex space-x-4">
-              <a
-                href="https://www.linkedin.com/company/selectskillset"
+              <Link
+                to="https://www.linkedin.com/company/selectskillset"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-[#0077B5] transition-colors duration-300"
               >
                 <Linkedin size={24} />
-              </a>
-              <a
-                href="https://twitter.com/selectskillset"
+              </Link>
+              <Link
+                to="https://twitter.com/selectskillset"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="hover:text-[#0077B5] transition-colors duration-300"
               >
                 <Twitter size={24} />
-              </a>
-              <a
-                href="mailto:support@selectskillset.com"
+              </Link>
+              <Link
+                to="mailto:support@selectskillset.com"
                 className="hover:text-[#0077B5] transition-colors duration-300"
               >
                 <Mail size={24} />
-              </a>
+              </Link>
             </div>
           </div>
         </div>

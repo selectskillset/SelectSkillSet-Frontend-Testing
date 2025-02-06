@@ -29,6 +29,8 @@ import EditCorporateProfile from "./dashboards/corporateDashboard/EditCorporateP
 import FilterCandidates from "./dashboards/corporateDashboard/FilterCandidates";
 import Chatbot from "./components/ui/Chatbot";
 import FeatureAnimation from "./components/ui/FeatureAnimation";
+import RequestDemoPage from "./pages/requestDemo/RequestDemoPage.js";
+import TermsAndConditions from "./pages/termsAndConditionPage/TermsAndConditions.js";
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
               <Route path="/" element={<HomePage />} />
               <Route path="/about" element={<AboutUsPage />} />
               <Route path="/products" element={<FeatureAnimation />} />
+              <Route path="/request-demo" element={<RequestDemoPage />} />
+              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
               <Route
                 path="/interviewer-profile/:id"
                 element={<InterviewerProfile />}
@@ -55,6 +59,7 @@ function App() {
                 element={<CandidateEvaluationForm />}
               />
               <Route path="/login" element={<LoginPage />} />
+
               <Route path="/candidate-login" element={<CandidateLogin />} />
               <Route path="/candidate-signup" element={<CandidateSignup />} />
               <Route

@@ -107,10 +107,10 @@ export const CandidateLogin = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-14 transform -translate-y-1/2 cursor-pointer text-gray-600"
+              className="absolute right-3 bottom-1 transform -translate-y-1/2 cursor-pointer text-gray-600"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
-              {showPassword ? <EyeOff size={24} /> : <Eye size={24} />}
+              {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
           </div>
 

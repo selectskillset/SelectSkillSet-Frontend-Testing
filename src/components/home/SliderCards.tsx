@@ -55,9 +55,9 @@ const SliderCards = () => {
           },
         },
         {
-          breakpoint: 640, // For mobile
+          breakpoint: 640, // For phoneNumber
           settings: {
-            slidesToShow: 1, // 1 card on mobile
+            slidesToShow: 1, // 1 card on phoneNumber
           },
         },
       ],

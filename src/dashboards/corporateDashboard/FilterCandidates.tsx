@@ -9,7 +9,7 @@ interface Candidate {
   firstName: string;
   lastName: string;
   email: string;
-  mobile: string;
+  phoneNumber: string;
   location?: string;
   resume?: string;
   skills: string[];
@@ -305,7 +305,7 @@ const FilterCandidates: React.FC = () => {
                 <strong>Email:</strong> {selectedCandidate.email}
               </div>
               <div>
-                <strong>Mobile:</strong> {selectedCandidate.mobile}
+                <strong>phoneNumber:</strong> {selectedCandidate.phoneNumber}
               </div>
               <div>
                 <strong>Location:</strong>{" "}

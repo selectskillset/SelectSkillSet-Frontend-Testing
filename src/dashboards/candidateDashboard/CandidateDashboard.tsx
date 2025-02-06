@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import profileimg from "../../images/candidateProfile.png";
 import axiosInstance from "../../components/common/axiosConfig";
-import Loader from "../../components/ui/Loader";
+import DashboardSkeletonLoader from "../../components/ui/DashboardSkeletonLoader";
 
 // Lazy load heavy components
 const CandidateInterviews = lazy(() => import("./CandidateInterviews"));
@@ -39,8 +39,8 @@ const CandidateDashboard: React.FC = () => {
             email: profileData.email || "Email not provided",
             skills: profileData.skills || [],
             location: profileData.location || "Location not provided",
-            mobile: profileData.mobile || "Mobile not provided",
-            countryCode: profileData.countryCode || "+00",
+            phoneNumber: profileData.phoneNumber || "phoneNumber not provided",
+
             jobTitle: profileData.jobTitle || "Job title not provided",
             profilePhoto: profileData.profilePhoto || profileimg,
             linkedIn: profileData.linkedIn || "",
@@ -92,8 +92,8 @@ const CandidateDashboard: React.FC = () => {
             { label: "Email", value: profile.email },
             { label: "Location", value: profile.location },
             {
-              label: "Mobile",
-              value: `${profile.countryCode} ${profile.mobile}`,
+              label: "Phone Number",
+              value: profile.phoneNumber,
             },
             {
               label: "LinkedIn",
@@ -204,14 +204,12 @@ const CandidateDashboard: React.FC = () => {
   }
 
   if (isLoading) {
-    return <Loader />;
+    return <DashboardSkeletonLoader />;
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
       className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8"
     >
@@ -290,7 +288,7 @@ const CandidateDashboard: React.FC = () => {
           {/* Upcoming Interviews */}
           {renderInterviews()}
           {/* Lazy Loaded Components */}
-          <Suspense fallback={<Loader />}>
+          <Suspense>
             <CandidateInterviews />
             <CandidateStatistics />
           </Suspense>

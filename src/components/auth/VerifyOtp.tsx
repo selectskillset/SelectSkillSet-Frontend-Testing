@@ -50,7 +50,7 @@ export const VerifyOtp = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     const storedData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-    const { firstName, lastName, email, mobile, password, countryCode } =
+    const { firstName, lastName, email, phoneNumber, password } =
       storedData;
 
     e.preventDefault();
@@ -64,9 +64,9 @@ export const VerifyOtp = () => {
           firstName,
           lastName,
           email,
-          mobile,
+          phoneNumber,
           password,
-          countryCode,
+     
         }
       );
 

@@ -10,7 +10,7 @@ interface Candidate {
   firstName: string;
   lastName: string;
   email: string;
-  mobile: string;
+  phoneNumber: string;
   location?: string;
   resume?: string;
   skills: string[];
@@ -265,7 +265,7 @@ const CorporateDashboard: React.FC = () => {
                   <strong>Email:</strong> {selectedCandidate.email}
                 </div>
                 <div>
-                  <strong>Phone:</strong> {selectedCandidate.mobile}
+                  <strong>Phone:</strong> {selectedCandidate.phoneNumber}
                 </div>
                 <div>
                   <strong>Skills:</strong>{" "}

@@ -79,12 +79,7 @@ export const Hero = () => {
             >
               Get Started
             </Link>
-            <Link
-              to="/request-demo"
-              className="px-6 py-3 sm:px-8 sm:py-4 border-2 border-[#0077B5] text-[#0077B5] rounded-lg font-semibold transform transition-all duration-300 hover:scale-105 hover:bg-[#0077B5] hover:text-white shadow-lg hover:shadow-xl"
-            >
-              Request Demo
-            </Link>
+            
           </motion.div>
         </motion.div>
       </div>

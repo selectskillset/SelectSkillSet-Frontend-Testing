@@ -15,7 +15,7 @@ const EditInterviewerProfile = () => {
     "lastName",
     "jobTitle",
     "location",
-    "mobile",
+    "phoneNumber",
     "profilePhoto",
     "experience",
     "price",
@@ -28,7 +28,7 @@ const EditInterviewerProfile = () => {
     lastName: "",
     jobTitle: "",
     location: "",
-    mobile: "",
+    phoneNumber: "",
     profilePhoto: "",
     experience: "",
     price: "",
@@ -51,7 +51,7 @@ const EditInterviewerProfile = () => {
           lastName: profileData.lastName || "",
           jobTitle: profileData.jobTitle || "",
           location: profileData.location || "",
-          mobile: profileData.mobile || "",
+          phoneNumber: profileData.phoneNumber || "",
           profilePhoto: profileData.profilePhoto || "",
           experience: profileData.experience,
           price: profileData.price,
@@ -101,12 +101,12 @@ const EditInterviewerProfile = () => {
   };
 
   const handleSave = async () => {
-    const mobileRegex = /^[0-9]{10,15}$/;
+    const phoneNumberRegex = /^[0-9]{10,15}$/;
 
     if (
       !profile.firstName ||
       !profile.lastName ||
-      !profile.mobile ||
+      !profile.phoneNumber ||
       !profile.experience ||
       !profile.price
     ) {
@@ -114,8 +114,8 @@ const EditInterviewerProfile = () => {
       return;
     }
 
-    if (!mobileRegex.test(profile.mobile)) {
-      toast.error("Invalid mobile number.");
+    if (!phoneNumberRegex.test(profile.phoneNumber)) {
+      toast.error("Invalid phoneNumber number.");
       return;
     }
 
@@ -213,7 +213,7 @@ const EditInterviewerProfile = () => {
           />
         </div>
 
-        {/* Mobile Number with Country Code */}
+        {/* phoneNumber Number with Country Code */}
         <div className="mb-6 flex items-center gap-2">
           <div className="w-1/4">
             <label className="font-medium text-gray-700">Country Code</label>
@@ -225,16 +225,16 @@ const EditInterviewerProfile = () => {
             />
           </div>
           <div className="w-3/4">
-            <label className="font-medium text-gray-700">Mobile Number</label>
+            <label className="font-medium text-gray-700">phoneNumber Number</label>
             <input
               type="text"
-              value={profile.mobile}
+              value={profile.phoneNumber}
               onChange={(e) =>
-                setProfile({ ...profile, mobile: e.target.value })
+                setProfile({ ...profile, phoneNumber: e.target.value })
               }
               className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
               maxLength={selectedCountry.maxLength}
-              placeholder="Enter your mobile number"
+              placeholder="Enter your phoneNumber number"
             />
           </div>
         </div>

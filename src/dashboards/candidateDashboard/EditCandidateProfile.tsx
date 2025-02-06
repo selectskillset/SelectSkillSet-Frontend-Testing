@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
-import { XCircle, Camera, UploadCloud, Pen } from "lucide-react";
+import { XCircle, Camera, UploadCloud, Pencil } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import axiosInstance from "../../components/common/axiosConfig";
 import { skillsData } from "../../components/common/SkillsData";
-import { countryData } from "../../components/common/countryData"; // Ensure countryData is imported
-import Loader from "../../components/ui/Loader"; // Ensure Loader is implemented
+import { countryData } from "../../components/common/countryData";
 import { useNavigate } from "react-router-dom";
+import { MuiTelInput } from "mui-tel-input";
 
 const EditCandidateProfile = () => {
   const navigate = useNavigate();
@@ -16,8 +16,7 @@ const EditCandidateProfile = () => {
     jobTitle: "",
     location: "",
     linkedIn: "",
-    mobile: "",
-    countryCode: "+91", // Default country code
+    phoneNumber: "",
     skills: [] as string[],
     resume: null as File | null,
     profilePhoto: null as File | null,
@@ -29,6 +28,9 @@ const EditCandidateProfile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [selectedCountry, setSelectedCountry] = useState(
+    countryData.find((c) => c.isoCode === "IN") || countryData[0] // Default to India or first country
+  );
 
   // Fetch profile data
   useEffect(() => {
@@ -42,8 +44,7 @@ const EditCandidateProfile = () => {
           jobTitle = "",
           location = "",
           linkedIn = "",
-          mobile = "",
-          countryCode = "+91",
+          phoneNumber = "",
           skills = [],
           resume = "",
           profilePhoto = "",
@@ -54,8 +55,7 @@ const EditCandidateProfile = () => {
           jobTitle,
           location,
           linkedIn,
-          mobile,
-          countryCode,
+          phoneNumber,
           skills,
           resume: null,
           profilePhoto: null,
@@ -77,22 +77,65 @@ const EditCandidateProfile = () => {
     setErrors((prev) => ({ ...prev, [key]: "" }));
   }, []);
 
+  // Handle phone number change
+  const handlePhoneChange = (value: string, isValid: boolean) => {
+    // Extract numeric characters from the phone number (excluding the country code)
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericValue = value.replace(/\D/g, ""); // Remove all non-numeric characters
+    const phoneNumberDigits = numericValue.slice(countryCodeLength); // Exclude country code
+
+    // Restrict input if it exceeds the maximum numeric length
+    if (phoneNumberDigits.length > selectedCountry.maxLength) return;
+
+    setProfile((prev) => ({ ...prev, phoneNumber: value })); // Preserve formatted value
+  };
+
+  // Handle country change
+  const handleCountryChange = (countryCode: string) => {
+    const selected = countryData.find(
+      (c) => c.isoCode === countryCode.toUpperCase()
+    );
+    if (selected) {
+      setSelectedCountry(selected);
+      setProfile((prev) => ({ ...prev, phoneNumber: "" })); // Reset phone number when country changes
+    }
+  };
+
   // Validate form fields
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
     if (!profile.firstName) newErrors.firstName = "First name is required.";
     if (!profile.lastName) newErrors.lastName = "Last name is required.";
-    if (!profile.mobile) newErrors.mobile = "Mobile number is required.";
+    if (!profile.phoneNumber)
+      newErrors.phoneNumber = "phoneNumber number is required.";
+
+    // Validate phone number
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericPhoneNumber = profile.phoneNumber
+      .replace(/\D/g, "")
+      .slice(countryCodeLength);
+
+    if (numericPhoneNumber.length !== selectedCountry.maxLength)
+      newErrors.phoneNumber = `phoneNumber number must be ${selectedCountry.maxLength} digits.`;
+
     if (profile.skills.length === 0)
       newErrors.skills = "At least one skill is required.";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [profile.firstName, profile.lastName, profile.mobile, profile.skills]);
+  }, [
+    profile.firstName,
+    profile.lastName,
+    profile.phoneNumber,
+    profile.skills,
+    selectedCountry,
+  ]);
 
   // Save changes
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
-
     const formData = new FormData();
 
     // Append fields to FormData
@@ -189,7 +232,7 @@ const EditCandidateProfile = () => {
     [profile.skills]
   );
 
-  if (isLoading) return <Loader />;
+  // if (isLoading) return <Loader />;
 
   return (
     <motion.div
@@ -202,12 +245,10 @@ const EditCandidateProfile = () => {
         {/* Header */}
         <h2 className="text-2xl font-bold text-gray-800 mb-6">Edit Profile</h2>
 
-        {/* Profile Photo Section */}
         <div className="flex flex-col items-center mb-6">
-          <label
-            htmlFor="profilePhoto"
-            className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 cursor-pointer hover:bg-gray-300 transition border-4 border-[#0077B5]"
-          >
+          {/* Profile Image Container */}
+          <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gray-200 border-4 border-[#0077B5]">
+            {/* Profile Image or Placeholder */}
             {profile.profilePhoto ? (
               <img
                 src={URL.createObjectURL(profile.profilePhoto)}
@@ -223,78 +264,94 @@ const EditCandidateProfile = () => {
             ) : (
               <Camera className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-500 w-12 h-12" />
             )}
+
+            {/* Edit (Pencil) Icon */}
+          </div>
+          <label
+            htmlFor="profilePhoto"
+            className="relative bottom-10  left-10 border-black bg-white p-1.5 rounded-full shadow-md cursor-pointer hover:bg-gray-100 transition"
+          >
+            <Pencil className="w-5 h-5 text-[#0077B5]" />
           </label>
+
+          {/* Upload Profile Photo Label */}
+          <label
+            htmlFor="profilePhoto"
+            className="mt-2 text-sm text-[#0077B5] cursor-pointer hover:underline"
+          >
+            Upload Profile Photo
+          </label>
+
+          {/* Hidden File Input */}
           <input
             id="profilePhoto"
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleProfilePhotoUpload}
+            onChange={(e) => handleProfilePhotoUpload(e)}
           />
-          <p className="mt-2 text-sm text-gray-600">Upload Profile Photo</p>
         </div>
-
         {/* Form Fields */}
         {["firstName", "lastName", "jobTitle", "location", "linkedIn"].map(
-          (key) => (
-            <div key={key} className="mb-4">
-              <label
-                htmlFor={key}
-                className="block text-sm font-medium text-gray-700"
-              >
-                {key.replace(/([A-Z])/g, " $1")}
-              </label>
-              <input
-                id={key}
-                type="text"
-                value={profile[key as keyof typeof profile]}
-                onChange={(e) => handleProfileChange(key, e.target.value)}
-                className={`mt-1 block w-full px-4 py-3 border ${
-                  errors[key] ? "border-red-500" : "border-gray-300"
-                } rounded-md shadow-sm focus:outline-none focus:ring-[#0077B5] focus:border-[#0077B5]`}
-                placeholder={`Enter ${key.replace(/([A-Z])/g, " $1")}`}
-              />
-              {errors[key] && (
-                <p className="mt-1 text-sm text-red-500">{errors[key]}</p>
-              )}
-            </div>
-          )
-        )}
+          (key) => {
+            // Function to format camelCase keys into human-readable labels
+            const formatLabel = (label: string): string => {
+              return label
+                .replace(/([a-z])([A-Z])/g, "$1 $2") // Add space before capital letters
+                .replace(/\b\w/g, (char) => char.toUpperCase()); // Capitalize the first letter of each word
+            };
 
-        {/* Mobile Number and Country Code */}
-        <div className="mb-4">
+            return (
+              <div key={key} className="mb-4">
+                <label
+                  htmlFor={key}
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  {formatLabel(key)} {/* Use the formatted label */}
+                </label>
+                <input
+                  id={key}
+                  type="text"
+                  value={profile[key as keyof typeof profile]}
+                  onChange={(e) => handleProfileChange(key, e.target.value)}
+                  className={`mt-1 block w-full px-4 py-3 border ${
+                    errors[key] ? "border-red-500" : "border-gray-300"
+                  } rounded-md shadow-sm focus:outline-none focus:ring-[#0077B5] focus:border-[#0077B5]`}
+                  placeholder={`Enter ${formatLabel(key)}`}
+                />
+                {errors[key] && (
+                  <p className="mt-1 text-sm text-red-500">{errors[key]}</p>
+                )}
+              </div>
+            );
+          }
+        )}
+        <div className="mb-4 w-full">
           <label className="block text-sm font-medium text-gray-700">
-            Mobile Number
+            phoneNumber Number
           </label>
-          <div className="flex gap-2">
-            <select
-              value={profile.countryCode}
-              onChange={(e) =>
-                handleProfileChange("countryCode", e.target.value)
-              }
-              className="mt-1 block w-1/4 px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#0077B5] focus:border-[#0077B5]"
-            >
-              {countryData.map((country) => (
-                <option key={country.code} value={country.code}>
-                  {country.code} ({country.isoCode})
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={profile.mobile}
-              onChange={(e) => handleProfileChange("mobile", e.target.value)}
-              className={`mt-1 block w-3/4 px-4 py-3 border ${
-                errors.mobile ? "border-red-500" : "border-gray-300"
-              } rounded-md shadow-sm focus:outline-none focus:ring-[#0077B5] focus:border-[#0077B5]`}
-              placeholder="Enter mobile number"
-            />
-          </div>
-          {errors.mobile && (
-            <p className="mt-1 text-sm text-red-500">{errors.mobile}</p>
+          <MuiTelInput
+            value={profile.phoneNumber}
+            onChange={(value, isValid) => handlePhoneChange(value, isValid)}
+            onCountryChange={(countryCode) => handleCountryChange(countryCode)}
+            defaultCountry={selectedCountry.isoCode.toLowerCase()} // Default country
+            fullWidth
+            variant="outlined"
+            inputProps={{
+              name: "phoneNumber",
+              required: true,
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                borderRadius: "8px",
+                height: "48px",
+              },
+            }}
+          />
+          {errors.phoneNumber && (
+            <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
           )}
         </div>
-
         {/* Skills Section */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">
@@ -340,7 +397,6 @@ const EditCandidateProfile = () => {
             <p className="mt-1 text-sm text-red-500">{errors.skills}</p>
           )}
         </div>
-
         {/* Resume Section */}
         <div className="mb-4">
           <label className="block text-sm font-medium text-gray-700">
@@ -378,7 +434,6 @@ const EditCandidateProfile = () => {
             </p>
           )}
         </div>
-
         {/* Action Buttons */}
         <div className="flex justify-end gap-4">
           <button

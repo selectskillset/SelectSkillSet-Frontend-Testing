@@ -1,11 +1,11 @@
 import React, { useRef, useEffect, useCallback, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { motion } from "framer-motion";
 import { Notification } from "../ui/Notification";
 
-// Framer Motion variants for mobile menu animations
-const mobileMenuVariants = {
+// Framer Motion variants for phoneNumber menu animations
+const phoneNumberMenuVariants = {
   hidden: { x: "100%" },
   visible: { x: 0 },
 };
@@ -13,6 +13,7 @@ const mobileMenuVariants = {
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const navigate = useNavigate();
+  const location = useLocation(); // To track the current route
   const menuRef = useRef(null);
 
   // Retrieve tokens from sessionStorage
@@ -64,34 +65,62 @@ export const Navbar = () => {
     navigate("/");
   }, [navigate]);
 
-  // Render common menu links for desktop and mobile
-  const renderMenuLinks = (isMobile = false) => {
-    const baseLinkClass = isMobile
+  // Render common menu links for desktop and phoneNumber
+  const renderMenuLinks = (isphoneNumber = false) => {
+    const baseLinkClass = isphoneNumber
       ? "text-gray-800 hover:text-[#0077B5] text-2xl font-medium transition duration-300"
       : "text-gray-800 hover:text-[#0077B5] text-lg font-medium transition duration-300";
-    const demoButtonClass = isMobile
+    const demoButtonClass = isphoneNumber
       ? "bg-[#0077B5] text-white text-2xl font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300"
       : "bg-[#0077B5] text-white text-lg font-semibold px-5 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300";
 
+    const isActive = (path: string) => location.pathname === path;
+
     return (
       <>
-        <Link to="/" className={baseLinkClass} onClick={closeMenu}>
+        <Link
+          to="/"
+          className={`${baseLinkClass} ${
+            isActive("/") ? "text-[#0077B5] font-bold" : ""
+          }`}
+          onClick={closeMenu}
+        >
           Home
         </Link>
-        <Link to="/products" className={baseLinkClass} onClick={closeMenu}>
+        <Link
+          to="/products"
+          className={`${baseLinkClass} ${
+            isActive("/products") ? "text-[#0077B5] font-bold" : ""
+          }`}
+          onClick={closeMenu}
+        >
           Products
         </Link>
-        <Link to="/about" className={baseLinkClass} onClick={closeMenu}>
+        <Link
+          to="/about"
+          className={`${baseLinkClass} ${
+            isActive("/about") ? "text-[#0077B5] font-bold" : ""
+          }`}
+          onClick={closeMenu}
+        >
           About Us
         </Link>
         <Link
           to="/interviewer-signup"
-          className={baseLinkClass}
+          className={`${baseLinkClass} ${
+            isActive("/interviewer-signup") ? "text-[#0077B5] font-bold" : ""
+          }`}
           onClick={closeMenu}
         >
           Become an Interviewer
         </Link>
-        <Link to="/login" className={baseLinkClass} onClick={closeMenu}>
+        <Link
+          to="/login"
+          className={`${baseLinkClass} ${
+            isActive("/login") ? "text-[#0077B5] font-bold" : ""
+          }`}
+          onClick={closeMenu}
+        >
           Login
         </Link>
         <Link
@@ -138,7 +167,7 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile Menu Button and Notification */}
+          {/* phoneNumber Menu Button and Notification */}
           <div className="md:hidden flex items-center space-x-4">
             {userLoggedIn && <Notification />}
             <button
@@ -156,10 +185,10 @@ export const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Menu */}
+      {/* phoneNumber Menu */}
       <motion.div
         ref={menuRef}
-        variants={mobileMenuVariants}
+        variants={phoneNumberMenuVariants}
         initial="hidden"
         animate={isMenuOpen ? "visible" : "hidden"}
         transition={{ type: "spring", stiffness: 100, damping: 20 }}

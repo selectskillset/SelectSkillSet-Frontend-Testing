@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../common/axiosConfig";
 import { Eye, EyeOff } from "lucide-react";
+import { MuiTelInput } from "mui-tel-input";
 import candidateSignup from "../../../images/candidateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
 
@@ -13,66 +14,94 @@ export const CandidateSignup = () => {
     lastName: "",
     email: "",
     password: "",
-    mobile: "",
-    countryCode: "+1",
+    phoneNumber: "", // Store the full phone number (e.g., "+91 9373960682")
   });
-  const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const [selectedCountry, setSelectedCountry] = useState(
+    countryData.find((c) => c.isoCode === "IE") || countryData[0] 
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === "mobile") {
-      const numericValue = value.replace(/\D/g, ""); // Allow only numbers
-      if (numericValue.length <= selectedCountry.maxLength) {
-        setFormData({ ...formData, [name]: numericValue });
-      }
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
+    setFormData({ ...formData, [name]: value });
   };
 
-  // Handle country selection
-  const handleCountryChange = (code: string) => {
-    const country = countryData.find((item) => item.code === code);
-    if (country) {
-      setSelectedCountry(country);
-      setFormData({ ...formData, countryCode: country.code, mobile: "" });
+  // Handle phone number change
+  const handlePhoneChange = (value: string, isValid: boolean) => {
+    // Extract numeric characters from the phone number
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericValue = value.replace(/\D/g, ""); // Remove all non-numeric characters
+    const phoneNumberDigits = numericValue.slice(countryCodeLength); // Exclude country code
+
+    // Restrict input if it exceeds the maximum numeric length
+    if (phoneNumberDigits.length > selectedCountry.maxLength) return;
+
+    setFormData({ ...formData, phoneNumber: value }); // Preserve formatted value
+  };
+
+  // Handle country change
+  const handleCountryChange = (countryCode: string) => {
+    const selected = countryData.find(
+      (c) => c.isoCode === countryCode.toUpperCase()
+    );
+    if (selected) {
+      setSelectedCountry(selected);
+      setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
     }
   };
 
   // Form validation
   const validateForm = () => {
-    const { firstName, lastName, email, password, mobile } = formData;
-    if (!firstName || !lastName || !email || !password || !mobile) {
+    const { firstName, lastName, email, password, phoneNumber } = formData;
+
+    // Check for empty fields
+    if (!firstName || !lastName || !email || !password || !phoneNumber) {
       toast.error("Please fill in all fields");
       return false;
     }
+
+    // Validate email
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     if (!emailRegex.test(email)) {
       toast.error("Please enter a valid email");
       return false;
     }
-    if (mobile.length !== selectedCountry.maxLength) {
-      toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
-      return false;
-    }
+
+    // Validate password
     if (password.length < 6) {
       toast.error("Password should be at least 6 characters");
       return false;
     }
+
+    // Validate phone number
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericPhoneNumber = phoneNumber
+      .replace(/\D/g, "")
+      .slice(countryCodeLength);
+    if (numericPhoneNumber.length !== selectedCountry.maxLength) {
+      toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
+      return false;
+    }
+
     return true;
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+     sessionStorage.setItem("userData", JSON.stringify(formData));
     if (!validateForm()) return;
 
     setIsLoading(true);
     try {
-      const response = await axiosInstance.post("/candidate/register", formData);
+      const response = await axiosInstance.post(
+        "/candidate/register",
+        formData
+      );
       setIsLoading(false);
       if (response.data.success) {
         toast.success("Registration successful");
@@ -93,7 +122,7 @@ export const CandidateSignup = () => {
         <h1 className="text-3xl font-bold mb-4 text-center text-[#0077B5]">
           Join as a Candidate
         </h1>
-        <p className="text-base mb-6 text-center max-w-md text-[#0077B5]">
+        <p className="text-base mb-6 text-center max-w-md text-[#0A66C2]">
           Find your dream job and take your career to the next level.
         </p>
         <img src={candidateSignup} alt="Sign Up" className="w-3/4 max-w-md" />
@@ -192,48 +221,34 @@ export const CandidateSignup = () => {
               </div>
             </div>
 
-            {/* Country Code and Phone Number */}
-            <div className="mb-4 flex items-center space-x-3">
-              <div className="w-1/3">
-                <label
-                  htmlFor="countryCode"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Country
-                </label>
-                <select
-                  id="countryCode"
-                  name="countryCode"
-                  value={formData.countryCode}
-                  onChange={(e) => handleCountryChange(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                >
-                  {countryData.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.flag} {country.name} ({country.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-2/3">
-                <label
-                  htmlFor="mobile"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  id="mobile"
-                  name="mobile"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  maxLength={selectedCountry.maxLength}
-                  className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                  placeholder="Enter your phone number"
-                  required
-                />
-              </div>
+            {/* Phone Input with Flags */}
+            <div className="mb-4">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Phone Number
+              </label>
+              <MuiTelInput
+                value={formData.phoneNumber}
+                onChange={(value, isValid) => handlePhoneChange(value, isValid)}
+                onCountryChange={(countryCode) =>
+                  handleCountryChange(countryCode)
+                }
+                defaultCountry={selectedCountry?.isoCode || "IE"} // Ensure default country matches selectedCountry
+                fullWidth
+                variant="outlined"
+                inputProps={{
+                  name: "phoneNumber",
+                  required: true,
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                    height: "48px",
+                  },
+                }}
+              />
             </div>
 
             {/* Submit Button */}
@@ -247,7 +262,6 @@ export const CandidateSignup = () => {
               {isLoading ? "Signing Up..." : "Sign Up"}
             </button>
           </form>
-
           <div className="text-center mt-4">
             <p className="text-sm">
               Already have an account?{" "}

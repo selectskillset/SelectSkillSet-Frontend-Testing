@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../common/axiosConfig";
 import toast from "react-hot-toast";
+import { MuiTelInput } from "mui-tel-input";
 import corporateSignup from "../../../images/corporateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
 
@@ -12,26 +13,42 @@ export const CorporateSignup: React.FC = () => {
     companyName: "",
     email: "",
     password: "",
-    phoneNumber: "",
-    countryCode: countryData[0].code,
+    phoneNumber: "", // Store the full phone number (e.g., "+91 9373960682")
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
-  const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const [selectedCountry, setSelectedCountry] = useState(
+    countryData.find((c) => c.isoCode === "IE") || countryData[0] // Default to India or first country
+  );
 
   // Handle input changes
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  // Handle country selection
-  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const country = countryData.find((c) => c.code === e.target.value);
-    if (country) {
-      setSelectedCountry(country);
-      setFormData({ ...formData, countryCode: country.code, phoneNumber: "" });
+  // Handle phone number change
+  const handlePhoneChange = (value: string, isValid: boolean) => {
+    // Extract numeric characters from the phone number (excluding the country code)
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericValue = value.replace(/\D/g, ""); // Remove all non-numeric characters
+    const phoneNumberDigits = numericValue.slice(countryCodeLength); // Exclude country code
+
+    // Restrict input if it exceeds the maximum numeric length
+    if (phoneNumberDigits.length > selectedCountry.maxLength) return;
+
+    setFormData({ ...formData, phoneNumber: value }); // Preserve formatted value
+  };
+
+  // Handle country change
+  const handleCountryChange = (countryCode: string) => {
+    const selected = countryData.find(
+      (c) => c.isoCode === countryCode.toUpperCase()
+    );
+    if (selected) {
+      setSelectedCountry(selected);
+      setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
     }
   };
 
@@ -39,17 +56,24 @@ export const CorporateSignup: React.FC = () => {
   const validateForm = () => {
     const { companyName, contactName, email, password, phoneNumber } = formData;
     const newErrors: any = {};
+
     if (!companyName) newErrors.companyName = "Company name is required.";
     if (!contactName) newErrors.contactName = "Contact name is required.";
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
       newErrors.email = "A valid email is required.";
     if (!password || password.length < 8)
       newErrors.password = "Password must be at least 8 characters.";
-    if (
-      !/^\d+$/.test(phoneNumber) ||
-      phoneNumber.length !== selectedCountry.maxLength
-    )
+
+    // Validate phone number
+    const countryCodeLength =
+      selectedCountry?.code.replace(/\D/g, "").length || 0;
+    const numericPhoneNumber = phoneNumber
+      .replace(/\D/g, "")
+      .slice(countryCodeLength);
+
+    if (numericPhoneNumber.length !== selectedCountry.maxLength)
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits.`;
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -176,43 +200,35 @@ export const CorporateSignup: React.FC = () => {
               )}
             </div>
 
-            {/* Country Code and Phone Number */}
-            <div className="mb-4 flex items-center space-x-3">
-              <div className="w-1/3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Country
-                </label>
-                <select
-                  name="countryCode"
-                  value={formData.countryCode}
-                  onChange={handleCountryChange}
-                  className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                >
-                  {countryData.map((country) => (
-                    <option key={country.code} value={country.code}>
-                      {country.name} ({country.code})
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="w-2/3">
-                <label className="block text-sm font-medium text-gray-700">
-                  Phone Number
-                </label>
-                <input
-                  type="text"
-                  name="phoneNumber"
-                  value={formData.phoneNumber}
-                  onChange={handleChange}
-                  maxLength={selectedCountry.maxLength}
-                  className="w-full p-3 border border-gray-300 rounded-lg mt-2 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
-                  placeholder={`Enter ${selectedCountry.maxLength} digits`}
-                />
-              </div>
+            {/* Phone Input with Flags */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <MuiTelInput
+                value={formData.phoneNumber}
+                onChange={(value, isValid) => handlePhoneChange(value, isValid)}
+                onCountryChange={(countryCode) =>
+                  handleCountryChange(countryCode)
+                }
+                defaultCountry="IE"
+                fullWidth
+                variant="outlined"
+                inputProps={{
+                  name: "phoneNumber",
+                  required: true,
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "8px",
+                    height: "48px",
+                  },
+                }}
+              />
+              {errors.phoneNumber && (
+                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
+              )}
             </div>
-            {errors.phoneNumber && (
-              <p className="text-red-500 text-sm mb-4">{errors.phoneNumber}</p>
-            )}
 
             {/* Submit Button */}
             <button
@@ -227,7 +243,6 @@ export const CorporateSignup: React.FC = () => {
               {loading ? "Signing Up..." : "Sign Up"}
             </button>
           </form>
-
           <div className="text-center mt-4">
             <p className="text-sm">
               Already have an account?{" "}
