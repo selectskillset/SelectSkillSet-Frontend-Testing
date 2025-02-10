@@ -49,14 +49,18 @@ const CandidateStatistics: React.FC = () => {
     totalFeedbackCount: number;
     feedbacks: Feedback[];
   } | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
+    null
+  );
   const [showAllFeedbacks, setShowAllFeedbacks] = useState(false);
 
   // Fetch candidate statistics
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        const response = await axiosInstance.get("/candidate/get-candidate-statistics");
+        const response = await axiosInstance.get(
+          "/candidate/get-candidate-statistics"
+        );
         setStatistics(response.data.statistics);
       } catch (error) {
         console.error("Error fetching candidate statistics:", error);
@@ -99,13 +103,45 @@ const CandidateStatistics: React.FC = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
         <p className="text-gray-700 text-center">
-          Unable to fetch candidate statistics at the moment. Please try again later.
+          Unable to fetch candidate statistics at the moment. Please try again
+          later.
         </p>
       </div>
     );
   }
 
-  const { completedInterviews, averageRating, totalFeedbackCount, feedbacks } = statistics;
+  const { completedInterviews, averageRating, totalFeedbackCount, feedbacks } =
+    statistics;
+
+  // Chart configurations
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleFont: { size: 14 },
+        bodyFont: { size: 12 },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        grid: {
+          color: "rgba(200, 200, 200, 0.2)",
+        },
+      },
+      x: {
+        grid: {
+          color: "rgba(200, 200, 200, 0.2)",
+        },
+      },
+    },
+  };
 
   // Radar Chart Data
   const radarChartData = {
@@ -113,10 +149,15 @@ const CandidateStatistics: React.FC = () => {
     datasets: [
       {
         label: "Feedback Ratings",
-        data: Object.values(feedbacks[0]?.feedbackData || {}).map((item: any) => item.rating),
+        data: Object.values(feedbacks[0]?.feedbackData || {}).map(
+          (item: any) => item.rating
+        ),
         backgroundColor: "rgba(75, 192, 192, 0.2)",
         borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
+        borderWidth: 2,
+        pointBackgroundColor: "rgba(75, 192, 192, 1)",
+        pointBorderColor: "#fff",
+        pointHoverRadius: 6,
       },
     ],
   };
@@ -143,13 +184,16 @@ const CandidateStatistics: React.FC = () => {
         ],
         borderColor: "rgba(255, 255, 255, 0.2)",
         borderWidth: 1,
+        hoverOffset: 10,
       },
     ],
   };
 
   // Bar Chart Data
   const barChartData = {
-    labels: feedbacks.map((f) => `${f.interviewer.firstName} ${f.interviewer.lastName}`),
+    labels: feedbacks.map(
+      (f) => `${f.interviewer.firstName} ${f.interviewer.lastName}`
+    ),
     datasets: [
       {
         label: "Overall Ratings",
@@ -157,6 +201,8 @@ const CandidateStatistics: React.FC = () => {
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 1,
+        borderRadius: 4,
+        hoverBackgroundColor: "rgba(75, 192, 192, 0.8)",
       },
     ],
   };
@@ -172,24 +218,32 @@ const CandidateStatistics: React.FC = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
           <p className="text-gray-600 text-sm">Completed Interviews</p>
-          <p className="text-xl font-semibold text-gray-800">{completedInterviews}</p>
+          <p className="text-xl font-semibold text-gray-800">
+            {completedInterviews}
+          </p>
         </div>
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
           <p className="text-gray-600 text-sm">Average Rating</p>
           <div className="flex items-center justify-center space-x-1">
             {renderStars(averageRating)}
           </div>
-          <p className="text-xl font-semibold text-gray-800">{averageRating.toFixed(1)}</p>
+          <p className="text-xl font-semibold text-gray-800">
+            {averageRating.toFixed(1)}
+          </p>
         </div>
         <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
           <p className="text-gray-600 text-sm">Total Feedback Count</p>
-          <p className="text-xl font-semibold text-gray-800">{totalFeedbackCount}</p>
+          <p className="text-xl font-semibold text-gray-800">
+            {totalFeedbackCount}
+          </p>
         </div>
       </div>
 
       {/* Feedback Cards */}
       <div className="mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">Feedbacks</h2>
+        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
+          Feedbacks
+        </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {feedbacksToDisplay?.map((feedback, index) => (
             <div
@@ -197,7 +251,9 @@ const CandidateStatistics: React.FC = () => {
               onClick={() => setSelectedFeedback(feedback)}
               className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition"
             >
-              <p className="text-sm font-medium text-gray-600">Feedback {index + 1}</p>
+              <p className="text-sm font-medium text-gray-600">
+                Feedback {index + 1}
+              </p>
               <div className="flex items-center space-x-2 mt-2">
                 {feedback.interviewer.profilePhoto ? (
                   <img
@@ -213,15 +269,20 @@ const CandidateStatistics: React.FC = () => {
                 )}
                 <div>
                   <p className="text-sm font-medium text-gray-800">
-                    {feedback.interviewer.firstName} {feedback.interviewer.lastName}
+                    {feedback.interviewer.firstName}{" "}
+                    {feedback.interviewer.lastName}
                   </p>
-                  <p className="text-xs text-gray-600">{feedback.interviewDate}</p>
+                  <p className="text-xs text-gray-600">
+                    {feedback.interviewDate}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-1 mt-2">
                 {renderStars(feedback.rating)}
               </div>
-              <p className="text-sm text-gray-800 mt-2">{feedback.rating.toFixed(1)}</p>
+              <p className="text-sm text-gray-800 mt-2">
+                {feedback.rating.toFixed(1)}
+              </p>
             </div>
           ))}
         </div>
@@ -244,7 +305,7 @@ const CandidateStatistics: React.FC = () => {
           </h3>
           {feedbacks.length > 0 ? (
             <div className="w-full h-64 sm:h-96">
-              <Radar data={radarChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Radar data={radarChartData} options={chartOptions} />
             </div>
           ) : (
             <p className="text-gray-600">No feedback data available.</p>
@@ -257,7 +318,7 @@ const CandidateStatistics: React.FC = () => {
             Average Rating Distribution
           </h3>
           <div className="w-full h-64 sm:h-96">
-            <Doughnut data={doughnutChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+            <Doughnut data={doughnutChartData} options={chartOptions} />
           </div>
         </div>
 
@@ -268,7 +329,7 @@ const CandidateStatistics: React.FC = () => {
           </h3>
           {feedbacks.length > 0 ? (
             <div className="w-full h-64 sm:h-96">
-              <Bar data={barChartData} options={{ responsive: true, maintainAspectRatio: false }} />
+              <Bar data={barChartData} options={chartOptions} />
             </div>
           ) : (
             <p className="text-gray-600">No feedback data available.</p>
@@ -290,17 +351,23 @@ const CandidateStatistics: React.FC = () => {
             >
               <X className="w-5 h-5" />
             </button>
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">Detailed Feedback</h3>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Detailed Feedback
+            </h3>
             <div className="max-h-96 overflow-y-auto">
-              {Object.entries(selectedFeedback.feedbackData).map(([key, value], index) => (
-                <div key={index} className="mb-4">
-                  <p className="text-sm font-medium text-gray-800">{key}</p>
-                  <p className="text-sm text-gray-600">Rating: {value.rating}/5</p>
-                  <p className="text-sm text-gray-600">
-                    Comments: {value.comments || "No comments provided."}
-                  </p>
-                </div>
-              ))}
+              {Object.entries(selectedFeedback.feedbackData).map(
+                ([key, value], index) => (
+                  <div key={index} className="mb-4">
+                    <p className="text-sm font-medium text-gray-800">{key}</p>
+                    <p className="text-sm text-gray-600">
+                      Rating: {value.rating}/5
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      Comments: {value.comments || "No comments provided."}
+                    </p>
+                  </div>
+                )
+              )}
             </div>
           </div>
         </div>

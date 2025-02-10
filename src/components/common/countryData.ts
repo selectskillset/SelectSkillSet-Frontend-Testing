@@ -1,5 +1,6 @@
+
 export const countryData = [
-  { code: "+358", isoCode: "AX", name: "Åland Islands", maxLength: 10 },
+  { code: "+358", isoCode: "AX", name: "Åland Islands", maxLength: 7  },
   { code: "+93", isoCode: "AF", name: "Afghanistan", maxLength: 9 },
   { code: "+355", isoCode: "AL", name: "Albania", maxLength: 9 },
   { code: "+213", isoCode: "DZ", name: "Algeria", maxLength: 9 },

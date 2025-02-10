@@ -31,6 +31,9 @@ import Chatbot from "./components/ui/Chatbot";
 import FeatureAnimation from "./components/ui/FeatureAnimation";
 import RequestDemoPage from "./pages/requestDemo/RequestDemoPage.js";
 import TermsAndConditions from "./pages/termsAndConditionPage/TermsAndConditions.js";
+import CandidateDetailsPage from "./dashboards/adminDashboard/CandidateDetailsPage.js";
+import InterviewerDetailsPage from "./dashboards/adminDashboard/InterviewerDetailsPage.js";
+import CorporateDetailsPage from "./dashboards/adminDashboard/CorporateDetailsPage.js";
 
 function App() {
   return (
@@ -45,7 +48,10 @@ function App() {
               <Route path="/about" element={<AboutUsPage />} />
               <Route path="/products" element={<FeatureAnimation />} />
               <Route path="/request-demo" element={<RequestDemoPage />} />
-              <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+              <Route
+                path="/terms-and-conditions"
+                element={<TermsAndConditions />}
+              />
               <Route
                 path="/interviewer-profile/:id"
                 element={<InterviewerProfile />}
@@ -104,6 +110,18 @@ function App() {
                 element={<AdminProfiles />}
               />
               <Route path="/admin/login" element={<AdminLogin />} />
+              <Route
+                path="/admin/candidates/:id"
+                element={<CandidateDetailsPage />}
+              />
+              <Route
+                path="/admin/interviewers/:id"
+                element={<InterviewerDetailsPage />}
+              />
+              <Route
+                path="/admin/corporates/:id"
+                element={<CorporateDetailsPage />}
+              />
             </Routes>
           </div>
           <Toaster

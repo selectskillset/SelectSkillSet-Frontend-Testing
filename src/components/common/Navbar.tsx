@@ -53,6 +53,8 @@ export const Navbar = () => {
       navigate("/corporate-dashboard");
     } else if (adminToken) {
       navigate("/admin/dashboard");
+    }else{
+      navigate("/")
     }
   }, [candidateToken, interviewerToken, corporateToken, adminToken, navigate]);
 

@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import axiosInstance from "../../common/axiosConfig";
-import { Eye, EyeOff } from "lucide-react";
-import { MuiTelInput } from "mui-tel-input";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import signupImg from "../../../images/signup.svg";
 import { countryData } from "../../common/countryData";
 
@@ -18,11 +17,9 @@ export const InterviewerSignup = () => {
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isPhoneValid, setIsPhoneValid] = useState(true); // Track phone number validity
   const [selectedCountry, setSelectedCountry] = useState(
-    countryData.find((c) => c.isoCode === "IE")
+    countryData.find((c) => c.isoCode === "IE") || countryData[0]
   );
-  const [maxLength, setMaxLength] = useState(selectedCountry?.maxLength || 10);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,28 +28,26 @@ export const InterviewerSignup = () => {
   };
 
   // Handle phone number change
-  const handlePhoneChange = (value: string, isValid: boolean) => {
-    // Extract the numeric part of the phone number (excluding the country code)
-    const countryCodeLength =
-      selectedCountry?.code.replace(/\D/g, "").length || 0;
-    const numericValue = value.replace(/\D/g, ""); // Remove all non-numeric characters
-    const phoneNumberDigits = numericValue.slice(countryCodeLength); // Exclude country code
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Ensure only digits are entered
+    const numericValue = value.replace(/\D/g, "");
 
     // Restrict input if it exceeds the maximum numeric length
-    if (phoneNumberDigits.length > maxLength) return;
+    if (numericValue.length > selectedCountry.maxLength) return;
 
-    setFormData({ ...formData, phoneNumber: value }); // Preserve formatted value
-    setIsPhoneValid(isValid); // Update phone validity state
+    setFormData({ ...formData, phoneNumber: numericValue });
   };
 
   // Handle country change
-  const handleCountryChange = (countryCode: string) => {
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = e.target.value;
     const selected = countryData.find(
       (c) => c.isoCode === countryCode.toUpperCase()
     );
     if (selected) {
       setSelectedCountry(selected);
-      setMaxLength(selected.maxLength); // Update max length
       setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
     }
   };
@@ -77,20 +72,11 @@ export const InterviewerSignup = () => {
       return false;
     }
 
-    // Extract numeric characters for validation (excluding the country code)
-    const countryCodeLength =
-      selectedCountry?.code.replace(/\D/g, "").length || 0;
-    const numericPhoneNumber = phoneNumber
-      .replace(/\D/g, "")
-      .slice(countryCodeLength);
-
-    if (!isPhoneValid) {
-      toast.error("Please enter a valid phone number for the selected country");
-      return false;
-    }
-
-    if (numericPhoneNumber.length !== maxLength) {
-      toast.error(`Phone number must be ${maxLength} digits`);
+    // Validate phone number
+    if (phoneNumber.length !== selectedCountry.maxLength) {
+      toast.error(
+        `Phone number must be ${selectedCountry.maxLength} digits for ${selectedCountry.name}`
+      );
       return false;
     }
 
@@ -100,12 +86,19 @@ export const InterviewerSignup = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    sessionStorage.setItem("userData", JSON.stringify(formData));
     if (!validateForm()) return;
+
+    const fullPhoneNumber = `${selectedCountry.code} ${formData.phoneNumber}`;
+    const payload = {
+      ...formData,
+      phoneNumber: fullPhoneNumber, // Include the full phone number with country code
+    };
     setIsLoading(true);
     try {
       const response = await axiosInstance.post(
         "/interviewer/register",
-        formData
+        payload
       );
       setIsLoading(false);
       if (response.data.success) {
@@ -226,7 +219,43 @@ export const InterviewerSignup = () => {
               </div>
             </div>
 
-            {/* Phone Input with Flags */}
+            {/* Country Selection */}
+            <div className="mb-4">
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Country
+              </label>
+              <div className="relative">
+                {/* Custom dropdown wrapper */}
+                <div className="relative flex items-center border border-gray-300 rounded-lg mt-1 p-2 bg-white">
+                  {/* Country flag inside the dropdown */}
+                  <img
+                    src={`https://flagcdn.com/w40/${selectedCountry.isoCode.toLowerCase()}.png`}
+                    alt={selectedCountry.name}
+                    className="w-8 h-5"
+                  />
+                  <select
+                    id="country"
+                    name="country"
+                    value={selectedCountry.isoCode}
+                    onChange={handleCountryChange}
+                    className="w-full pl-6 pr-6 py-1 border-none bg-transparent outline-none focus:none focus:ring-none appearance-none"
+                    required
+                  >
+                    {countryData.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.emoji} {country.name} ({country.code})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown />
+                </div>
+              </div>
+            </div>
+
+            {/* Phone Number Field */}
             <div className="mb-4">
               <label
                 htmlFor="phoneNumber"
@@ -234,31 +263,16 @@ export const InterviewerSignup = () => {
               >
                 Phone Number
               </label>
-              <MuiTelInput
+              <input
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
                 value={formData.phoneNumber}
-                onChange={(value, isValid) => handlePhoneChange(value, isValid)}
-                onCountryChange={(countryCode) =>
-                  handleCountryChange(countryCode)
-                }
-                defaultCountry="IE"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  name: "phoneNumber",
-                  required: true,
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                    height: "48px",
-                  },
-                }}
+                onChange={handlePhoneChange}
+                className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                placeholder={`Enter your phone number (${selectedCountry.maxLength} digits)`}
+                required
               />
-              {!isPhoneValid && (
-                <p className="text-red-500 text-xs mt-1">
-                  Invalid phone number for the selected country
-                </p>
-              )}
             </div>
 
             {/* Submit Button */}

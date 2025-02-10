@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../common/axiosConfig";
 import toast from "react-hot-toast";
-import { MuiTelInput } from "mui-tel-input";
 import corporateSignup from "../../../images/corporateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
+import { ChevronDown } from "lucide-react";
 
 export const CorporateSignup: React.FC = () => {
   const navigate = useNavigate();
@@ -28,21 +28,21 @@ export const CorporateSignup: React.FC = () => {
   };
 
   // Handle phone number change
-  const handlePhoneChange = (value: string, isValid: boolean) => {
-    // Extract numeric characters from the phone number (excluding the country code)
-    const countryCodeLength =
-      selectedCountry?.code.replace(/\D/g, "").length || 0;
-    const numericValue = value.replace(/\D/g, ""); // Remove all non-numeric characters
-    const phoneNumberDigits = numericValue.slice(countryCodeLength); // Exclude country code
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+
+    // Ensure only digits are entered
+    const numericValue = value.replace(/\D/g, "");
 
     // Restrict input if it exceeds the maximum numeric length
-    if (phoneNumberDigits.length > selectedCountry.maxLength) return;
+    if (numericValue.length > selectedCountry.maxLength) return;
 
-    setFormData({ ...formData, phoneNumber: value }); // Preserve formatted value
+    setFormData({ ...formData, phoneNumber: numericValue });
   };
 
   // Handle country change
-  const handleCountryChange = (countryCode: string) => {
+  const handleCountryChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const countryCode = e.target.value;
     const selected = countryData.find(
       (c) => c.isoCode === countryCode.toUpperCase()
     );
@@ -51,7 +51,6 @@ export const CorporateSignup: React.FC = () => {
       setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
     }
   };
-
   // Form validation
   const validateForm = () => {
     const { companyName, contactName, email, password, phoneNumber } = formData;
@@ -65,27 +64,29 @@ export const CorporateSignup: React.FC = () => {
       newErrors.password = "Password must be at least 8 characters.";
 
     // Validate phone number
-    const countryCodeLength =
-      selectedCountry?.code.replace(/\D/g, "").length || 0;
-    const numericPhoneNumber = phoneNumber
-      .replace(/\D/g, "")
-      .slice(countryCodeLength);
-
-    if (numericPhoneNumber.length !== selectedCountry.maxLength)
-      newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits.`;
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    if (phoneNumber.length !== selectedCountry.maxLength) {
+      toast.error(
+        `Phone number must be ${selectedCountry.maxLength} digits for ${selectedCountry.name}`
+      );
+      return false;
+    }
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    sessionStorage.setItem("userData", JSON.stringify(formData));
     if (!validateForm()) return;
+
+    const fullPhoneNumber = `${selectedCountry.code} ${formData.phoneNumber}`;
+    const payload = {
+      ...formData,
+      phoneNumber: fullPhoneNumber, // Include the full phone number with country code
+    };
 
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/corporate/signup", formData);
+      const response = await axiosInstance.post("/corporate/signup", payload);
       const { message, success } = response.data;
       if (success) {
         toast.success(message || "Account created successfully!");
@@ -117,7 +118,7 @@ export const CorporateSignup: React.FC = () => {
       </div>
 
       {/* Right Section */}
-      <div className="flex-1 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
             Corporate Signup
@@ -200,34 +201,60 @@ export const CorporateSignup: React.FC = () => {
               )}
             </div>
 
-            {/* Phone Input with Flags */}
+            {/* Country Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="country"
+                className="block text-sm font-medium text-gray-700"
+              >
+                Country
+              </label>
+              <div className="relative">
+                {/* Custom dropdown wrapper */}
+                <div className="relative flex items-center border border-gray-300 rounded-lg mt-1 p-2 bg-white">
+                  {/* Country flag inside the dropdown */}
+                  <img
+                    src={`https://flagcdn.com/w40/${selectedCountry.isoCode.toLowerCase()}.png`}
+                    alt={selectedCountry.name}
+                    className="w-8 h-5"
+                  />
+                  <select
+                    id="country"
+                    name="country"
+                    value={selectedCountry.isoCode}
+                    onChange={handleCountryChange}
+                    className="w-full pl-6 pr-6 py-1 border-none bg-transparent outline-none focus:none focus:ring-none appearance-none"
+                    required
+                  >
+                    {countryData.map((country) => (
+                      <option key={country.isoCode} value={country.isoCode}>
+                        {country.emoji} {country.name} ({country.code})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown />
+                </div>
+              </div>
+            </div>
+
+            {/* Phone Number Field */}
+            <div className="mb-4">
+              <label
+                htmlFor="phoneNumber"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Phone Number
               </label>
-              <MuiTelInput
+              <input
+                type="text"
+                id="phoneNumber"
+                name="phoneNumber"
                 value={formData.phoneNumber}
-                onChange={(value, isValid) => handlePhoneChange(value, isValid)}
-                onCountryChange={(countryCode) =>
-                  handleCountryChange(countryCode)
-                }
-                defaultCountry="IE"
-                fullWidth
-                variant="outlined"
-                inputProps={{
-                  name: "phoneNumber",
-                  required: true,
-                }}
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    borderRadius: "8px",
-                    height: "48px",
-                  },
-                }}
+                onChange={handlePhoneChange}
+                className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+                placeholder={`Enter your phone number (${selectedCountry.maxLength} digits)`}
+                required
               />
-              {errors.phoneNumber && (
-                <p className="text-red-500 text-sm">{errors.phoneNumber}</p>
-              )}
             </div>
 
             {/* Submit Button */}
