@@ -1,6 +1,7 @@
+// AdminDashboard.tsx
 import { useNavigate } from "react-router-dom";
 import { User2Icon } from "lucide-react";
-import { AdminProvider, useAdminContext } from "../../context/AdminContext";
+import { useAdminContext } from "../../context/AdminContext";
 import { AdminDashboardSkeleton } from "../../components/ui/AdminDashboardSkeleton";
 import DashboardStats from "./DashboardStats";
 import DashboardCharts from "./DashboardCharts";
@@ -13,6 +14,16 @@ const AdminDashboard = () => {
     return <AdminDashboardSkeleton />;
   }
 
+  if (!data) {
+    return (
+      <div className="min-h-screen bg-gray-100 p-5">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-red-500">No data available</div>
+        </div>
+      </div>
+    );
+  }
+
   const {
     totalCandidates = 0,
     totalInterviewers = 0,
@@ -20,7 +31,7 @@ const AdminDashboard = () => {
     pendingCount = 0,
     completedCount = 0,
     cancelledCount = 0,
-  } = data || {};
+  } = data;
 
   return (
     <div className="min-h-screen bg-gray-100 p-5">
@@ -56,8 +67,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default () => (
-  <AdminProvider>
-    <AdminDashboard />
-  </AdminProvider>
-);
+export default AdminDashboard;

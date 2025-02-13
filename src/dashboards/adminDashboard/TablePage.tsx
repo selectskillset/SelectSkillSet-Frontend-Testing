@@ -1,17 +1,23 @@
 import { useSearchParams } from "react-router-dom";
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAdminContext } from "../../context/AdminContext";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 
 const TablePage = () => {
-  const { data } = useAdminContext();
+  const { data, loading, refetch } = useAdminContext();
   const [searchParams] = useSearchParams();
   const userType = searchParams.get("userType") || "candidates";
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!data && !loading) {
+      refetch();
+    }
+  }, [data, loading, refetch]);
 
   const tablesConfig = {
     candidates: {
@@ -79,6 +85,16 @@ const TablePage = () => {
       totalPages: Math.ceil(filtered.length / rowsPerPage),
     };
   }, [userType, search, page, tablesConfig]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="animate-pulse text-lg text-gray-600">
+          Loading data...
+        </div>
+      </div>
+    );
+  }
 
   if (!tablesConfig[userType]) {
     return <div>Invalid user type</div>;
