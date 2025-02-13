@@ -14,6 +14,7 @@ export const CorporateSignup: React.FC = () => {
     email: "",
     password: "",
     phoneNumber: "", // Store the full phone number (e.g., "+91 9373960682")
+    countryCode: "",
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -48,7 +49,7 @@ export const CorporateSignup: React.FC = () => {
     );
     if (selected) {
       setSelectedCountry(selected);
-      setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
+      setFormData({ ...formData, phoneNumber: "", countryCode: selected.code }); // Reset phone number when country changes
     }
   };
   // Form validation
@@ -62,35 +63,32 @@ export const CorporateSignup: React.FC = () => {
       newErrors.email = "A valid email is required.";
     if (!password || password.length < 8)
       newErrors.password = "Password must be at least 8 characters.";
+    if (phoneNumber.length !== selectedCountry.maxLength)
+      newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits for ${selectedCountry.name}.`;
 
-    // Validate phone number
-    if (phoneNumber.length !== selectedCountry.maxLength) {
-      toast.error(
-        `Phone number must be ${selectedCountry.maxLength} digits for ${selectedCountry.name}`
-      );
-      return false;
-    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    sessionStorage.setItem("userData", JSON.stringify(formData));
     if (!validateForm()) return;
 
-    const fullPhoneNumber = `${selectedCountry.code} ${formData.phoneNumber}`;
     const payload = {
       ...formData,
-      phoneNumber: fullPhoneNumber, // Include the full phone number with country code
+      countryCode: selectedCountry.code,
     };
+    sessionStorage.setItem("userData", JSON.stringify(payload));
 
     setLoading(true);
     try {
-      const response = await axiosInstance.post("/corporate/signup", payload);
+      const response = await axiosInstance.post("/corporate/register", payload);
       const { message, success } = response.data;
       if (success) {
-        toast.success(message || "Account created successfully!");
-        setTimeout(() => navigate("/corporate-login"), 2000);
+        toast.success("Registration successful");
+        sessionStorage.setItem("userData", JSON.stringify(formData));
+        navigate("/verify-otp?userType=corporate");
       } else {
         toast.error(message || "Signup failed. Please try again.");
       }
@@ -103,7 +101,6 @@ export const CorporateSignup: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen flex">
       {/* Left Section */}

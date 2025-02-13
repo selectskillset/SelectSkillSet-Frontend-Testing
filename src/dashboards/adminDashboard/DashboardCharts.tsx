@@ -1,8 +1,18 @@
 import { Bar, Doughnut } from "react-chartjs-2";
-import { Chart } from "chart.js/auto"; 
+import { Chart, registerables } from "chart.js";
 import { motion } from "framer-motion";
 
-Chart.register();
+// Register Chart.js components
+Chart.register(...registerables);
+
+interface DashboardChartsProps {
+  pendingCount: number;
+  completedCount: number;
+  cancelledCount: number;
+  totalCandidates: number;
+  totalInterviewers: number;
+  totalCorporates: number;
+}
 
 const DashboardCharts = ({
   pendingCount,
@@ -11,7 +21,7 @@ const DashboardCharts = ({
   totalCandidates,
   totalInterviewers,
   totalCorporates,
-}) => {
+}: DashboardChartsProps) => {
   const colors = {
     blue: "#3B82F6",
     indigo: "#6366F1",
@@ -21,7 +31,7 @@ const DashboardCharts = ({
     slate: "#64748B",
   };
 
-  // User Statistics Chart Data
+  // User Distribution Chart Data
   const userDistributionData = {
     labels: ["Candidates", "Interviewers", "Corporates"],
     datasets: [
@@ -133,6 +143,7 @@ const DashboardCharts = ({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      {/* User Distribution Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -146,6 +157,7 @@ const DashboardCharts = ({
         </div>
       </motion.div>
 
+      {/* Interview Status Chart */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

@@ -14,6 +14,7 @@ export const InterviewerSignup = () => {
     email: "",
     password: "",
     phoneNumber: "",
+    countryCode:""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +49,7 @@ export const InterviewerSignup = () => {
     );
     if (selected) {
       setSelectedCountry(selected);
-      setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
+      setFormData({ ...formData, phoneNumber: "" , countryCode: selected.code}); // Reset phone number when country changes
     }
   };
 
@@ -86,14 +87,13 @@ export const InterviewerSignup = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    sessionStorage.setItem("userData", JSON.stringify(formData));
     if (!validateForm()) return;
-
-    const fullPhoneNumber = `${selectedCountry.code} ${formData.phoneNumber}`;
+    
     const payload = {
       ...formData,
-      phoneNumber: fullPhoneNumber, // Include the full phone number with country code
+      countryCode: selectedCountry.code,
     };
+    sessionStorage.setItem("userData", JSON.stringify(payload));
     setIsLoading(true);
     try {
       const response = await axiosInstance.post(
@@ -103,7 +103,7 @@ export const InterviewerSignup = () => {
       setIsLoading(false);
       if (response.data.success) {
         toast.success("Registration successful");
-        navigate("/interviewer-login");
+        navigate("/verify-otp?userType=interviewer");
       } else {
         toast.error(response.data.message || "Registration failed");
       }

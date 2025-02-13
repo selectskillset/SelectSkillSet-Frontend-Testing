@@ -1,12 +1,22 @@
 import { motion } from "framer-motion";
 import { Users, Briefcase, Building, Clock } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+interface DashboardStatsProps {
+  totalCandidates: number;
+  totalInterviewers: number;
+  totalCorporates: number;
+  pendingCount: number;
+}
 
 const DashboardStats = ({
   totalCandidates,
   totalInterviewers,
   totalCorporates,
   pendingCount,
-}) => {
+}: DashboardStatsProps) => {
+  const navigate = useNavigate();
+
   const stats = [
     {
       label: "Total Candidates",
@@ -14,6 +24,7 @@ const DashboardStats = ({
       color: "bg-blue-50",
       iconColor: "bg-blue-500",
       icon: <Users className="w-5 h-5 text-white" />,
+      type: "candidates",
     },
     {
       label: "Total Interviewers",
@@ -21,6 +32,7 @@ const DashboardStats = ({
       color: "bg-purple-50",
       iconColor: "bg-purple-500",
       icon: <Briefcase className="w-5 h-5 text-white" />,
+      type: "interviewers",
     },
     {
       label: "Total Corporates",
@@ -28,6 +40,7 @@ const DashboardStats = ({
       color: "bg-green-50",
       iconColor: "bg-green-500",
       icon: <Building className="w-5 h-5 text-white" />,
+      type: "corporates",
     },
     {
       label: "Pending Interviews",
@@ -45,7 +58,9 @@ const DashboardStats = ({
           key={stat.label}
           whileHover={{ y: -4, scale: 1.02 }}
           transition={{ duration: 0.2 }}
-          className={`group p-5 ${stat.color}  shadow-xs hover:shadow-md transition-all duration-300 ease-out  border-gray-100/50 rounded-xl shadow-lg border border-gray-100 hover:border-gray-100`}
+          className={`group p-5 ${stat.color} shadow-xs hover:shadow-md transition-all duration-300 ease-out border-gray-100/50 rounded-xl shadow-lg border border-gray-100 hover:border-gray-100 cursor-pointer`}
+          onClick={() => stat.type && navigate(`/admin/dashboard/table?userType=${stat.type}`)}
+          aria-label={`View ${stat.label}`}
         >
           <div className="flex items-center justify-between">
             <div>
@@ -58,18 +73,6 @@ const DashboardStats = ({
               className={`p-3 rounded-xl ${stat.iconColor} shadow-sm group-hover:shadow-md transition-shadow`}
             >
               {stat.icon}
-            </div>
-          </div>
-
-          {/* Optional: Progress bar animation */}
-          <div className="mt-4">
-            <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: "100%" }}
-                transition={{ duration: 1 }}
-                className={`h-full ${stat.iconColor}`}
-              />
             </div>
           </div>
         </motion.div>

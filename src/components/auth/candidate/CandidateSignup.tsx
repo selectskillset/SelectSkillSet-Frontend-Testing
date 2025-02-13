@@ -14,6 +14,7 @@ export const CandidateSignup = () => {
     email: "",
     password: "",
     phoneNumber: "",
+    countryCode:""
   });
   const [selectedCountry, setSelectedCountry] = useState(
     countryData.find((c) => c.isoCode === "IE") || countryData[0]
@@ -48,7 +49,7 @@ export const CandidateSignup = () => {
     );
     if (selected) {
       setSelectedCountry(selected);
-      setFormData({ ...formData, phoneNumber: "" }); // Reset phone number when country changes
+      setFormData({ ...formData, phoneNumber: "" ,countryCode: selected.code }); // Reset phone number when country changes
     }
   };
 
@@ -89,15 +90,14 @@ export const CandidateSignup = () => {
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    sessionStorage.setItem("userData", JSON.stringify(formData));
-
+    
     if (!validateForm()) return;
-
-    const fullPhoneNumber = `${selectedCountry.code} ${formData.phoneNumber}`;
+    
     const payload = {
       ...formData,
-      phoneNumber: fullPhoneNumber, // Include the full phone number with country code
+      countryCode: selectedCountry.code, // Include the full phone number with country code
     };
+    sessionStorage.setItem("userData", JSON.stringify(payload));
 
     setIsLoading(true);
     try {
@@ -106,7 +106,7 @@ export const CandidateSignup = () => {
 
       if (response.data.success) {
         toast.success("Registration successful");
-        navigate("/verify-otp");
+        navigate("/verify-otp?userType=candidate");
       } else {
         // Handle non-success response from server (200 status but success: false)
         toast.error(response.data.message || "Registration failed");

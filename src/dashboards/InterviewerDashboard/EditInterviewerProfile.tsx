@@ -1,327 +1,492 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 import axiosInstance from "../../components/common/axiosConfig";
-import { countryData } from "../../components/common/countryData";
 import { skillsData } from "../../components/common/SkillsData";
+import { countryData } from "../../components/common/countryData";
+import { XCircle, Camera, Pencil, ChevronDown } from "lucide-react";
+import { jobTitles } from "../../components/common/JobTitles";
+
+type ProfileState = {
+  firstName: string;
+  lastName: string;
+  jobTitle: string;
+  location: string;
+  phoneNumber: string;
+  experience: string;
+  price: string;
+  skills: string[];
+  profilePhoto: File | null;
+};
 
 const EditInterviewerProfile = () => {
   const navigate = useNavigate();
-  const token = sessionStorage.getItem("interviewerToken");
-
-  const allowedUpdates = [
-    "firstName",
-    "lastName",
-    "jobTitle",
-    "location",
-    "phoneNumber",
-    "profilePhoto",
-    "experience",
-    "price",
-    "countryCode",
-    "skills",
-  ];
-
-  const [profile, setProfile] = useState({
+  const [profile, setProfile] = useState<ProfileState>({
     firstName: "",
     lastName: "",
     jobTitle: "",
     location: "",
     phoneNumber: "",
-    profilePhoto: "",
     experience: "",
     price: "",
-    countryCode: "",
     skills: [],
+    profilePhoto: null,
   });
-
-  const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const [existingProfilePhoto, setExistingProfilePhoto] = useState("");
   const [skillInput, setSkillInput] = useState("");
-  const [suggestedSkills, setSuggestedSkills] = useState([]);
+  const [jobTitleInput, setJobTitleInput] = useState("");
+  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
+  const [suggestedJobTitles, setSuggestedJobTitles] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
 
   useEffect(() => {
     const fetchProfile = async () => {
+      setIsLoading(true);
       try {
-        const response = await axiosInstance.get("/interviewer/getProfile");
-        const profileData = response.data?.profile || {};
+        const { data } = await axiosInstance.get("/interviewer/getProfile");
+        const profileData = data.profile;
+        const country =
+          countryData.find((c) => c.code === profileData.countryCode) ||
+          countryData[0];
 
+        setSelectedCountry(country);
         setProfile({
-          firstName: profileData.firstName || "",
-          lastName: profileData.lastName || "",
-          jobTitle: profileData.jobTitle || "",
-          location: profileData.location || "",
-          phoneNumber: profileData.phoneNumber || "",
-          profilePhoto: profileData.profilePhoto || "",
-          experience: profileData.experience,
-          price: profileData.price,
-          countryCode: profileData.countryCode || countryData[0].code,
-          skills: profileData.skills || [],
+          ...profileData,
+          phoneNumber: profileData.phoneNumber,
+          profilePhoto: null,
         });
-
-        setSelectedCountry(
-          countryData.find((item) => item.code === profileData.countryCode) ||
-            countryData[0]
-        );
+        setExistingProfilePhoto(profileData.profilePhoto);
       } catch (error) {
-        toast.error("Failed to load profile. Please try again later.");
+        toast.error("Failed to load profile data");
+      } finally {
+        setIsLoading(false);
       }
     };
-
     fetchProfile();
-  }, [token]);
+  }, []);
 
-  const handleSkillChange = (e) => {
-    const input = e.target.value;
-    setSkillInput(input);
-    if (input) {
+  const handleJobTitleInput = useCallback((value: string) => {
+    setJobTitleInput(value);
+    setSuggestedJobTitles(
+      jobTitles
+        .filter((title) => title.toLowerCase().includes(value.toLowerCase()))
+        .slice(0, 5)
+    );
+  }, []);
+
+  const handleAddJobTitle = useCallback((title: string) => {
+    if (title.trim()) {
+      setProfile((prev) => ({ ...prev, jobTitle: title }));
+      setJobTitleInput("");
+      setSuggestedJobTitles([]);
+    }
+  }, []);
+
+  const handleJobTitleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && jobTitleInput.trim()) {
+        e.preventDefault();
+        handleAddJobTitle(jobTitleInput.trim());
+      }
+    },
+    [jobTitleInput, handleAddJobTitle]
+  );
+
+  const handleProfileChange = useCallback(
+    (field: keyof ProfileState, value: string) => {
+      setProfile((prev) => ({ ...prev, [field]: value }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    },
+    []
+  );
+
+  const handleCountryChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const countryCode = e.target.value;
+      const selected = countryData.find(
+        (c) => c.isoCode === countryCode.toUpperCase()
+      );
+      if (selected) {
+        setSelectedCountry(selected);
+        setProfile((prev) => ({ ...prev, phoneNumber: "" }));
+      }
+    },
+    []
+  );
+
+  const handlePhoneChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const numericValue = e.target.value.replace(/\D/g, "");
+      if (numericValue.length <= selectedCountry.maxLength) {
+        setProfile((prev) => ({ ...prev, phoneNumber: numericValue }));
+      }
+    },
+    [selectedCountry.maxLength]
+  );
+
+  const validateForm = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
+    if (!profile.firstName.trim()) newErrors.firstName = "First name required";
+    if (!profile.lastName.trim()) newErrors.lastName = "Last name required";
+    if (!profile.jobTitle.trim()) newErrors.jobTitle = "Job title required";
+    if (!profile.experience.trim())
+      newErrors.experience = "Experience required";
+    if (!profile.price.trim()) newErrors.price = "Price required";
+    if (!profile.skills.length)
+      newErrors.skills = "At least one skill required";
+
+    if (!profile.phoneNumber) {
+      newErrors.phoneNumber = "Phone number required";
+    } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
+      newErrors.phoneNumber = `Must be ${selectedCountry.maxLength} digits`;
+    }
+
+    setErrors(newErrors);
+    return !Object.keys(newErrors).length;
+  }, [profile, selectedCountry]);
+
+  const handleSave = useCallback(async () => {
+    if (!validateForm()) return;
+
+    const formData = new FormData();
+    // Explicitly append only required fields
+    formData.append("firstName", profile.firstName);
+    formData.append("lastName", profile.lastName);
+    formData.append("jobTitle", profile.jobTitle);
+    formData.append("location", profile.location);
+    formData.append("phoneNumber", profile.phoneNumber);
+    formData.append("countryCode", selectedCountry.code);
+    formData.append("experience", profile.experience);
+    formData.append("price", profile.price);
+    formData.append("skills", JSON.stringify(profile.skills));
+
+    if (profile.profilePhoto) {
+      formData.append("profilePhoto", profile.profilePhoto);
+    }
+
+    setIsSaving(true);
+    try {
+      await axiosInstance.put("/interviewer/updateProfile", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      toast.success("Profile updated");
+      navigate("/interviewer-dashboard");
+    } catch (error) {
+      toast.error("Update failed");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [profile, selectedCountry, navigate, validateForm]);
+
+  const handleSkillInput = useCallback(
+    (value: string) => {
+      setSkillInput(value);
       setSuggestedSkills(
         skillsData
-          .filter((skill) => skill.toLowerCase().includes(input.toLowerCase()))
+          .filter(
+            (skill) =>
+              skill.toLowerCase().includes(value.toLowerCase()) &&
+              !profile.skills.includes(skill)
+          )
           .slice(0, 5)
       );
-    } else {
+    },
+    [profile.skills]
+  );
+
+  const handleAddSkill = useCallback(
+    (skill: string) => {
+      if (!skill.trim() || profile.skills.includes(skill)) return;
+      setProfile((prev) => ({ ...prev, skills: [...prev.skills, skill] }));
+      setSkillInput("");
       setSuggestedSkills([]);
-    }
-  };
+    },
+    [profile.skills]
+  );
 
-  const handleAddSkill = (skill) => {
-    if (!profile.skills.includes(skill)) {
-      setProfile({ ...profile, skills: [...profile.skills, skill] });
-    }
-    setSkillInput("");
-    setSuggestedSkills([]);
-  };
-
-  const handleRemoveSkill = (skill) => {
-    setProfile({
-      ...profile,
-      skills: profile.skills.filter((s) => s !== skill),
-    });
-  };
-
-  const handleSave = async () => {
-    const phoneNumberRegex = /^[0-9]{10,15}$/;
-
-    if (
-      !profile.firstName ||
-      !profile.lastName ||
-      !profile.phoneNumber ||
-      !profile.experience ||
-      !profile.price
-    ) {
-      toast.error("All fields are required.");
-      return;
-    }
-
-    if (!phoneNumberRegex.test(profile.phoneNumber)) {
-      toast.error("Invalid phoneNumber number.");
-      return;
-    }
-
-    try {
-      const updatedData = Object.fromEntries(
-        Object.entries(profile).filter(([key]) => allowedUpdates.includes(key))
-      );
-
-      updatedData.countryCode = selectedCountry.code;
-
-      const response = await axiosInstance.put(
-        "/interviewer/updateProfile",
-        updatedData
-      );
-
-      if (response.data.success) {
-        toast.success("Profile updated successfully!");
-        navigate("/interviewer-dashboard");
-      } else {
-        toast.error(
-          response.data.message || "Failed to update profile. Please try again."
-        );
-      }
-    } catch (error) {
-      toast.error("Failed to update profile. Please try again.");
-    }
-  };
+  const handleRemoveSkill = useCallback((skill: string) => {
+    setProfile((prev) => ({
+      ...prev,
+      skills: prev.skills.filter((s) => s !== skill),
+    }));
+  }, []);
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-10"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
     >
-      <div className="max-w-4xl mx-auto p-8 bg-white shadow-lg rounded-xl">
-        <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">
+      <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <h2 className="text-3xl font-bold text-gray-900 text-center">
           Edit Interviewer Profile
         </h2>
 
-        {/* First Name */}
-        <div className="mb-6">
-          <label className="font-medium text-gray-700">First Name</label>
-          <input
-            type="text"
-            value={profile.firstName}
-            onChange={(e) =>
-              setProfile({ ...profile, firstName: e.target.value })
-            }
-            className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your first name"
-          />
-        </div>
-
-        {/* Last Name */}
-        <div className="mb-6">
-          <label className="font-medium text-gray-700">Last Name</label>
-          <input
-            type="text"
-            value={profile.lastName}
-            onChange={(e) =>
-              setProfile({ ...profile, lastName: e.target.value })
-            }
-            className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your last name"
-          />
-        </div>
-
-        {/* Job Title */}
-        <div className="mb-6">
-          <label className="font-medium text-gray-700">Job Title</label>
-          <input
-            type="text"
-            value={profile.jobTitle}
-            onChange={(e) =>
-              setProfile({ ...profile, jobTitle: e.target.value })
-            }
-            className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your job title"
-          />
-        </div>
-
-        {/* Location */}
-        <div className="mb-6">
-          <label className="font-medium text-gray-700">Location</label>
-          <input
-            type="text"
-            value={profile.location}
-            onChange={(e) =>
-              setProfile({ ...profile, location: e.target.value })
-            }
-            className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your location"
-          />
-        </div>
-
-        {/* phoneNumber Number with Country Code */}
-        <div className="mb-6 flex items-center gap-2">
-          <div className="w-1/4">
-            <label className="font-medium text-gray-700">Country Code</label>
+        {/* Profile Photo Section */}
+        <div className="flex flex-col items-center space-y-4">
+          <div className="relative w-32 h-32 rounded-full border-4 border-blue-100 bg-gray-100 overflow-hidden">
+            {profile.profilePhoto || existingProfilePhoto ? (
+              <img
+                src={
+                  profile.profilePhoto
+                    ? URL.createObjectURL(profile.profilePhoto)
+                    : existingProfilePhoto
+                }
+                alt="Profile"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <Camera className="w-12 h-12 text-gray-400 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" />
+            )}
             <input
-              type="text"
-              value={selectedCountry.code}
-              readOnly
-              className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            />
-          </div>
-          <div className="w-3/4">
-            <label className="font-medium text-gray-700">phoneNumber Number</label>
-            <input
-              type="text"
-              value={profile.phoneNumber}
+              id="profilePhoto"
+              type="file"
+              accept="image/*"
+              className="hidden"
               onChange={(e) =>
-                setProfile({ ...profile, phoneNumber: e.target.value })
+                e.target.files?.[0] &&
+                setProfile((prev) => ({
+                  ...prev,
+                  profilePhoto: e.target.files![0],
+                }))
               }
-              className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-              maxLength={selectedCountry.maxLength}
-              placeholder="Enter your phoneNumber number"
             />
+          </div>
+             <label
+            htmlFor="profilePhoto"
+            className="relative bottom-14 left-12 bg-white p-1.5 rounded-full shadow-lg cursor-pointer hover:bg-gray-50 transition-colors"
+          >
+            <Pencil className="w-5 h-5 text-blue-600" />
+          </label>
+        </div>
+
+        {/* Form Fields */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {(["firstName", "lastName", "location"] as const).map((field) => (
+            <div key={field}>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {field.replace(/([A-Z])/g, " $1").trim()}
+              </label>
+              <input
+                value={profile[field]}
+                onChange={(e) => handleProfileChange(field, e.target.value)}
+                className={`w-full px-4 py-2.5 rounded-lg border ${
+                  errors[field] ? "border-red-500" : "border-gray-300"
+                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                placeholder={`Enter ${field
+                  .replace(/([A-Z])/g, " $1")
+                  .toLowerCase()}`}
+              />
+              {errors[field] && (
+                <p className="mt-1.5 text-sm text-red-600">{errors[field]}</p>
+              )}
+            </div>
+          ))}
+
+          <div className="relative">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Job Title
+            </label>
+            <input
+              value={jobTitleInput || profile.jobTitle}
+              onChange={(e) => {
+                handleJobTitleInput(e.target.value);
+                handleProfileChange("jobTitle", e.target.value);
+              }}
+              onKeyPress={handleJobTitleKeyPress}
+              className={`w-full px-4 py-2.5 rounded-lg border ${
+                errors.jobTitle ? "border-red-500" : "border-gray-300"
+              } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              placeholder="Enter or select job title"
+            />
+            {suggestedJobTitles.length > 0 && (
+              <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                {suggestedJobTitles.map((title) => (
+                  <li
+                    key={title}
+                    onClick={() => handleAddJobTitle(title)}
+                    className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
+                  >
+                    {title}
+                  </li>
+                ))}
+              </ul>
+            )}
+            {errors.jobTitle && (
+              <p className="mt-1.5 text-sm text-red-600">{errors.jobTitle}</p>
+            )}
+          </div>
+
+          {/* Country Selector */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Country
+            </label>
+            <div className="relative mt-1">
+              <div className="relative flex items-center border border-gray-300 rounded-lg bg-white h-[42px]">
+                <img
+                  src={`https://flagcdn.com/w40/${selectedCountry.isoCode.toLowerCase()}.png`}
+                  alt={selectedCountry.name}
+                  className="w-8 h-5 ml-2"
+                />
+                <select
+                  value={selectedCountry.isoCode}
+                  onChange={handleCountryChange}
+                  className="w-full pl-3 pr-6 bg-transparent outline-none appearance-none"
+                >
+                  {countryData.map((country) => (
+                    <option key={country.isoCode} value={country.isoCode}>
+                      {country.name} ({country.code})
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-3 text-gray-500" />
+              </div>
+            </div>
+          </div>
+
+          {/* Phone Number Field */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Phone Number
+            </label>
+            <div className="flex items-center mt-1 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-blue-500">
+              <span className="px-3 py-2 border-r border-gray-300 bg-gray-50">
+                {selectedCountry.code}
+              </span>
+              <input
+                type="text"
+                value={profile.phoneNumber}
+                onChange={handlePhoneChange}
+                placeholder={`${selectedCountry.maxLength} digits`}
+                className="w-full px-3 py-2 border-none focus:ring-0 rounded-r-lg"
+              />
+            </div>
+            {errors.phoneNumber && (
+              <p className="mt-1.5 text-sm text-red-600">
+                {errors.phoneNumber}
+              </p>
+            )}
+          </div>
+
+          {/* Experience */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Experience (years)
+            </label>
+            <input
+              type="number"
+              value={profile.experience}
+              onChange={(e) =>
+                handleProfileChange("experience", e.target.value)
+              }
+              className={`w-full px-4 py-2.5 rounded-lg border ${
+                errors.experience ? "border-red-500" : "border-gray-300"
+              } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              placeholder="Enter years of experience"
+              min="0"
+            />
+            {errors.experience && (
+              <p className="mt-1.5 text-sm text-red-600">{errors.experience}</p>
+            )}
+          </div>
+
+          {/* Price */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Price per Session ($)
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                $
+              </span>
+              <input
+                type="number"
+                value={profile.price}
+                onChange={(e) => handleProfileChange("price", e.target.value)}
+                className={`w-full pl-8 px-4 py-2.5 rounded-lg border ${
+                  errors.price ? "border-red-500" : "border-gray-300"
+                } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+                placeholder="Enter hourly rate"
+                min="0"
+              />
+            </div>
+            {errors.price && (
+              <p className="mt-1.5 text-sm text-red-600">{errors.price}</p>
+            )}
           </div>
         </div>
 
-        {/* Experience */}
-        <div className="mb-6 relative">
-          <label className="font-medium text-gray-700">Experience</label>
-          <input
-            type="text"
-            value={profile.experience}
-            onChange={(e) =>
-              setProfile({ ...profile, experience: e.target.value })
-            }
-            className="text-gray-800 p-4 pl-10 pr-16 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your experience in years"
-          />
-          <span className="absolute right-3 bottom-4 text-xl">years</span>
-        </div>
-
-        {/* Price */}
-        <div className="mb-6 relative">
-          <label className="font-medium text-gray-700">Price</label>
-          <input
-            type="text"
-            value={profile.price}
-            onChange={(e) =>
-              setProfile({ ...profile, price: e.target.value })
-            }
-            className="text-gray-800 p-4 pl-10 pr-16 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Enter your price"
-          />
-          <span className="absolute right-3 bottom-3 text-2xl">$</span>
-        </div>
-
-        {/* Skills */}
-        <div className="mb-6">
-          <label className="font-medium text-gray-700">Skills</label>
-          <input
-            type="text"
-            value={skillInput}
-            onChange={handleSkillChange}
-            className="text-gray-800 p-4 rounded-lg border border-gray-300 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 mt-2"
-            placeholder="Type to search and add skills"
-          />
-          {suggestedSkills.length > 0 && (
-            <div className="border border-gray-300 rounded-lg mt-2 bg-white shadow-md">
-              {suggestedSkills.map((skill, index) => (
-                <div
-                  key={index}
-                  onClick={() => handleAddSkill(skill)}
-                  className="p-2 cursor-pointer hover:bg-gray-100"
-                >
-                  {skill}
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="flex flex-wrap gap-2 mt-4">
-            {profile.skills.map((skill, index) => (
+        {/* Skills Section */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Skills
+          </label>
+          <div className="relative">
+            <input
+              value={skillInput}
+              onChange={(e) => handleSkillInput(e.target.value)}
+              onKeyPress={(e) =>
+                e.key === "Enter" && handleAddSkill(skillInput.trim())
+              }
+              className={`w-full px-4 py-2.5 rounded-lg border ${
+                errors.skills ? "border-red-500" : "border-gray-300"
+              } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+              placeholder="Type and press enter to add skills"
+            />
+            {suggestedSkills.length > 0 && (
+              <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                {suggestedSkills.map((skill) => (
+                  <li
+                    key={skill}
+                    onClick={() => handleAddSkill(skill)}
+                    className="px-4 py-2.5 hover:bg-blue-50 cursor-pointer transition-colors text-gray-700"
+                  >
+                    {skill}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {profile.skills.map((skill) => (
               <span
-                key={index}
-                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg flex items-center"
+                key={skill}
+                className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
               >
                 {skill}
-                <button
+                <XCircle
                   onClick={() => handleRemoveSkill(skill)}
-                  className="ml-2 text-red-500"
-                >
-                  x
-                </button>
+                  className="ml-2 w-4 h-4 cursor-pointer hover:text-blue-900"
+                />
               </span>
             ))}
           </div>
+          {errors.skills && (
+            <p className="mt-1.5 text-sm text-red-600">{errors.skills}</p>
+          )}
         </div>
 
-        <div className="flex space-x-4 mt-6">
+        {/* Action Buttons */}
+        <div className="flex justify-end space-x-4 pt-6">
           <button
-            className="w-full sm:w-auto bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onClick={handleSave}
-          >
-            Save Changes
-          </button>
-          <button
-            className="w-full sm:w-auto bg-gray-500 text-white py-3 px-6 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-300"
             onClick={() => navigate("/interviewer-dashboard")}
+            className="px-6 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
           >
             Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`px-6 py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 ${
+              isSaving ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+          >
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </div>
