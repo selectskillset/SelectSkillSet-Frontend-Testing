@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import corporateSignup from "../../../images/corporateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
 import { ChevronDown } from "lucide-react";
+import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
 
 export const CorporateSignup: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +22,8 @@ export const CorporateSignup: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState(
     countryData.find((c) => c.isoCode === "IE") || countryData[0] // Default to India or first country
   );
+   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+    const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,6 +69,12 @@ export const CorporateSignup: React.FC = () => {
     if (phoneNumber.length !== selectedCountry.maxLength)
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits for ${selectedCountry.name}.`;
 
+    // Validate terms and conditions
+    if (!hasAcceptedTerms) {
+      toast.error("You must accept the terms and conditions to proceed.");
+      return false;
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
   };
@@ -78,6 +87,7 @@ export const CorporateSignup: React.FC = () => {
     const payload = {
       ...formData,
       countryCode: selectedCountry.code,
+      hasAcceptedTerms,
     };
     sessionStorage.setItem("userData", JSON.stringify(payload));
 
@@ -254,6 +264,27 @@ export const CorporateSignup: React.FC = () => {
               />
             </div>
 
+            <div className="flex items-center space-x-2 my-5">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={hasAcceptedTerms}
+                onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                required
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700">
+                I agree to the{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-[#0A66C2] underline hover:text-[#005885]"
+                >
+                  Terms and Conditions
+                </button>
+              </label>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -278,6 +309,11 @@ export const CorporateSignup: React.FC = () => {
               </span>
             </p>
           </div>
+          {isTermsModalOpen && (
+            <TermsAndConditionsModal
+              onClose={() => setIsTermsModalOpen(false)}
+            />
+          )}
         </div>
       </div>
     </div>

@@ -1,325 +1,279 @@
-import { useEffect, useState } from "react";
-import { Calendar, Clock, Briefcase, DollarSign } from "lucide-react";
-import axiosInstance from "../../components/common/axiosConfig";
-import profile from "../../images/interviewerProfile.png";
+// CandidateInterviews.tsx
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  Search,
+  Briefcase,
+  Clock,
+  DollarSign,
+  Star,
+  ShieldCheck,
+  UserRoundSearch,
+} from "lucide-react";
+import profilePlaceholder from "../../images/interviewerProfile.png";
+import { useNavigate } from "react-router-dom";
+import { motion } from "framer-motion";
+import { useCandidateContext } from "../../context/CandidateContext";
 import toast from "react-hot-toast";
-import { playSound } from "../../components/common/soundEffect";
-import { Link } from "react-router-dom";
+import FindUserLoader from "../../components/ui/FindUserLoader";
 
 const CandidateInterviews: React.FC = () => {
-  const [interviewers, setInterviewers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [isConfirming, setIsConfirming] = useState(false);
-  const [visibleSlots, setVisibleSlots] = useState({});
-  const itemsPerPage = 3;
-  const defaultVisibleSlots = 3;
+  const { interviewers, isLoadingInterviewers, fetchInterviewers } =
+    useCandidateContext();
 
-  // Fetch interviewers on component mount
   useEffect(() => {
-    const fetchInterviewers = async () => {
-      try {
-        const { data } = await axiosInstance.get("/candidate/interviewers");
-        if (data.success) {
-          setInterviewers(data.interviewers);
-        } else {
-          setError("Failed to fetch interviewers.");
-        }
-      } catch (err) {
-        setError("No interviewers found.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchInterviewers();
-  }, []);
-
-  // Handle viewing more slots for an interviewer
-  const handleViewMoreSlots = (interviewerId) => {
-    setVisibleSlots((prev) => ({
-      ...prev,
-      [interviewerId]: (prev[interviewerId] || defaultVisibleSlots) + 3,
-    }));
-  };
-
-  // Handle booking a slot
-  const handleBookSlot = (interviewerId, dateId, date, from, to) => {
-    setSelectedSlot({ interviewerId, dateId, date, from, to });
-  };
-
-  // Handle confirming the booking
-  const handleRequestInterview = async () => {
-    if (isConfirming || !selectedSlot) return;
-    setIsConfirming(true);
-
-    try {
-      const interviewer = interviewers.find(
-        (i) => i._id === selectedSlot.interviewerId
-      );
-      if (!interviewer) throw new Error("Interviewer not found!");
-
-      const { data } = await axiosInstance.post("/candidate/schedule", {
-        interviewerId: selectedSlot.interviewerId,
-        date: selectedSlot.date,
-        price: interviewer.price,
-        from: selectedSlot.from,
-        to: selectedSlot.to,
-      });
-
-      if (data.success) {
-        // Update the local state to remove the booked slot
-        setInterviewers((prevInterviewers) =>
-          prevInterviewers.map((interviewer) => {
-            if (interviewer._id === selectedSlot.interviewerId) {
-              return {
-                ...interviewer,
-                availability: {
-                  ...interviewer.availability,
-                  dates: interviewer.availability.dates.filter(
-                    (slot) => slot._id !== selectedSlot.dateId
-                  ),
-                },
-              };
-            }
-            return interviewer;
-          })
-        );
-
-        toast.success("Interview scheduled successfully!", {
-          duration: 4000,
-          position: "top-center",
-        });
-        playSound();
-      } else {
-        throw new Error(data.message || "Failed to schedule the interview.");
-      }
-    } catch (err) {
-      toast.error(err.response?.data?.message || err.message, {
-        duration: 4000,
-        position: "top-center",
-      });
-    } finally {
-      setIsConfirming(false);
-      setSelectedSlot(null);
+    if (!interviewers.length) {
+      fetchInterviewers();
     }
-  };
+  }, [interviewers, fetchInterviewers]);
+  const [isFindingPerfectMatch, setIsFindingPerfectMatch] = useState(false);
 
-  // Paginate interviewers
-  const paginatedInterviewers = interviewers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 6;
+
+  // Filtered interviewers
+  const filteredInterviewers = useMemo(
+    () =>
+      interviewers.filter(
+        (interviewer) =>
+          `${interviewer.firstName} ${interviewer.lastName}`
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          interviewer.skills?.some((skill: string) =>
+            skill.toLowerCase().includes(searchQuery.toLowerCase())
+          )
+      ),
+    [interviewers, searchQuery]
   );
-  const totalPages = Math.ceil(interviewers.length / itemsPerPage);
 
-  // Loading state
-  if (loading)
+  // Paginated data
+  const paginatedInterviewers = useMemo(
+    () =>
+      filteredInterviewers.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      ),
+    [filteredInterviewers, currentPage]
+  );
+
+  const totalPages = Math.ceil(filteredInterviewers.length / itemsPerPage);
+
+  if (isLoadingInterviewers)
     return (
       <div className="flex justify-center items-center h-screen">
-        <p>Loading interviewers...</p>
+        <div className="animate-pulse text-gray-500">
+          Loading professionals...
+        </div>
       </div>
     );
 
   // Error state
-  if (error)
-    return (
-      <div className="flex justify-center items-center h-screen text-red-500">
-        {error}
-      </div>
-    );
+  // if (error)
+  //   return (
+  //     <div className="text-center text-red-500">
+  //       <p>{error}</p>
+  //     </div>
+  //   );
+
+  const handleFindPerfectInterviewer = async () => {
+    setIsFindingPerfectMatch(true); // Start loader
+    await new Promise((resolve) => setTimeout(resolve, 4000)); // Simulate API delay
+    setIsFindingPerfectMatch(false); // Stop loader
+
+    // Display toast notification
+    toast.success("Here are the best-matched interviewers based on your skills!", {  
+      duration: 4000,  
+      position: "top-center",  
+    });
+    
+
+    // Implement API call here if needed
+    // Example: fetchPerfectMatches();
+  };
+
+  if(isFindingPerfectMatch){
+    return <FindUserLoader/>
+  }
 
   return (
-    <div className="bg-white shadow-lg rounded-lg p-6 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <h2 className="text-xl font-semibold mb-6">Schedule an Interview</h2>
+    <div className="max-w-7xl mx-auto p-6">
+      {/* Header Section */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          Find Interviewers
+        </h1>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+          <div className="relative w-full md:w-[400px]">
+            <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Search for interviewers or skills..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
+            />
+          </div>
+          <button
+            onClick={handleFindPerfectInterviewer}
+            className="flex items-center gap-2 px-6 py-3 bg-[#0077B5] text-white rounded-md hover:bg-[#005f8a] transition-colors"
+          >
+            <UserRoundSearch className="w-5 h-5" />
+            Find Perfect Interviewer
+          </button>
+        </div>
+      </div>
 
-        {/* Interviewer List */}
-        <div className="space-y-6">
-          {paginatedInterviewers.map((interviewer) => {
-            const visibleSlotCount =
-              visibleSlots[interviewer._id] || defaultVisibleSlots;
-            const hasMoreSlots =
-              interviewer.availability?.dates?.length > visibleSlotCount;
+      {/* Interviewers List */}
+      <motion.div
+        className="space-y-6"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      >
+        {paginatedInterviewers.length > 0 ? (
+          paginatedInterviewers.map((interviewer) => (
+            <InterviewerCard key={interviewer._id} interviewer={interviewer} />
+          ))
+        ) : (
+          <p className="text-center text-gray-500">No interviewers found.</p>
+        )}
+      </motion.div>
 
-            return (
-              <div
-                key={interviewer._id}
-                className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
-              >
-                <div className="flex flex-col md:flex-row gap-6">
-                  {/* Profile Image */}
-                  <img
-                    src={interviewer.profilePhoto || profile}
-                    alt={interviewer.firstName}
-                    className="w-24 h-24 rounded-full object-cover border-2 border-gray-100"
-                  />
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="mt-8 flex justify-center items-center gap-4">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 text-sm font-medium text-[#0077B5] disabled:text-gray-400 hover:bg-gray-100 rounded-md"
+          >
+            Previous
+          </button>
+          <span className="text-sm text-gray-600">
+            Page {currentPage} of {totalPages}
+          </span>
+          <button
+            onClick={() =>
+              setCurrentPage((prev) => Math.min(totalPages, prev + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="px-4 py-2 text-sm font-medium text-[#0077B5] disabled:text-gray-400 hover:bg-gray-100 rounded-md"
+          >
+            Next
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 
-                  {/* Interviewer Details */}
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900">
-                          {interviewer.firstName} {interviewer.lastName}
-                        </h3>
-                        <p className="text-gray-600 mt-1">
-                          {interviewer.jobTitle || "Professional Interviewer"}
-                        </p>
-                      </div>
-                      <Link
-                        to={`/interviewer-profile/${interviewer._id}`}
-                        className="text-[#0077B5] text-sm font-medium hover:underline"
-                      >
-                        View Profile
-                      </Link>
-                    </div>
+// Interviewer Card Component
+const InterviewerCard: React.FC<{ interviewer: any }> = ({ interviewer }) => {
+  const navigate = useNavigate();
 
-                    <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center">
-                        <Briefcase className="w-4 h-4 mr-2" />
-                        {interviewer.experience || "N/A"} years experience
-                      </div>
-                      <div className="flex items-center">
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        {interviewer.price || "Free"}
-                      </div>
-                    </div>
+  // Display only the first 10 skills and count the remaining
+  const displaySkills = useMemo(() => {
+    const skills = interviewer.skills || [];
+    const visibleSkills = skills.slice(0, 10);
+    const remainingCount =
+      skills.length > 10 ? `+${skills.length - 10} more` : "";
+    return { visibleSkills, remainingCount };
+  }, [interviewer.skills]);
 
-                    {/* Available Slots */}
-                    <div className="mt-6">
-                      <h4 className="text-sm font-semibold text-gray-900 mb-3">
-                        Available Slots
-                      </h4>
-                      {interviewer.availability?.dates?.length > 0 ? (
-                        <>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                            {interviewer.availability.dates
-                              .slice(0, visibleSlotCount)
-                              .map((date: any) => (
-                                <div
-                                  key={date._id}
-                                  className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:bg-gray-100 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2 text-gray-600 mb-2">
-                                    <Calendar className="w-4 h-4" />
-                                    <span className="text-sm font-medium">
-                                      {new Date(date.date).toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                                    <Clock className="w-4 h-4" />
-                                    {date.from} - {date.to}
-                                  </div>
-                                  <button
-                                    onClick={() =>
-                                      handleBookSlot(
-                                        interviewer._id,
-                                        date._id,
-                                        date.date,
-                                        date.from,
-                                        date.to
-                                      )
-                                    }
-                                    className="mt-3 w-full text-sm px-4 py-2 bg-[#0077B5] text-white rounded-md hover:bg-[#005f8a] transition-colors"
-                                  >
-                                    Book Slot
-                                  </button>
-                                </div>
-                              ))}
-                          </div>
-                          {hasMoreSlots && (
-                            <button
-                              onClick={() =>
-                                handleViewMoreSlots(interviewer._id)
-                              }
-                              className="mt-4 text-sm text-[#0077B5] font-medium hover:underline"
-                            >
-                              View More Slots →
-                            </button>
-                          )}
-                        </>
-                      ) : (
-                        <div className="text-gray-500 text-sm">
-                          No available slots currently
-                        </div>
-                      )}
-                    </div>
-                  </div>
+  // Check if the interviewer is highly rated (>= 4)
+  const isHighlyRated = interviewer.averageRating >= 4;
+
+  return (
+    <motion.div
+      className={`bg-white rounded-xl shadow-sm border ${
+        isHighlyRated ? "border-yellow-500 border-2" : "border-gray-200"
+      } hover:shadow-lg transition-all duration-300 relative`}
+    >
+      <div className="p-6">
+        {/* Profile Header */}
+        <div className="flex items-start gap-6 mb-6">
+          <img
+            src={interviewer.profilePhoto || profilePlaceholder}
+            alt={`${interviewer.firstName} ${interviewer.lastName}`}
+            className="w-24 h-24 rounded-full object-cover border-4 border-[#0077B5]"
+          />
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {interviewer.firstName} {interviewer.lastName}
+              </h3>
+              {isHighlyRated && (
+                <div className="tooltip" data-tip="Highly Rated Interviewer">
+                  <ShieldCheck className="w-6 h-6 text-[#0077B5]" />
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+            <p className="text-gray-600 text-base">
+              {interviewer.jobTitle || "Technical Interviewer"}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate(`/interviewer-profile/${interviewer._id}`)}
+            className="text-[#0077B5] border-2 p-2 border-[#0077B5] text-sm font-medium rounded-md hover:bg-[#005f8a] hover:text-white transition-colors"
+          >
+            View Profile
+          </button>
         </div>
 
-        {/* Interviewers Pagination */}
-        {interviewers.length > itemsPerPage && (
-          <div className="mt-8 flex justify-center items-center gap-4">
-            <button
-              onClick={() => setCurrentPage((prev) => prev - 1)}
-              disabled={currentPage === 1}
-              className="px-4 py-2 text-sm font-medium text-[#0077B5] disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-100 rounded-md"
-            >
-              Previous
-            </button>
-            <span className="text-sm text-gray-600">
-              Page {currentPage} of {totalPages}
-            </span>
-            <button
-              onClick={() => setCurrentPage((prev) => prev + 1)}
-              disabled={currentPage === totalPages}
-              className="px-4 py-2 text-sm font-medium text-[#0077B5] disabled:text-gray-400 disabled:cursor-not-allowed hover:bg-gray-100 rounded-md"
-            >
-              Next
-            </button>
+        {/* Stats Row */}
+        <div className="flex items-center gap-6 text-sm mb-6">
+          <div className="flex items-center text-gray-600">
+            <Briefcase className="w-4 h-4 mr-1" />
+            {interviewer.experience || 5}+ years
           </div>
-        )}
+          <div className="flex items-center text-yellow-500">
+            <Star className="w-4 h-4 mr-1" />
+            {interviewer.averageRating
+              ? interviewer.averageRating.toFixed(1)
+              : "0.0"}{" "}
+            Rating
+          </div>
+        </div>
 
-        {/* Confirmation Modal */}
-        {selectedSlot && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-md w-full">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Confirm Interview Slot
-              </h3>
-              <div className="space-y-3 text-sm text-gray-600">
-                <p>
-                  <span className="font-medium">Interviewer:</span>{" "}
-                  {
-                    interviewers.find(
-                      (i) => i._id === selectedSlot.interviewerId
-                    )?.firstName
-                  }
-                </p>
-                <p>
-                  <span className="font-medium">Date:</span>{" "}
-                  {new Date(selectedSlot.date).toLocaleDateString()}
-                </p>
-                <p>
-                  <span className="font-medium">Time:</span> {selectedSlot.from}{" "}
-                  - {selectedSlot.to}
-                </p>
-              </div>
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  onClick={() => setSelectedSlot(null)}
-                  disabled={isConfirming}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRequestInterview}
-                  disabled={isConfirming}
-                  className="px-4 py-2 text-sm font-medium text-white bg-[#0077B5] rounded-md hover:bg-[#005f8a] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {isConfirming ? "Processing..." : "Confirm Booking"}
-                </button>
-              </div>
-            </div>
+        {/* Pricing & Availability */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center text-[#0077B5] font-medium text-lg">
+            <DollarSign className="w-5 h-5 mr-1" />
+            {interviewer.price}/hr
           </div>
-        )}
+          <div className="flex items-center text-sm text-green-600 bg-green-100 px-3 py-1 rounded">
+            <Clock className="w-4 h-4 mr-1" />
+            Available Now
+          </div>
+        </div>
+
+        {/* Skills */}
+        <div className="flex flex-wrap gap-3 mb-6">
+          {displaySkills.visibleSkills.map((skill: string, index: number) => (
+            <span
+              key={index}
+              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm"
+            >
+              {skill}
+            </span>
+          ))}
+          {displaySkills.remainingCount && (
+            <span className="px-4 py-2 bg-gray-100 text-gray-700 rounded-full text-sm">
+              {displaySkills.remainingCount}
+            </span>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="border-t border-gray-200 pt-4">
+          <div className="flex justify-between text-sm text-gray-500">
+            <span>
+              {interviewer.completedInterviews || 0} interviews Completed
+            </span>
+          </div>
+        </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

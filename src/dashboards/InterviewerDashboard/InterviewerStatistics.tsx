@@ -1,5 +1,10 @@
-import { useEffect, useState } from "react";
-import { Bar, Radar } from "react-chartjs-2";
+import React, {
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+} from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -11,10 +16,14 @@ import {
   RadialLinearScale,
   PointElement,
   LineElement,
+  ArcElement,
 } from "chart.js";
-import { Star, StarHalf, X } from "lucide-react";
-import axiosInstance from "../../components/common/axiosConfig";
+import { Bar, Radar } from "react-chartjs-2";
+import { Star, X } from "lucide-react";
+import { InterviewerContext } from "../../context/InterviewerContext";
+import { motion, AnimatePresence } from "framer-motion";
 
+// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -24,273 +33,368 @@ ChartJS.register(
   Legend,
   RadialLinearScale,
   PointElement,
-  LineElement
+  LineElement,
+  ArcElement
 );
 
 const InterviewerStatistics = () => {
-  const [statistics, setStatistics] = useState<{
-    completedInterviews: number;
-    pendingRequests: number;
-    totalAccepted: number;
-    averageRating: number;
-    totalFeedbackCount: number;
-    feedbacks: Array<{
-      feedbackData: Record<string, { rating: number; comments: string }>;
-      rating: number;
-      interviewRequestId: string;
-      interviewDate: string;
-      candidateName: string;
-      profilePhoto: string;
-    }>;
-  } | null>(null);
-
+  const { statistics, fetchStatistics } = useContext(InterviewerContext);
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
   const [showAllFeedbacks, setShowAllFeedbacks] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const response = await axiosInstance.get(
-          "/interviewer/get-interviewer-statistics"
-        );
-        if (response.data && response.data.statistics) {
-          setStatistics(response.data.statistics);
-        } else {
-          setStatistics(null);
-        }
-      } catch (error) {
-        console.error("Error fetching interviewer statistics:", error);
-        setStatistics(null);
-      }
-    };
+    if (!statistics) {
+      fetchStatistics();
+    }
+  }, [statistics, fetchStatistics]);
 
-    fetchStatistics();
-  }, []);
-
-  if (statistics === null) {
-    return (
-      <div className="bg-gray-50 p-8 max-w-6xl mx-auto rounded-lg shadow-md">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Interviewer Statistics
-        </h2>
-        <p className="text-center text-lg text-gray-500">
-          No data available for the interviewer statistics at this time.
-        </p>
-      </div>
-    );
-  }
+  const isLoading = !statistics;
 
   const {
     completedInterviews,
     pendingRequests,
     totalAccepted,
-    averageRating,
-    totalFeedbackCount,
-    feedbacks,
-  } = statistics;
+    feedbacks = [],
+  } = statistics || {};
 
-  const renderStars = (rating: number) => {
+  const tabs = useMemo(
+    () => [
+      { id: "overview", label: "Overview" },
+      { id: "feedbacks", label: "Feedbacks" },
+      { id: "ratings", label: "Feedbacks Analysis" },
+    ],
+    []
+  );
+
+  const renderStars = useCallback((rating: number) => {
     const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
+    const hasHalfStar = rating % 1 >= 0.5;
     return (
-      <div className="flex space-x-1">
-        {[...Array(fullStars)].map((_, index) => (
-          <Star key={`full-${index}`} className="text-yellow-400" />
-        ))}
-        {halfStar && <StarHalf className="text-yellow-400" />}
-        {[...Array(5 - fullStars - (halfStar ? 1 : 0))].map((_, index) => (
-          <Star key={`empty-${index}`} className="text-gray-300" />
+      <div className="flex items-center space-x-1">
+        {[...Array(5)].map((_, index) => (
+          <Star
+            key={index}
+            className={`w-5 h-5 ${
+              index < fullStars
+                ? "text-yellow-400"
+                : hasHalfStar && index === fullStars
+                ? "text-yellow-400"
+                : "text-gray-200"
+            }`}
+          />
         ))}
       </div>
     );
-  };
+  }, []);
 
-  const handleOutsideClick = (e: any) => {
-    if (e.target.id === "modal-overlay") {
-      setSelectedFeedback(null);
-    }
-  };
+  const feedbacksToDisplay = useMemo(
+    () => (showAllFeedbacks ? feedbacks : feedbacks.slice(0, 3)),
+    [feedbacks, showAllFeedbacks]
+  );
 
-  const feedbacksToDisplay = showAllFeedbacks
-    ? feedbacks
-    : feedbacks.slice(0, 4);
+  const barChartData = useMemo(
+    () => ({
+      labels: ["Completed", "Pending", "Accepted"],
+      datasets: [
+        {
+          label: "Interview Stats",
+          data: [completedInterviews, pendingRequests, totalAccepted],
+          backgroundColor: ["#0A66C2", "#FFD700", "#2E7D32"],
+          borderWidth: 0,
+          borderRadius: 8,
+          barThickness: 40,
+        },
+      ],
+    }),
+    [completedInterviews, pendingRequests, totalAccepted]
+  );
+
+  const radarData = useMemo(() => {
+    if (!feedbacks.length || !feedbacks[0]?.feedbackData) return null;
+    return {
+      labels: Object.keys(feedbacks[0].feedbackData),
+      datasets: [
+        {
+          label: "Skill Ratings",
+          data: Object.values(feedbacks[0].feedbackData).map(
+            (v: any) => v.rating
+          ),
+          backgroundColor: "rgba(10, 102, 194, 0.2)",
+          borderColor: "#0A66C2",
+          pointBackgroundColor: "#0A66C2",
+          pointBorderColor: "#fff",
+        },
+      ],
+    };
+  }, [feedbacks]);
+
+  const handleTabChange = useCallback((tabId: string) => {
+    setActiveTab(tabId);
+    setSelectedFeedback(null);
+  }, []);
+
+  const handleFeedbackClick = useCallback((feedback: any) => {
+    setSelectedFeedback(feedback);
+  }, []);
+
+  const handleModalClose = useCallback(() => {
+    setSelectedFeedback(null);
+  }, []);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-pulse text-lg text-gray-500">
+          Loading statistics...
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-gray-50 p-8 max-w-7xl mx-auto rounded-lg shadow-md space-y-8">
-      <h2 className="text-3xl font-bold text-center mb-8 text-gray-900">
-        Interviewer Statistics
-      </h2>
+    <div className="min-h-screen p-4">
+      {/* Header Section */}
+      <header className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Performance Dashboard
+        </h1>
+        <p className="text-gray-600 mt-2">
+          Analytics for your interview performance
+        </p>
+      </header>
 
-      {/* Statistics Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
-        <div className="p-6 bg-white shadow-md rounded-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Completed Interviews
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">
-            {completedInterviews}
-          </p>
-        </div>
-        <div className="p-6 bg-white shadow-md rounded-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Pending Requests
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">{pendingRequests}</p>
-        </div>
-        <div className="p-6 bg-white shadow-md rounded-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Total Accepted
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">{totalAccepted}</p>
-        </div>
-        <div className="p-6 bg-white shadow-md rounded-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Average Rating
-          </h3>
-          {renderStars(averageRating)}
-        </div>
-        <div className="p-6 bg-white shadow-md rounded-lg text-center">
-          <h3 className="text-xl font-semibold text-gray-700">
-            Feedback Count
-          </h3>
-          <p className="text-3xl font-bold text-gray-900">
-            {totalFeedbackCount}
-          </p>
-        </div>
-      </div>
-
-      {/* Feedback Cards */}
-      {feedbacks.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-          {feedbacksToDisplay.map((feedback, index) => (
-            <div
-              key={feedback.interviewRequestId}
-              className="p-6 bg-white shadow-lg rounded-lg cursor-pointer hover:shadow-2xl transition-shadow"
-              onClick={() => setSelectedFeedback(feedback)}
+      {/* Navigation Tabs */}
+      <nav className="mb-8 border-b border-gray-200">
+        <div className="flex space-x-8">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => handleTabChange(tab.id)}
+              className={`pb-4 px-1 font-medium ${
+                activeTab === tab.id
+                  ? "text-[#0A66C2] border-b-2 border-[#0A66C2]"
+                  : "text-gray-500 hover:text-gray-700"
+              }`}
             >
-              <h4 className="text-lg font-semibold text-gray-800 mb-2">
-                Feedback {index + 1}
-              </h4>
-              <div className="flex items-center space-x-4 mb-2">
-                <img
-                  src={feedback.profilePhoto}
-                  alt={feedback.candidateName}
-                  className="w-12 h-12 rounded-full"
-                />
-                <div>
-                  <p className="font-semibold text-gray-800">
-                    {feedback.candidateName}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {feedback.interviewDate}
-                  </p>
-                </div>
-              </div>
-              <div className="mt-2">{renderStars(feedback.rating)}</div>
-              <p className="text-sm text-gray-600 mt-2">
-                Total Rating: {feedback.rating.toFixed(1)}
-              </p>
-            </div>
+              {tab.label}
+            </button>
           ))}
         </div>
-      ) : (
-        <p className="text-center text-lg text-gray-500 mb-8">
-          No feedback data available.
-        </p>
-      )}
+      </nav>
 
-      {/* View More Button */}
-      {feedbacks.length > 4 && !showAllFeedbacks && (
-        <div className="text-center">
-          <button
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition-colors"
-            onClick={() => setShowAllFeedbacks(true)}
-          >
-            View More
-          </button>
-        </div>
-      )}
-
-      {/* Charts */}
-      <div className="mb-8">
-        {feedbacks.length > 0 && (
-          <div className="bg-white p-6 shadow-md rounded-lg w-full">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Feedback Ratings
-            </h3>
-            <Radar
-              data={{
-                labels: Object.keys(feedbacks[0].feedbackData),
-                datasets: [
-                  {
-                    label: "Ratings",
-                    data: Object.values(feedbacks[0].feedbackData).map(
-                      (item) => item.rating
-                    ),
-                    backgroundColor: "rgba(255, 99, 132, 0.2)",
-                    borderColor: "rgba(255, 99, 132, 1)",
-                    borderWidth: 1,
-                  },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  title: { display: true, text: "Feedback Ratings" },
-                },
-                scales: {
-                  r: {
-                    min: 0,
-                    max: 5,
-                    ticks: {
-                      stepSize: 1,
-                    },
-                  },
-                },
-              }}
-              className="w-full h-[400px] sm:h-[500px] lg:h-[600px]"
-            />
-          </div>
-        )}
-      </div>
-
-      {/* Modal */}
-      {selectedFeedback && (
-        <div
-          id="modal-overlay"
-          className="popup-container fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
-          onClick={handleOutsideClick}
+      {/* Content Sections */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.2 }}
         >
-          <div className="bg-white p-6 rounded-lg shadow-lg relative max-w-3xl w-full mx-4 md:mx-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
-            <button
-              onClick={() => setSelectedFeedback(null)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-            >
-              <X size={24} />
-            </button>
-            <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Detailed Feedback
-            </h3>
-            <div className="space-y-4">
-              {Object.entries(selectedFeedback.feedbackData).map(
-                ([key, value]) => (
-                  <div key={key} className="p-4 bg-gray-100 rounded-lg">
-                    <h4 className="font-semibold text-gray-800">{key}</h4>
-                    <p className="text-sm text-gray-600">
-                      Rating: {value.rating}
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Comments: {value.comments}
-                    </p>
+          {activeTab === "overview" && (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {[
+                { label: "Completed Interviews", value: completedInterviews },
+                { label: "Pending Requests", value: pendingRequests },
+                { label: "Total Accepted", value: totalAccepted },
+              ].map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
+                >
+                  <h3 className="text-gray-500 font-medium mb-2">
+                    {item.label}
+                  </h3>
+                  <p className="text-4xl font-bold text-gray-900">
+                    {item.value}
+                  </p>
+                </div>
+              ))}
+              <div className="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <h3 className="text-lg font-semibold mb-4">
+                  Activity Overview
+                </h3>
+                <Bar
+                  data={barChartData}
+                  options={{
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                      y: { beginAtZero: true, grid: { color: "#f3f4f6" } },
+                      x: { grid: { display: false } },
+                    },
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
+          {activeTab === "feedbacks" && (
+            <div className="space-y-6">
+              {feedbacks.length === 0 ? (
+                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
+                  <p className="text-gray-500 text-lg">
+                    No feedbacks available yet.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                    {feedbacksToDisplay.map((feedback) => (
+                      <motion.div
+                        key={feedback.interviewRequestId}
+                        whileHover={{ y: -5 }}
+                        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer"
+                        onClick={() => handleFeedbackClick(feedback)}
+                      >
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="font-semibold text-gray-900">
+                              {feedback.candidateName}
+                            </h4>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {feedback.interviewDate}
+                            </p>
+                          </div>
+                          <div className="flex items-center space-x-1">
+                            <span className="text-sm font-medium text-gray-900">
+                              {feedback.rating.toFixed(1)}
+                            </span>
+                            <Star className="w-5 h-5 text-yellow-400" />
+                          </div>
+                        </div>
+                        <div className="mt-4">
+                          <div className="text-sm text-gray-600 line-clamp-3">
+                            {feedback.feedbackData?.overall?.comments}
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
                   </div>
-                )
+                  {feedbacks.length > 3 && !showAllFeedbacks && (
+                    <div className="text-center">
+                      <button
+                        className="px-6 py-2.5 bg-[#0A66C2] text-white rounded-lg font-medium hover:bg-[#0056b3] transition-colors shadow-sm"
+                        onClick={() => setShowAllFeedbacks(true)}
+                      >
+                        Show All Feedbacks
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          )}
+
+          {activeTab === "ratings" && (
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+              <h3 className="text-lg font-semibold mb-6">Feedbacks Analysis</h3>
+              {feedbacks.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    No feedbacks available for analysis.
+                  </p>
+                </div>
+              ) : !radarData ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-500">
+                    Feedback data is incomplete or unavailable for analysis.
+                  </p>
+                </div>
+              ) : (
+                <div className="max-w-2xl mx-auto">
+                  <Radar
+                    data={radarData}
+                    options={{
+                      responsive: true,
+                      scales: {
+                        r: {
+                          beginAtZero: true,
+                          max: 5,
+                          ticks: {
+                            stepSize: 1,
+                            color: "#6B7280",
+                            backdropColor: "transparent",
+                          },
+                          grid: { color: "#f3f4f6" },
+                          pointLabels: { color: "#374151" },
+                        },
+                      },
+                      plugins: { legend: { display: false } },
+                      elements: { line: { tension: 0.3 } },
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Feedback Modal */}
+      <AnimatePresence>
+        {selectedFeedback && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+            onClick={handleModalClose}
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="p-6">
+                <div className="flex justify-between items-start mb-6">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      Detailed Feedback
+                    </h3>
+                    <p className="text-gray-500 mt-1">
+                      {selectedFeedback.interviewDate}
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleModalClose}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+
+                <div className="space-y-6">
+                  {Object.entries(selectedFeedback.feedbackData).map(
+                    ([key, value]) => (
+                      <div key={key} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="font-medium text-gray-900 capitalize">
+                            {key}
+                          </h4>
+                          <div className="flex items-center space-x-1">
+                            <span className="font-medium text-gray-900">
+                              {(value as any).rating.toFixed(1)}
+                            </span>
+                            <Star className="w-5 h-5 text-yellow-400" />
+                          </div>
+                        </div>
+                        <p className="text-gray-600 text-sm leading-relaxed">
+                          {(value as any).comments}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
 
-export default InterviewerStatistics;
+export default React.memo(InterviewerStatistics);

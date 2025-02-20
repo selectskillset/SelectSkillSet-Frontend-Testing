@@ -5,6 +5,7 @@ import axiosInstance from "../../common/axiosConfig";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import candidateSignup from "../../../images/candidateSignup.svg";
 import { countryData } from "../../common/countryData";
+import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
 
 export const CandidateSignup = () => {
   const navigate = useNavigate();
@@ -14,13 +15,15 @@ export const CandidateSignup = () => {
     email: "",
     password: "",
     phoneNumber: "",
-    countryCode:""
+    countryCode: "",
   });
   const [selectedCountry, setSelectedCountry] = useState(
     countryData.find((c) => c.isoCode === "IE") || countryData[0]
   );
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,7 +52,7 @@ export const CandidateSignup = () => {
     );
     if (selected) {
       setSelectedCountry(selected);
-      setFormData({ ...formData, phoneNumber: "" ,countryCode: selected.code }); // Reset phone number when country changes
+      setFormData({ ...formData, phoneNumber: "", countryCode: selected.code }); // Reset phone number when country changes
     }
   };
 
@@ -84,18 +87,25 @@ export const CandidateSignup = () => {
       return false;
     }
 
+    // Validate terms and conditions
+    if (!hasAcceptedTerms) {
+      toast.error("You must accept the terms and conditions to proceed.");
+      return false;
+    }
+
     return true;
   };
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     const payload = {
       ...formData,
       countryCode: selectedCountry.code, // Include the full phone number with country code
+      hasAcceptedTerms,
     };
     sessionStorage.setItem("userData", JSON.stringify(payload));
 
@@ -285,6 +295,27 @@ export const CandidateSignup = () => {
               />
             </div>
 
+            <div className="flex items-center space-x-2 my-5">
+              <input
+                type="checkbox"
+                id="terms"
+                checked={hasAcceptedTerms}
+                onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                required
+              />
+              <label htmlFor="terms" className="text-sm text-gray-700">
+                I agree to the{" "}
+                <button
+                  type="button"
+                  onClick={() => setIsTermsModalOpen(true)}
+                  className="text-[#0A66C2] underline hover:text-[#005885]"
+                >
+                  Terms and Conditions
+                </button>
+              </label>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -307,6 +338,11 @@ export const CandidateSignup = () => {
               </span>
             </p>
           </div>
+          {isTermsModalOpen && (
+            <TermsAndConditionsModal
+              onClose={() => setIsTermsModalOpen(false)}
+            />
+          )}
         </div>
       </div>
     </div>

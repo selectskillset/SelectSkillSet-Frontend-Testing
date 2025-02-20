@@ -6,28 +6,28 @@
 /* @import './styles/animations.css'; */
 
 /* Global Scrollbar Styles */
-body {
-  --sb-track-color: #ffffff;
+* {
+  --sb-track-color: transparent;
   --sb-thumb-color: #0077b5;
   --sb-size: 10px;
 }
 
-body::-webkit-scrollbar {
+*::-webkit-scrollbar {
   width: var(--sb-size);
 }
 
-body::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: var(--sb-track-color);
   border-radius: 14px;
 }
 
-body::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background: var(--sb-thumb-color);
   border-radius: 14px;
 }
 
 @supports not selector(::-webkit-scrollbar) {
-  body {
+  * {
     scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
   }
 }
@@ -299,8 +299,7 @@ input[type="number"] {
   }
 }
 
-input[type="checkbox"]:checked {
-}
+
 
 .bell {
   display: block;
@@ -479,4 +478,322 @@ input[type="checkbox"]:checked {
   animation: sleeping 3.5s ease-in-out forwards infinite;
   animation-delay: 1.3s;
   -website-animation-delay: 1.3s;
+}
+
+
+
+:root {
+  --magnifying-glass: rgb(111, 197, 211);
+  --magnifying-glass-light: rgb(167, 217, 225);
+  --magnifying-glass-dark: rgb(95, 168, 180);
+  --contact-card: rgb(252, 236, 243);
+  --contact-card-light: rgb(210, 175, 211);
+  --contact-card-dark: rgb(153, 106, 169);
+}
+
+/* Loader Container */
+.flex.items-center.justify-center.min-h-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--gray-100);
+}
+
+.relative.w-full.max-w-md {
+  position: relative;
+  bottom: 100px;
+  width: 100%;
+  max-width: 384px; /* Adjusted for responsiveness */
+}
+
+/* Contact Card */
+.contact-card {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 250px;
+  height: 120px;
+  background-color: var(--contact-card);
+  border-radius: 4px;
+  border-bottom: 8px solid var(--contact-card-light);
+  animation: contact-card-animate 3s ease-in-out infinite;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.contact-card-first {
+  animation-delay: 0s;
+}
+
+.contact-card-second {
+  animation-delay: 1.5s;
+}
+
+/* Avatar */
+.avatar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  left: -125px;
+  width: 65px;
+  height: 65px;
+  background-color: var(--contact-card-light);
+  border-radius: 4px;
+  z-index: 3;
+}
+
+.avatar::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  top: -15px;
+  height: 22.5px;
+  width: 22.5px;
+  background-color: var(--contact-card-dark);
+  border-radius: 50%;
+}
+
+.avatar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  top: 40px;
+  height: 25px;
+  width: 40px;
+  background-color: var(--contact-card-dark);
+  border-top-left-radius: 50%;
+  border-top-right-radius: 50%;
+}
+
+/* Text Placeholder */
+.text-placeholder {
+  position: absolute;
+  top: 42.5px;
+  right: 40px;
+  width: 100px;
+  height: 7.5px;
+  background-color: var(--contact-card-dark);
+}
+
+.text-placeholder::before {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  top: 17.5px;
+  width: 120px;
+  height: 7.5px;
+  background-color: var(--contact-card-dark);
+}
+
+.text-placeholder::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  top: 32.5px;
+  width: 110px;
+  height: 7.5px;
+  background-color: var(--contact-card-dark);
+}
+
+/* Magnifying Glass */
+.magnifying-glass {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  width: 150px;
+  height: 150px;
+  border: 14px solid var(--magnifying-glass);
+  border-radius: 50%;
+  animation: magnifying-glass-animate 1.5s ease-in-out infinite;
+  animation-delay: 0.375s;
+  transform: rotate(37.5deg);
+  left: 150px;
+  top: 0;
+}
+
+.magnifying-glass::before,
+.magnifying-glass::after {
+  content: "";
+  position: absolute;
+  height: 160px;
+  width: 160px;
+  border-radius: 50%;
+  opacity: 0.8;
+  transform: rotate(15deg);
+}
+
+.magnifying-glass::before {
+  left: -12px;
+  top: -5px;
+  border-left: 6px solid white;
+}
+
+.magnifying-glass::after {
+  left: -4px;
+  top: -5px;
+  border-right: 6px solid white;
+}
+
+.glass {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 150px;
+  width: 150px;
+  border-radius: 50%;
+  background-color: white;
+  opacity: 0.35;
+}
+
+.handle {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 100px;
+  width: 35px;
+  border-radius: 7.5px;
+  background-color: var(--magnifying-glass);
+  top: 240px;
+}
+
+.handle::after {
+  content: "";
+  position: absolute;
+  border-top-right-radius: 30px;
+  left: 5px;
+  top: -20px;
+  height: 30px;
+  width: 20px;
+  background-color: var(--magnifying-glass-dark);
+}
+
+.handle-inner {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  margin: auto;
+  height: 92px;
+  left: -7.5px;
+  top: -7.5px;
+  width: 27.5px;
+  border-top-left-radius: 7.5px;
+  border-bottom-right-radius: 17.5px;
+  background-color: var(--magnifying-glass-light);
+  z-index: 2;
+}
+
+.handle-inner::before,
+.handle-inner::after {
+  content: "";
+  position: absolute;
+  left: 0px;
+  top: 34px;
+  height: 8px;
+  width: 27.5px;
+  background-color: var(--magnifying-glass);
+  z-index: 1;
+}
+
+/* Animations */
+@keyframes contact-card-animate {
+  0% {
+    opacity: 0;
+    top: -300px;
+    width: 0px;
+  }
+  1% {
+    opacity: 1;
+    top: -300px;
+    width: 0px;
+  }
+  10% {
+    top: -300px;
+    width: 250px;
+  }
+  20% {
+    top: 0px;
+    width: 250px;
+  }
+  25% {
+    top: 0px;
+    width: 250px;
+  }
+  35% {
+    top: 0px;
+    width: 250px;
+  }
+  50% {
+    top: 300px;
+    width: 250px;
+  }
+  65% {
+    opacity: 1;
+    top: 300px;
+    width: 0px;
+  }
+  100% {
+    opacity: 0;
+    top: 300px;
+    width: 0px;
+  }
+}
+
+@keyframes magnifying-glass-animate {
+  0% {
+    transform: rotate(37.5deg);
+    left: 150px;
+    top: 0;
+  }
+  10% {
+    transform: rotate(37.5deg);
+    left: 150px;
+    top: 0;
+  }
+  50% {
+    transform: rotate(5deg);
+    left: -150px;
+    top: 0;
+  }
+  75% {
+    transform: rotate(5deg);
+    left: -150px;
+    top: 0;
+  }
+  82.5% {
+    top: 27.5px;
+  }
+  90% {
+    transform: rotate(37.5deg);
+    left: 150px;
+    top: 0;
+  }
+  100% {
+    transform: rotate(37.5deg);
+    left: 150px;
+    top: 0;
+  }
 }

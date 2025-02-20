@@ -23,7 +23,7 @@ const DashboardStats = ({
       value: totalCandidates,
       color: "bg-blue-50",
       iconColor: "bg-blue-500",
-      icon: <Users className="w-5 h-5 text-white" />,
+      icon: <Users className="w-6 h-6 text-white" />,
       type: "candidates",
     },
     {
@@ -31,7 +31,7 @@ const DashboardStats = ({
       value: totalInterviewers,
       color: "bg-purple-50",
       iconColor: "bg-purple-500",
-      icon: <Briefcase className="w-5 h-5 text-white" />,
+      icon: <Briefcase className="w-6 h-6 text-white" />,
       type: "interviewers",
     },
     {
@@ -39,7 +39,7 @@ const DashboardStats = ({
       value: totalCorporates,
       color: "bg-green-50",
       iconColor: "bg-green-500",
-      icon: <Building className="w-5 h-5 text-white" />,
+      icon: <Building className="w-6 h-6 text-white" />,
       type: "corporates",
     },
     {
@@ -47,30 +47,48 @@ const DashboardStats = ({
       value: pendingCount,
       color: "bg-orange-50",
       iconColor: "bg-orange-500",
-      icon: <Clock className="w-5 h-5 text-white" />,
+      icon: <Clock className="w-6 h-6 text-white" />,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {stats.map((stat) => (
         <motion.div
           key={stat.label}
-          whileHover={{ y: -4, scale: 1.02 }}
-          transition={{ duration: 0.2 }}
-          className={`group p-5 ${stat.color} shadow-xs hover:shadow-md transition-all duration-300 ease-out border-gray-100/50 rounded-xl shadow-lg border border-gray-100 hover:border-gray-100 cursor-pointer`}
-          onClick={() => stat.type && navigate(`/admin/dashboard/table?userType=${stat.type}`)}
+          whileHover={{
+            scale: 1.03,
+            boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.1)",
+          }}
+          transition={{ duration: 0.3 }}
+          className={`relative p-6 rounded-2xl shadow-md hover:shadow-lg cursor-pointer overflow-hidden group ${stat.color}`}
+          onClick={() =>
+            stat.type &&
+            navigate(`/admin/dashboard/table?userType=${stat.type}`)
+          }
           aria-label={`View ${stat.label}`}
         >
-          <div className="flex items-center justify-between">
+          {/* Background Gradient */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-br from-${stat.iconColor.replace(
+              "bg-",
+              ""
+            )}/20 to-transparent opacity-70 group-hover:opacity-100 transition-opacity`}
+          ></div>
+
+          {/* Content */}
+          <div className="relative z-10 flex items-center justify-between">
+            {/* Left Side */}
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
                 {stat.label}
               </p>
-              <p className="text-4xl font-bold text-gray-800">{stat.value}</p>
+              <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
             </div>
+
+            {/* Icon */}
             <div
-              className={`p-3 rounded-xl ${stat.iconColor} shadow-sm group-hover:shadow-md transition-shadow`}
+              className={`p-3 rounded-lg ${stat.iconColor} shadow-sm group-hover:scale-110 transition-transform`}
             >
               {stat.icon}
             </div>

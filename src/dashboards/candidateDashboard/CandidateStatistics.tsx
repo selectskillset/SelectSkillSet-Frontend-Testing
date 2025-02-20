@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useMemo, useCallback, useState, useEffect } from "react";
 import { Bar, Radar, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -13,8 +13,9 @@ import {
   LineElement,
   ArcElement,
 } from "chart.js";
-import { Star, StarHalf, X } from "lucide-react";
-import axiosInstance from "../../components/common/axiosConfig";
+import { Briefcase, ClipboardList, Star, X } from "lucide-react";
+import { useCandidateContext } from "../../context/CandidateContext";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Register Chart.js components
 ChartJS.register(
@@ -30,10 +31,12 @@ ChartJS.register(
   ArcElement
 );
 
+// Type definitions
 interface Feedback {
-  feedbackData: Record<string, any>;
-  rating: number;
   interviewRequestId: string;
+  feedbackData: Record<string, { rating: number; comments: string }>;
+  rating: number;
+  _id: string;
   interviewDate: string;
   interviewer: {
     firstName: string;
@@ -42,338 +45,408 @@ interface Feedback {
   };
 }
 
-const CandidateStatistics: React.FC = () => {
-  const [statistics, setStatistics] = useState<{
-    completedInterviews: number;
-    averageRating: number;
-    totalFeedbackCount: number;
-    feedbacks: Feedback[];
-  } | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
-    null
-  );
-  const [showAllFeedbacks, setShowAllFeedbacks] = useState(false);
+interface Statistics {
+  completedInterviews: number;
+  averageRating: number;
+  totalFeedbackCount: number;
+  feedbacks: Feedback[];
+}
 
-  // Fetch candidate statistics
+// Chart options
+const radarOptions = {
+  responsive: true,
+  scales: {
+    r: {
+      beginAtZero: true,
+      max: 5,
+      ticks: { stepSize: 1, color: "#6B7280", backdropColor: "transparent" },
+      grid: { color: "#f3f4f6" },
+      pointLabels: { color: "#374151" },
+    },
+  },
+  plugins: { legend: { display: false } },
+  elements: { line: { tension: 0.3 } },
+};
+
+const doughnutOptions = {
+  responsive: true,
+  plugins: { legend: { position: "top" } },
+  maintainAspectRatio: false,
+};
+
+const barOptions = {
+  responsive: true,
+  plugins: { legend: { display: false } },
+  scales: {
+    y: { beginAtZero: true, grid: { color: "#f3f4f6" } },
+    x: { grid: { display: false } },
+  },
+};
+
+const CandidateStatistics: React.FC = () => {
+  const { statistics, isLoading, fetchStatistics, error } =
+    useCandidateContext();
+
   useEffect(() => {
-    const fetchStatistics = async () => {
-      try {
-        const response = await axiosInstance.get(
-          "/candidate/get-candidate-statistics"
-        );
-        setStatistics(response.data.statistics);
-      } catch (error) {
-        console.error("Error fetching candidate statistics:", error);
-        setStatistics(null);
-      }
-    };
-    fetchStatistics();
+    if (!statistics) {
+      fetchStatistics();
+    }
+  }, [statistics, fetchStatistics]);
+  
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(null);
+  const [activeTab, setActiveTab] = useState("overview");
+
+  const tabs = useMemo(
+    () => [
+      { id: "overview", label: "Overview" },
+      { id: "feedbacks", label: "Feedbacks" },
+      { id: "analysis", label: "Analysis" },
+    ],
+    []
+  );
+
+  const renderStars = useCallback((rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    return (
+      <div className="flex items-center gap-1">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={16}
+            fill={
+              i < fullStars || (i === fullStars && hasHalfStar)
+                ? "#FFD700"
+                : "none"
+            }
+            stroke="#FFD700"
+            strokeWidth={i >= fullStars && !hasHalfStar ? 1 : 0}
+          />
+        ))}
+      </div>
+    );
   }, []);
 
-  // Render star ratings
-  const renderStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
-    return (
-      <>
-        {[...Array(fullStars)].map((_, index) => (
-          <Star key={index} className="w-4 h-4 text-yellow-500" />
-        ))}
-        {halfStar && <StarHalf className="w-4 h-4 text-yellow-500" />}
-        {[...Array(5 - fullStars - (halfStar ? 1 : 0))].map((_, index) => (
-          <Star key={index} className="w-4 h-4 text-gray-300" />
-        ))}
-      </>
+  const chartData = useMemo(() => {
+    if (!statistics)
+      return { radarData: null, doughnutData: null, barData: null };
+
+    // Radar Chart Data
+    const radarLabels = Array.from(
+      new Set(statistics.feedbacks.flatMap((f) => Object.keys(f.feedbackData)))
     );
-  };
 
-  // Handle modal close
-  const handleOutsideClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setSelectedFeedback(null);
-    }
-  };
+    const radarValues = radarLabels.map((label) => {
+      const values = statistics.feedbacks
+        .map((f) => f.feedbackData[label]?.rating)
+        .filter(Boolean);
+      return values.length
+        ? values.reduce((a, b) => a + b, 0) / values.length
+        : 0;
+    });
 
-  // Limit feedbacks to display
-  const feedbacksToDisplay = showAllFeedbacks
-    ? statistics?.feedbacks
-    : statistics?.feedbacks.slice(0, 4);
+    // Doughnut Chart Data
+    const ratingCounts = [0, 0, 0, 0, 0];
+    statistics.feedbacks.forEach((f) => {
+      const rounded = Math.round(f.rating);
+      if (rounded >= 1 && rounded <= 5) ratingCounts[5 - rounded]++;
+    });
 
-  if (!statistics) {
+    // Bar Chart Data
+    const barLabels = statistics.feedbacks.map(
+      (f, i) =>
+        `Interview ${i + 1} - ${new Date(f.interviewDate).toLocaleDateString()}`
+    );
+
+    return {
+      radarData: radarLabels.length > 0 ? {
+        labels: radarLabels,
+        datasets: [
+          {
+            label: "Skill Ratings",
+            data: radarValues,
+            backgroundColor: "rgba(10, 102, 194, 0.2)",
+            borderColor: "#0A66C2",
+            pointBackgroundColor: "#0A66C2",
+            pointBorderColor: "#fff",
+          },
+        ],
+      } : null,
+      doughnutData: ratingCounts.some(count => count > 0) ? {
+        labels: ["5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"],
+        datasets: [
+          {
+            data: ratingCounts,
+            backgroundColor: [
+              "#0A66C2",
+              "#4CAF50",
+              "#FFC107",
+              "#FF5722",
+              "#9E9E9E",
+            ],
+            borderColor: "rgba(255, 255, 255, 0.2)",
+          },
+        ],
+      } : null,
+      barData: statistics.feedbacks.length > 0 ? {
+        labels: barLabels,
+        datasets: [
+          {
+            label: "Ratings",
+            data: statistics.feedbacks.map((f) => f.rating),
+            backgroundColor: "#0A66C2",
+            borderRadius: 8,
+          },
+        ],
+      } : null,
+    };
+  }, [statistics]);
+
+  if (isLoading)
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
-        <p className="text-gray-700 text-center">
-          Unable to fetch candidate statistics at the moment. Please try again
-          later.
-        </p>
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-pulse text-lg text-gray-500">
+          Loading statistics...
+        </div>
       </div>
     );
-  }
 
-  const { completedInterviews, averageRating, totalFeedbackCount, feedbacks } =
-    statistics;
+  if (error)
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500">
+        {error}
+      </div>
+    );
 
-  // Chart configurations
-  const chartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "top" as const,
-      },
-      tooltip: {
-        enabled: true,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleFont: { size: 14 },
-        bodyFont: { size: 12 },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        grid: {
-          color: "rgba(200, 200, 200, 0.2)",
-        },
-      },
-      x: {
-        grid: {
-          color: "rgba(200, 200, 200, 0.2)",
-        },
-      },
-    },
-  };
-
-  // Radar Chart Data
-  const radarChartData = {
-    labels: Object.keys(feedbacks[0]?.feedbackData || {}),
-    datasets: [
-      {
-        label: "Feedback Ratings",
-        data: Object.values(feedbacks[0]?.feedbackData || {}).map(
-          (item: any) => item.rating
-        ),
-        backgroundColor: "rgba(75, 192, 192, 0.2)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 2,
-        pointBackgroundColor: "rgba(75, 192, 192, 1)",
-        pointBorderColor: "#fff",
-        pointHoverRadius: 6,
-      },
-    ],
-  };
-
-  // Doughnut Chart Data
-  const doughnutChartData = {
-    labels: ["5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"],
-    datasets: [
-      {
-        label: "Average Rating Distribution",
-        data: [
-          averageRating >= 4 ? 1 : 0,
-          averageRating >= 3 && averageRating < 4 ? 1 : 0,
-          averageRating >= 2 && averageRating < 3 ? 1 : 0,
-          averageRating >= 1 && averageRating < 2 ? 1 : 0,
-          averageRating < 1 ? 1 : 0,
-        ],
-        backgroundColor: [
-          "rgba(75, 192, 192, 0.6)",
-          "rgba(153, 102, 255, 0.6)",
-          "rgba(255, 159, 64, 0.6)",
-          "rgba(255, 99, 132, 0.6)",
-          "rgba(54, 162, 235, 0.6)",
-        ],
-        borderColor: "rgba(255, 255, 255, 0.2)",
-        borderWidth: 1,
-        hoverOffset: 10,
-      },
-    ],
-  };
-
-  // Bar Chart Data
-  const barChartData = {
-    labels: feedbacks.map(
-      (f) => `${f.interviewer.firstName} ${f.interviewer.lastName}`
-    ),
-    datasets: [
-      {
-        label: "Overall Ratings",
-        data: feedbacks.map((f) => f.rating),
-        backgroundColor: "rgba(75, 192, 192, 0.6)",
-        borderColor: "rgba(75, 192, 192, 1)",
-        borderWidth: 1,
-        borderRadius: 4,
-        hoverBackgroundColor: "rgba(75, 192, 192, 0.8)",
-      },
-    ],
-  };
+  if (!statistics) return null;
 
   return (
-    <div className="min-h-screen bg-white rounded-lg shadow-lg p-4 sm:p-6 lg:p-8">
+    <div className="p-6 bg-white min-h-screen shadow-lg rounded-lg">
       {/* Header */}
-      <h1 className="text-xl sm:text-2xl font-bold text-gray-800 mb-6">
-        Candidate Statistics
-      </h1>
-
-      {/* Statistics Overview */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
-          <p className="text-gray-600 text-sm">Completed Interviews</p>
-          <p className="text-xl font-semibold text-gray-800">
-            {completedInterviews}
-          </p>
-        </div>
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
-          <p className="text-gray-600 text-sm">Average Rating</p>
-          <div className="flex items-center justify-center space-x-1">
-            {renderStars(averageRating)}
-          </div>
-          <p className="text-xl font-semibold text-gray-800">
-            {averageRating.toFixed(1)}
-          </p>
-        </div>
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-md text-center">
-          <p className="text-gray-600 text-sm">Total Feedback Count</p>
-          <p className="text-xl font-semibold text-gray-800">
-            {totalFeedbackCount}
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">
+          Candidate Performance
+        </h1>
+        <p className="text-sm text-gray-600">
+          Detailed analytics of your interview results
+        </p>
       </div>
 
-      {/* Feedback Cards */}
-      <div className="mb-8">
-        <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-          Feedbacks
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-          {feedbacksToDisplay?.map((feedback, index) => (
-            <div
-              key={index}
-              onClick={() => setSelectedFeedback(feedback)}
-              className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition"
-            >
-              <p className="text-sm font-medium text-gray-600">
-                Feedback {index + 1}
-              </p>
-              <div className="flex items-center space-x-2 mt-2">
-                {feedback.interviewer.profilePhoto ? (
-                  <img
-                    src={feedback.interviewer.profilePhoto}
-                    alt="Interviewer"
-                    className="w-8 h-8 rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-gray-600">
-                    {feedback.interviewer.firstName[0]}
-                    {feedback.interviewer.lastName[0]}
-                  </div>
-                )}
-                <div>
-                  <p className="text-sm font-medium text-gray-800">
-                    {feedback.interviewer.firstName}{" "}
-                    {feedback.interviewer.lastName}
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {feedback.interviewDate}
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-1 mt-2">
-                {renderStars(feedback.rating)}
-              </div>
-              <p className="text-sm text-gray-800 mt-2">
-                {feedback.rating.toFixed(1)}
-              </p>
-            </div>
-          ))}
-        </div>
-        {feedbacks.length > 4 && !showAllFeedbacks && (
+      {/* Tabs */}
+      <div className="flex border-b border-gray-200 mb-6">
+        {tabs.map((tab) => (
           <button
-            onClick={() => setShowAllFeedbacks(true)}
-            className="mt-4 text-[#0077B5] hover:underline"
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`pb-4 px-3 font-medium ${
+              activeTab === tab.id
+                ? "text-[#0A66C2] border-b-2 border-[#0A66C2]"
+                : "text-gray-500 hover:text-gray-700"
+            }`}
           >
-            View More
+            {tab.label}
           </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div>
+        {activeTab === "overview" && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <StatCard
+              title="Completed Interviews"
+              value={statistics.completedInterviews}
+              icon={<Briefcase size={20} />}
+            />
+            <StatCard
+              title="Average Rating"
+              value={statistics.averageRating.toFixed(1)}
+              icon={<Star size={20} />}
+              customContent={renderStars(statistics.averageRating)}
+            />
+            <StatCard
+              title="Total Feedback Count"
+              value={statistics.totalFeedbackCount}
+              icon={<ClipboardList size={20} />}
+            />
+          </div>
+        )}
+
+        {activeTab === "feedbacks" && (
+          <div className="space-y-4">
+            {statistics.feedbacks.length === 0 ? (
+              <div className="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">
+                No feedbacks available yet.
+              </div>
+            ) : (
+              statistics.feedbacks.map((feedback, i) => (
+                <FeedbackCard
+                  key={feedback._id}
+                  feedback={feedback}
+                  onClick={() => setSelectedFeedback(feedback)}
+                />
+              ))
+            )}
+          </div>
+        )}
+
+        {activeTab === "analysis" && (
+          <div className="space-y-6">
+            {chartData.radarData ? (
+              <ChartCard title="Skill Ratings">
+                <Radar data={chartData.radarData} options={radarOptions} />
+              </ChartCard>
+            ) : (
+              <EmptyState message="No skill data available for analysis" />
+            )}
+
+            {chartData.doughnutData ? (
+              <ChartCard title="Rating Distribution">
+                <Doughnut data={chartData.doughnutData} options={doughnutOptions} />
+              </ChartCard>
+            ) : (
+              <EmptyState message="No rating distribution data available" />
+            )}
+
+            {chartData.barData ? (
+              <ChartCard title="Overall Ratings">
+                <Bar data={chartData.barData} options={barOptions} />
+              </ChartCard>
+            ) : (
+              <EmptyState message="No ratings data available for visualization" />
+            )}
+          </div>
         )}
       </div>
 
-      {/* Charts */}
-      <div className="space-y-8">
-        {/* Radar Chart */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-            Feedback Ratings
-          </h3>
-          {feedbacks.length > 0 ? (
-            <div className="w-full h-64 sm:h-96">
-              <Radar data={radarChartData} options={chartOptions} />
-            </div>
-          ) : (
-            <p className="text-gray-600">No feedback data available.</p>
-          )}
-        </div>
-
-        {/* Doughnut Chart */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-            Average Rating Distribution
-          </h3>
-          <div className="w-full h-64 sm:h-96">
-            <Doughnut data={doughnutChartData} options={chartOptions} />
-          </div>
-        </div>
-
-        {/* Bar Chart */}
-        <div>
-          <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-4">
-            Overall Ratings by Interviewers
-          </h3>
-          {feedbacks.length > 0 ? (
-            <div className="w-full h-64 sm:h-96">
-              <Bar data={barChartData} options={chartOptions} />
-            </div>
-          ) : (
-            <p className="text-gray-600">No feedback data available.</p>
-          )}
-        </div>
-      </div>
-
-      {/* Modal for Detailed Feedback */}
-      {selectedFeedback && (
-        <div
-          id="modal-overlay"
-          onClick={handleOutsideClick}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-        >
-          <div className="bg-white p-6 rounded-lg shadow-lg max-w-lg w-full relative">
-            <button
-              onClick={() => setSelectedFeedback(null)}
-              className="absolute top-4 right-4 w-5 h-5 text-gray-500 hover:text-gray-700 transition duration-200"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <h3 className="text-xl font-semibold text-gray-800 mb-4">
-              Detailed Feedback
-            </h3>
-            <div className="max-h-96 overflow-y-auto">
-              {Object.entries(selectedFeedback.feedbackData).map(
-                ([key, value], index) => (
-                  <div key={index} className="mb-4">
-                    <p className="text-sm font-medium text-gray-800">{key}</p>
-                    <p className="text-sm text-gray-600">
-                      Rating: {value.rating}/5
-                    </p>
-                    <p className="text-sm text-gray-600">
-                      Comments: {value.comments || "No comments provided."}
-                    </p>
-                  </div>
-                )
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Feedback Modal */}
+      <AnimatePresence>
+        {selectedFeedback && (
+          <FeedbackModal
+            feedback={selectedFeedback}
+            onClose={() => setSelectedFeedback(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+// Reusable Components
+const StatCard: React.FC<{
+  title: string;
+  value: number | string;
+  icon: React.ReactNode;
+  customContent?: React.ReactNode;
+}> = ({ title, value, icon, customContent }) => (
+  <div className="bg-white p-4 rounded-lg shadow-md flex flex-col items-center justify-center space-y-2">
+    {icon}
+    <h3 className="text-lg font-medium text-gray-800">{title}</h3>
+    <p className="text-2xl font-bold text-[#0A66C2]">{value}</p>
+    {customContent && <div>{customContent}</div>}
+  </div>
+);
+
+const FeedbackCard: React.FC<{ feedback: Feedback; onClick: () => void }> = ({
+  feedback,
+  onClick,
+}) => (
+  <motion.div
+    whileHover={{ scale: 1.02 }}
+    className="bg-white p-4 rounded-lg shadow-md cursor-pointer hover:shadow-lg transition"
+    onClick={onClick}
+  >
+    <div className="flex items-center gap-4">
+      {feedback.interviewer.profilePhoto ? (
+        <img
+          src={feedback.interviewer.profilePhoto}
+          alt="Profile"
+          className="w-10 h-10 rounded-full object-cover"
+        />
+      ) : (
+        <div className="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium">
+          {feedback.interviewer.firstName[0]}
+          {feedback.interviewer.lastName[0]}
+        </div>
+      )}
+      <div>
+        <h4 className="text-lg font-medium">
+          {feedback.interviewer.firstName} {feedback.interviewer.lastName}
+        </h4>
+        <p className="text-sm text-gray-500">
+          {new Date(feedback.interviewDate).toLocaleDateString()}
+        </p>
+      </div>
+    </div>
+    <div className="mt-2 flex items-center gap-2">
+      <Star size={16} fill="#FFD700" />
+      <span className="text-gray-800">{feedback.rating.toFixed(1)}</span>
+    </div>
+  </motion.div>
+);
+
+const ChartCard: React.FC<{ title: string; children: React.ReactNode }> = ({
+  title,
+  children,
+}) => (
+  <div className="bg-white p-4 rounded-lg shadow-md">
+    <h3 className="text-lg font-medium text-gray-800 mb-4">{title}</h3>
+    <div className="h-64">{children}</div>
+  </div>
+);
+
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <div className="bg-white p-6 rounded-lg shadow-md text-center text-gray-500">
+    {message}
+  </div>
+);
+
+const FeedbackModal: React.FC<{ feedback: Feedback; onClose: () => void }> = ({
+  feedback,
+  onClose,
+}) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+    onClick={onClose}
+  >
+    <motion.div
+      initial={{ scale: 0.9 }}
+      animate={{ scale: 1 }}
+      exit={{ scale: 0.9 }}
+      className="bg-white p-8 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <button
+        className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition"
+        onClick={onClose}
+      >
+        <X size={20} />
+      </button>
+      <h3 className="text-xl font-bold text-gray-800 mb-4">
+        Detailed Feedback
+      </h3>
+      <div className="space-y-4">
+        {Object.entries(feedback.feedbackData).map(([key, value], index) => (
+          <div key={index} className="space-y-2">
+            <h4 className="text-lg font-medium text-gray-700 capitalize">
+              {key}
+            </h4>
+            <div className="flex items-center gap-2">
+              <Star size={16} fill="#FFD700" />
+              <span className="text-gray-600">{value.rating}/5</span>
+            </div>
+            <p className="text-gray-600">
+              {value.comments || "No specific comments provided for this category."}
+            </p>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  </motion.div>
+);
 
 export default CandidateStatistics;
