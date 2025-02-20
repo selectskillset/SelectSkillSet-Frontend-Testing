@@ -10,10 +10,8 @@ const CandidateUpcomingInterviews: React.FC = () => {
 
   // Fetch interviews if not already loaded
   useEffect(() => {
-    if (!interviews.length) {
-      fetchInterviews();
-    }
-  }, [interviews, fetchInterviews]);
+    fetchInterviews();
+  }, [fetchInterviews]);
 
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -131,7 +129,6 @@ const CandidateUpcomingInterviews: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900">
                         {interview.interviewerName || "Interview Session"}
                       </h3>
-                     
                     </div>
                   </div>
                   <span className={getStatusStyle(interview.status)}>

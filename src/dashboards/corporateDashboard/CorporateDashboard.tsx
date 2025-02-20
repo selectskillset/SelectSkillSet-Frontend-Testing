@@ -1,5 +1,5 @@
 // src/components/CorporateDashboard.tsx
-import React, { useCallback, memo, useState, useMemo } from "react";
+import React, { useCallback, memo, useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Edit, Filter, Bookmark, Heart, Mail } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -34,45 +34,38 @@ interface CorporateProfile {
 const CANDIDATES_PER_PAGE = 5;
 
 // Profile Sidebar Component
-const ProfileSidebar = memo(
-  ({ profile }: { profile: CorporateProfile;}) => (
-    <aside className="bg-white shadow-lg rounded-xl h-max p-6 lg:w-80 m-4 sticky top-24 border border-gray-100">
-      <div className="flex flex-col items-center">
-        <img
-          src={profile.profilePhoto || "https://via.placeholder.com/100"}
-          alt={`${profile.companyName} profile`}
-          className="w-20 h-20 rounded-full mb-4 border-2 border-[#0077b5] object-cover shadow-md"
-          loading="lazy"
-        />
-        <h2 className="text-xl font-semibold text-[#0077b5] text-center">
-          {profile.companyName}
-        </h2>
-        <p className="text-sm text-gray-600 text-center">
-          {profile.contactName}
-        </p>
-       
-        <div className="mt-6 border-t border-gray-200 pt-4 w-full space-y-4 text-sm">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Email</span>
-            <span className="text-[#0077b5] ">
-              {profile.email}
-            </span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Phone</span>
-            <span className="text-[#0077b5]">{`${profile.countryCode} ${profile.phoneNumber}`}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-700 font-medium">Bookmarks</span>
-            <span className="text-[#0077b5] font-semibold">
-              {profile.bookmarks.length}
-            </span>
-          </div>
+const ProfileSidebar = memo(({ profile }: { profile: CorporateProfile }) => (
+  <aside className="bg-white shadow-lg rounded-xl h-max p-6 lg:w-80 m-4 sticky top-24 border border-gray-100">
+    <div className="flex flex-col items-center">
+      <img
+        src={profile.profilePhoto || "https://via.placeholder.com/100"}
+        alt={`${profile.companyName} profile`}
+        className="w-20 h-20 rounded-full mb-4 border-2 border-[#0077b5] object-cover shadow-md"
+        loading="lazy"
+      />
+      <h2 className="text-xl font-semibold text-[#0077b5] text-center">
+        {profile.companyName}
+      </h2>
+      <p className="text-sm text-gray-600 text-center">{profile.contactName}</p>
+      <div className="mt-6 border-t border-gray-200 pt-4 w-full space-y-4 text-sm">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-700 font-medium">Email</span>
+          <span className="text-[#0077b5]">{profile.email}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-700 font-medium">Phone</span>
+          <span className="text-[#0077b5]">{`${profile.countryCode} ${profile.phoneNumber}`}</span>
+        </div>
+        <div className="flex justify-between items-center">
+          <span className="text-gray-700 font-medium">Bookmarks</span>
+          <span className="text-[#0077b5] font-semibold">
+            {profile.bookmarks.length}
+          </span>
         </div>
       </div>
-    </aside>
-  )
-);
+    </div>
+  </aside>
+));
 
 // Candidate Table Component
 const CandidateTable = memo(
@@ -172,9 +165,15 @@ const CandidateTable = memo(
 
 // Main Component
 const CorporateDashboard: React.FC = () => {
-  const { profile, candidates, totalCandidates, loading, fetchCandidates } =
+  const { profile, candidates, totalCandidates, loading, fetchCandidates,fetchProfile } =
     useCorporateContext();
   const [currentPage, setCurrentPage] = useState<number>(1);
+
+
+  useEffect(()=>{
+    fetchCandidates()
+    fetchProfile()
+  },[])
 
   const navigate = useNavigate();
 
@@ -187,7 +186,7 @@ const CorporateDashboard: React.FC = () => {
   // Dummy counts for now (replace with real data later)
   const stats = useMemo(
     () => ({
-      bookmarked: profile ? profile.bookmarks.length : 15, // Use profile.bookmarks for now
+      bookmarked: profile ? profile.bookmarks.length : 0,
       wishlisted: 10, // Dummy
       contacted: 8, // Dummy
     }),
@@ -196,15 +195,14 @@ const CorporateDashboard: React.FC = () => {
 
   const handlePageChange = useCallback(
     (page: number) => {
-      if (page >= 1 && page <= totalPages) {
+      if (page >= 1 && page <= totalPages && page !== currentPage) {
         setCurrentPage(page);
         fetchCandidates(page);
       }
     },
-    [totalPages, fetchCandidates]
+    [totalPages, fetchCandidates, currentPage]
   );
 
- 
   const handleFilterCandidates = useCallback(
     () => navigate("/corporate/filter-candidate"),
     [navigate]
@@ -214,17 +212,21 @@ const CorporateDashboard: React.FC = () => {
     [navigate]
   );
 
-  // Click handlers for cards (can be customized later)
-  const handleCardClick = useCallback((type: string) => {
-    console.log(`Clicked ${type} card`);
-    // Add navigation or filtering logic here if needed
-  }, []);
+  // Click handlers for cards
+  const handleCardClick = useCallback(
+    (type: string) => {
+      console.log(`Clicked ${type} card`);
+      if (type === "Bookmarked") {
+        navigate("/corporate/bookmarked-candidates");
+      }
+      // Add navigation or filtering logic for other types if needed
+    },
+    [navigate]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#f3f2ef] to-[#e5e7eb] flex flex-col lg:flex-row antialiased">
-      {profile && (
-        <ProfileSidebar profile={profile}  />
-      )}
+      {profile && <ProfileSidebar profile={profile} />}
       <main className="flex-1 p-4 lg:p-6">
         {/* Dashboard Header */}
         <motion.div
@@ -247,6 +249,8 @@ const CorporateDashboard: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            whileHover={{ scale: 1.03 }}
             className="bg-gradient-to-br from-[#0077b5] to-[#005885] text-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
             onClick={() => handleCardClick("Bookmarked")}
           >
@@ -271,6 +275,8 @@ const CorporateDashboard: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            whileHover={{ scale: 1.03 }}
             className="bg-gradient-to-br from-[#e0245e] to-[#c01e4e] text-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
             onClick={() => handleCardClick("Wishlisted")}
           >
@@ -295,6 +301,8 @@ const CorporateDashboard: React.FC = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+            whileHover={{ scale: 1.03 }}
             className="bg-gradient-to-br from-[#17bf63] to-[#139f50] text-white rounded-xl shadow-lg p-6 cursor-pointer hover:shadow-xl transition-shadow"
             onClick={() => handleCardClick("Contacted")}
           >
@@ -327,7 +335,7 @@ const CorporateDashboard: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-center mt-6 px-6">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
+            disabled={currentPage === 1 || loading}
             className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium mb-4 sm:mb-0 w-full sm:w-auto"
           >
             Previous
@@ -337,7 +345,7 @@ const CorporateDashboard: React.FC = () => {
           </span>
           <button
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={currentPage === totalPages || loading}
             className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 text-sm font-medium w-full sm:w-auto"
           >
             Next

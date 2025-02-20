@@ -44,10 +44,10 @@ const InterviewerStatistics = () => {
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    if (!statistics) {
+   
       fetchStatistics();
-    }
-  }, [statistics, fetchStatistics]);
+  
+  }, [ fetchStatistics]);
 
   const isLoading = !statistics;
 
