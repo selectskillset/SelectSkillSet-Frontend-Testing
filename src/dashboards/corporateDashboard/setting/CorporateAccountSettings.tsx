@@ -37,7 +37,7 @@ const CorporateAccountSettings: React.FC = () => {
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium text-gray-700">Email</span>
           <span className="text-sm text-gray-600">
-            {profile.email}
+            {/* {profile.email ? profile.email :"N/A"} */}
           </span>
         </div>
         <div className="flex justify-between items-center">
