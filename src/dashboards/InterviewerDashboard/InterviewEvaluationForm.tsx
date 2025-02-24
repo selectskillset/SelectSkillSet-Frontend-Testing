@@ -153,10 +153,10 @@ const InterviewEvaluationForm: React.FC = () => {
               >
                 <div className="relative bg-white rounded-lg p-8 w-11/12 max-w-lg shadow-xl">
                   <h2 className="text-2xl font-semibold text-[#0a66c2] mb-4">
-                    Interview Evaluation Instructions
+                    Candidate Evaluation Instructions
                   </h2>
                   <p className="text-gray-600 mb-4 leading-relaxed">
-                    Interview evaluation forms are to be completed by the
+                  Candidate evaluation forms are to be completed by the
                     interviewer to rank the candidate’s overall qualifications
                     for the position for which they have applied. Use the
                     following scale for your evaluation:
@@ -191,7 +191,7 @@ const InterviewEvaluationForm: React.FC = () => {
             <div className="bg-white w-full max-w-3xl shadow-xl rounded-lg overflow-hidden">
               <div className="p-6 relative">
                 <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-                  Interview Evaluation Form
+                Candidate Evaluation Form
                 </h1>
                 <button
                   onClick={() => setShowPopup(true)}
