@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useCallback, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import axiosInstance from "../../components/common/axiosConfig";
-import { Check, StarIcon, Info } from "lucide-react";
+import { Check, Star, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../components/ui/Loader";
 
@@ -32,307 +32,392 @@ const descriptions = [
   "How would you rate the overall experience in terms of professionalism, fairness, and insight into the company or role?",
 ];
 
+interface FormState {
+  [key: string]: {
+    rating: number;
+    comments: string;
+  };
+}
+
 const CandidateEvaluationForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState(
+  const [formData, setFormData] = useState<FormState>(
     steps.reduce((acc, step) => {
       acc[step] = { rating: 0, comments: "" };
       return acc;
-    }, {} as Record<string, { rating: number; comments: string }>)
+    }, {} as FormState)
   );
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
-  const [showPopup, setShowPopup] = useState(true);
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false); // Loading state
+  const [showGuidelines, setShowGuidelines] = useState(true);
+  const [showConfirmation, setShowConfirmation] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { interviewerId, interviewRequestId } = useParams();
   const navigate = useNavigate();
+  const { interviewerId, interviewRequestId } = useParams();
 
-  const handleNext = () => {
-    if (
-      formData[steps[currentStep]].rating === 0 ||
-      !formData[steps[currentStep]].comments
-    ) {
-      toast.error("Please provide a rating and comments before proceeding.");
-      return;
+  const handleNavigation = useCallback((direction: "next" | "prev") => {
+    setCurrentStep((prev) => (direction === "next" ? prev + 1 : prev - 1));
+  }, []);
+
+  const validateCurrentStep = useCallback(() => {
+    const current = formData[steps[currentStep]];
+    if (current.rating === 0 || current.comments.trim() === "") {
+      toast.error("Please complete all fields before continuing");
+      return false;
     }
+    return true;
+  }, [currentStep, formData]);
 
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps((prev) => [...prev, currentStep]);
-    }
+  const handleStepProgress = useCallback(() => {
+    if (!validateCurrentStep()) return;
 
-    if (currentStep < steps.length - 1) {
-      setCurrentStep((prev) => prev + 1);
+    setCompletedSteps((prev) =>
+      prev.includes(currentStep) ? prev : [...prev, currentStep]
+    );
+
+    if (currentStep === steps.length - 1) {
+      setShowConfirmation(true);
     } else {
-      setShowConfirmModal(true);
+      handleNavigation("next");
     }
-  };
+  }, [currentStep, handleNavigation, validateCurrentStep]);
 
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep((prev) => prev - 1);
-    }
-  };
+  const handleRatingChange = useCallback(
+    (rating: number) => {
+      setFormData((prev) => ({
+        ...prev,
+        [steps[currentStep]]: { ...prev[steps[currentStep]], rating },
+      }));
+    },
+    [currentStep]
+  );
 
-  const handleRatingChange = (rating: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      [steps[currentStep]]: {
-        ...prev[steps[currentStep]],
-        rating,
-      },
-    }));
-  };
+  const handleCommentsChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      setFormData((prev) => ({
+        ...prev,
+        [steps[currentStep]]: {
+          ...prev[steps[currentStep]],
+          comments: e.target.value,
+        },
+      }));
+    },
+    [currentStep]
+  );
 
-  const handleCommentsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [steps[currentStep]]: {
-        ...prev[steps[currentStep]],
-        comments: e.target.value,
-      },
-    }));
-  };
-
-  const handleSubmit = async () => {
+  const submitEvaluation = useCallback(async () => {
     if (!interviewerId || !interviewRequestId) {
-      toast.error("Invalid candidate ID.");
+      toast.error("Invalid evaluation parameters");
       return;
     }
 
-    setIsLoading(true);
-
+    setIsSubmitting(true);
     try {
       await axiosInstance.post("/candidate/add-interviewer-feedback", {
         interviewerId,
         interviewRequestId,
         feedback: formData,
       });
-      toast.success("Candidate feedback submitted successfully!");
-      setShowConfirmModal(false);
-      setTimeout(() => {
-        navigate("/");
-      }, 1000);
+      toast.success("Evaluation submitted successfully!");
+      navigate("/", { replace: true });
     } catch (error) {
-      toast.error(error.response?.data?.message || "Submission failed.");
+      toast.error(error.response?.data?.message || "Submission failed");
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
-  };
+  }, [interviewerId, interviewRequestId, formData, navigate]);
 
-  const handleCancel = () => {
-    setShowConfirmModal(false);
-  };
+  useEffect(() => {
+    const handleKeyNavigation = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && currentStep > 0) {
+        handleNavigation("prev");
+      } else if (e.key === "ArrowRight" && currentStep < steps.length - 1) {
+        handleNavigation("next");
+      }
+    };
 
-  const handleStepClick = (index: number) => {
-    setCurrentStep(index);
-  };
+    window.addEventListener("keydown", handleKeyNavigation);
+    return () => window.removeEventListener("keydown", handleKeyNavigation);
+  }, [currentStep, handleNavigation]);
 
   return (
-    <>
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <>
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
+      <AnimatePresence>
+        {showGuidelines && (
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.3 }}
-            className="min-h-screen bg-[#f3f2ef] p-4 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+            onClick={() => setShowGuidelines(false)}
           >
-            {showPopup && (
-              <div
-                onClick={(e) =>
-                  (e.target as HTMLElement).classList.contains(
-                    "popup-container"
-                  ) && setShowPopup(false)
-                }
-                className="popup-container fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-              >
-                <div className="relative bg-white rounded-lg p-8 w-11/12 max-w-lg shadow-xl">
-                  <h2 className="text-2xl font-semibold text-[#0a66c2] mb-4">
-                  interviewer Evaluation Instructions
-                  </h2>
-                  <p className="text-gray-600 mb-4 leading-relaxed">
-                  interviewer evaluation forms are to be completed by the
-                    candidate to rank the interviewer’s overall performance
-                    during the interview. Use the following scale for your
-                    evaluation:
-                  </p>
-                  <ul className="list-disc list-inside text-gray-700 space-y-2 mb-4">
-                    <li>
-                      <strong>5 – Exceptional:</strong> Outstanding
-                      capabilities.
-                    </li>
-                    <li>
-                      <strong>4 – Above Average:</strong> Exceeds expectations.
-                    </li>
-                    <li>
-                      <strong>3 – Average:</strong> Meets expectations.
-                    </li>
-                    <li>
-                      <strong>2 – Satisfactory:</strong> Acceptable performance.
-                    </li>
-                    <li>
-                      <strong>1 – Unsatisfactory:</strong> Below requirements.
-                    </li>
-                  </ul>
-                  <button
-                    onClick={() => setShowPopup(false)}
-                    className="px-4 py-2 bg-[#0a66c2] text-white rounded-lg hover:bg-[#084694]"
-                  >
-                    Close
-                  </button>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-white w-full max-w-3xl shadow-xl rounded-lg overflow-hidden">
-              <div className="p-6 relative">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-                interviewer Evaluation Form
-                </h1>
-                <button
-                  onClick={() => setShowPopup(true)}
-                  className="absolute top-4 right-4 text-[#0a66c2] hover:text-[#084694]"
-                >
-                  <Info size={24} />
-                </button>
-
-                {/* Step Indicator */}
-                <div className="flex justify-center gap-2 overflow-x-auto mb-8">
-                  {steps.map((_, index) => (
-                    <div key={index} className="flex flex-col items-center">
-                      <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold cursor-pointer ${
-                          index === currentStep
-                            ? "bg-[#0a66c2] text-white"
-                            : completedSteps.includes(index)
-                            ? "bg-green-500 text-white"
-                            : "bg-gray-300 text-gray-700"
-                        }`}
-                        onClick={() => handleStepClick(index)}
-                      >
-                        {completedSteps.includes(index) ? (
-                          <Check size={20} />
-                        ) : (
-                          index + 1
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <h2 className="text-lg font-semibold text-gray-700">
-                  {steps[currentStep]}
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  Evaluation Guidelines
                 </h2>
+                <button
+                  onClick={() => setShowGuidelines(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
+              </div>
+              <div className="space-y-4 text-gray-600">
+                <p className="leading-relaxed">
+                  Please rate the interview using the following scale:
+                </p>
+                <ul className="space-y-3">
+                  {[5, 4, 3, 2, 1].map((rating) => (
+                    <li key={rating} className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+                        {rating}
+                      </div>
+                      <span className="font-medium">
+                        {
+                          [
+                            "Exceptional - Outstanding experience",
+                            "Above Average - Exceeds expectations",
+                            "Average - Meets requirements",
+                            "Satisfactory - Needs improvement",
+                            "Unsatisfactory - Below standards",
+                          ][5 - rating]
+                        }
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <motion.div
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        className="max-w-4xl mx-auto bg-white rounded-2xl shadow-sm"
+      >
+        <div className="p-6 md:p-8">
+          <div className="flex items-center justify-between mb-8">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Interviewer Evaluation
+            </h1>
+            <button
+              onClick={() => setShowGuidelines(true)}
+              className="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-gray-100"
+            >
+              <Info size={20} />
+            </button>
+          </div>
+
+          <div className="mb-8 overflow-x-auto pb-2">
+            <div className="flex gap-2">
+              {steps.map((step, index) => (
+                <button
+                  key={step}
+                  onClick={() => setCurrentStep(index)}
+                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    currentStep === index
+                      ? "bg-blue-100 text-blue-600"
+                      : completedSteps.includes(index)
+                      ? "bg-green-100 text-green-600"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
+                >
+                  {completedSteps.includes(index) ? (
+                    <span className="flex items-center gap-2">
+                      <Check size={14} /> {index + 1}
+                    </span>
+                  ) : (
+                    `Step ${index + 1}`
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentStep}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              className="space-y-8"
+            >
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {steps[currentStep]}
+                </h3>
                 <p className="text-gray-600 mt-2">
                   {descriptions[currentStep]}
                 </p>
+              </div>
 
-                <div className="mt-6">
-                  <label className="block text-gray-600 font-medium">
-                    Rating
+              <div className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Performance Rating
                   </label>
-                  <div className="flex gap-3 mt-3">
-                    {[1, 2, 3, 4, 5].map((star) => (
+                  <div className="flex gap-2 flex-wrap">
+                    {[1, 2, 3, 4, 5].map((rating) => (
                       <button
-                        key={star}
-                        onClick={() => handleRatingChange(star)}
-                        className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition ${
-                          formData[steps[currentStep]].rating >= star
-                            ? "bg-yellow-500 text-white shadow-md shadow-yellow-400 border-yellow-400"
-                            : "bg-white border-gray-300 hover:border-yellow-500"
+                        key={rating}
+                        onClick={() => handleRatingChange(rating)}
+                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                          formData[steps[currentStep]].rating >= rating
+                            ? "bg-blue-500 text-white shadow-lg"
+                            : "bg-gray-100 text-gray-400 hover:bg-blue-50"
                         }`}
                       >
-                        <StarIcon size={20} />
+                        <Star
+                          size={20}
+                          fill={
+                            formData[steps[currentStep]].rating >= rating
+                              ? "currentColor"
+                              : "none"
+                          }
+                        />
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="mt-6">
-                  <label className="block text-gray-600 font-medium">
-                    Comments
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Detailed Feedback
                   </label>
                   <textarea
                     value={formData[steps[currentStep]].comments}
                     onChange={handleCommentsChange}
-                    placeholder="Enter your comments here"
-                    className="w-full mt-3 p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring focus:ring-[#0a66c2]"
+                    placeholder="Provide specific examples and observations..."
+                    className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    rows={4}
                   />
                 </div>
-
-                <div className="flex justify-between mt-10">
-                  <button
-                    onClick={handlePrevious}
-                    disabled={currentStep === 0}
-                    className="px-6 py-2 bg-gray-200 text-gray-600 rounded-lg disabled:opacity-50"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNext}
-                    className="px-6 py-2 bg-[#0a66c2] text-white rounded-lg hover:bg-[#084694]"
-                  >
-                    {currentStep < steps.length - 1 ? "Next" : "Submit"}
-                  </button>
-                </div>
               </div>
+            </motion.div>
+          </AnimatePresence>
+
+          <div className="mt-10 flex items-center justify-between">
+            <button
+              onClick={() => handleNavigation("prev")}
+              disabled={currentStep === 0}
+              className="px-4 py-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 flex items-center gap-2"
+            >
+              <ChevronLeft size={18} />
+              <span className="hidden sm:inline">Previous</span>
+            </button>
+
+            <div className="text-sm text-gray-500">
+              {currentStep + 1} of {steps.length}
             </div>
 
-            {/* Loader Spinner */}
-            {isLoading && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="spinner-border animate-spin inline-block w-12 h-12 border-4 border-solid border-current border-t-transparent rounded-full"></div>
-              </div>
-            )}
+            <button
+              onClick={handleStepProgress}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+            >
+              {currentStep === steps.length - 1 ? (
+                "Review and Submit"
+              ) : (
+                <>
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight size={18} />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
-            {/* Confirmation Modal */}
-            {showConfirmModal && (
-              <div
-                onClick={(e) =>
-                  (e.target as HTMLElement).classList.contains(
-                    "popup-container"
-                  ) && setShowConfirmModal(false)
-                }
-                className="popup-container fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50"
-              >
-                <div className="relative bg-white rounded-lg p-6 w-11/12 max-w-lg shadow-xl">
-                  <h2 className="text-2xl font-semibold text-[#0a66c2] mb-4">
-                    Confirm Submission
-                  </h2>
-                  <div className="overflow-y-auto max-h-80">
-                    {steps.map((step, index) => (
-                      <div key={index} className="mb-3">
-                        <p className="font-semibold">{step}</p>
-                        <p>Rating: {formData[step].rating}</p>
-                        <p>Comments: {formData[step].comments}</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex gap-4 mt-6">
-                    <button
-                      onClick={handleSubmit}
-                      className="px-6 py-2 bg-[#0a66c2] text-white rounded-lg hover:bg-[#084694]"
-                    >
-                      Confirm
-                    </button>
-                    <button
-                      onClick={handleCancel}
-                      className="px-6 py-2 bg-gray-200 text-gray-600 rounded-lg"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
+      <AnimatePresence>
+        {showConfirmation && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+          >
+            <motion.div
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl"
+            >
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Confirm Evaluation
+                </h2>
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X size={24} />
+                </button>
               </div>
-            )}
+
+              <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+                {steps.map((step, index) => (
+                  <div key={step} className="p-4 bg-gray-50 rounded-lg">
+                    <h3 className="font-medium text-gray-900 mb-2">{step}</h3>
+                    <div className="flex items-center gap-2 text-sm mb-2">
+                      <Star
+                        size={16}
+                        className={`${
+                          formData[step].rating >= 3
+                            ? "text-green-500"
+                            : "text-yellow-500"
+                        }`}
+                        fill="currentColor"
+                      />
+                      <span
+                        className={`font-medium ${
+                          formData[step].rating >= 3
+                            ? "text-green-600"
+                            : "text-yellow-600"
+                        }`}
+                      >
+                        {formData[step].rating}/5
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm whitespace-pre-wrap">
+                      {formData[step].comments}
+                    </p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
+                <button
+                  onClick={() => setShowConfirmation(false)}
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  Edit Evaluation
+                </button>
+                <button
+                  onClick={submitEvaluation}
+                  disabled={isSubmitting}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-75 flex items-center gap-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader className="w-4 h-4" />
+                      Submitting...
+                    </>
+                  ) : (
+                    "Confirm Submission"
+                  )}
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
-        </>
-      )}
-    </>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

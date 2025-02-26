@@ -244,17 +244,7 @@ export const Navbar = () => {
           >
             Dashboard
           </Link>
-          <Link
-            to="/corporate-bookmarked"
-            className={`${tabClass} ${
-              isActive("/corporate-bookmarked")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Bookmarked
-          </Link>
+          
           <Link
             to="/corporate-settings"
             className={`${tabClass} ${

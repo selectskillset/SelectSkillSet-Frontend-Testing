@@ -1,11 +1,4 @@
-// src/components/CandidateProfilePage.tsx
-import React, {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useMemo,
-} from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import toast from "react-hot-toast";
 import axiosInstance from "../../components/common/axiosConfig";
 import { useParams } from "react-router-dom";
@@ -18,10 +11,23 @@ import {
   Bookmark,
   Heart,
   Star,
+  X,
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
 
-// Interface matching your API response
+interface Feedback {
+  interviewRequestId: string;
+  feedbackData: Record<
+    string,
+    {
+      rating: number;
+      comments: string;
+    }
+  >;
+  rating: number;
+  _id: string;
+}
+
 interface Candidate {
   _id: string;
   firstName: string;
@@ -34,12 +40,19 @@ interface Candidate {
   linkedIn: string;
   resume: string;
   skills: string[];
-  statistics: { averageRating: number };
+  statistics: {
+    averageRating: number;
+    feedbacks: Feedback[];
+  };
 }
 
 const CandidateProfilePage = () => {
   const { id } = useParams<{ id: string }>();
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
+  const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
+    null
+  );
 
   const [state, setState] = useState<{
     candidate: Candidate | null;
@@ -57,16 +70,13 @@ const CandidateProfilePage = () => {
     error: null,
   });
 
-  // Fetch candidate data with error handling
   const fetchCandidate = useCallback(async () => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));
     try {
       const { data } = await axiosInstance.get(
         `/corporate/getOneCandidate/${id}`
       );
-      console.log("API Response:", data); // Debug: Log the full response
 
-      // Since your response is the candidate object directly
       if (data && data._id) {
         setState((prev) => ({ ...prev, candidate: data }));
       } else {
@@ -87,7 +97,6 @@ const CandidateProfilePage = () => {
     fetchCandidate();
   }, [fetchCandidate]);
 
-  // Handle clicks outside dropdown
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -101,7 +110,6 @@ const CandidateProfilePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Handlers for actions
   const toggleBookmark = useCallback(() => {
     setState((prev) => {
       const newState = { ...prev, isBookmarked: !prev.isBookmarked };
@@ -137,17 +145,109 @@ const CandidateProfilePage = () => {
     }
   }, [state.candidate?.email]);
 
-  // Memoized derived values
   const fullPhoneNumber = useMemo(() => {
     return state.candidate?.countryCode && state.candidate?.phoneNumber
       ? `${state.candidate.countryCode} ${state.candidate.phoneNumber}`
       : state.candidate?.phoneNumber || "Not provided";
   }, [state.candidate]);
 
+  const openFeedbackModal = (feedback: Feedback) => {
+    setSelectedFeedback(feedback);
+    setIsFeedbackModalOpen(true);
+  };
+
+  const closeFeedbackModal = () => {
+    setIsFeedbackModalOpen(false);
+    setSelectedFeedback(null);
+  };
+
+  const renderFeedbackModal = () => (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+      onClick={closeFeedbackModal}
+    >
+      <motion.div
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xl font-semibold text-[#0077b5]">
+              Detailed Feedback
+            </h3>
+            <button
+              onClick={closeFeedbackModal}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
+
+          {selectedFeedback && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 sm:col-span-1">
+                  <h4 className="text-sm font-medium text-gray-500 mb-2">
+                    Overall Rating
+                  </h4>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      {[...Array(5)].map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.round(selectedFeedback.rating)
+                              ? "text-yellow-400 fill-current"
+                              : "text-gray-300"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-lg font-medium text-gray-700">
+                      {selectedFeedback.rating.toFixed(1)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-[#0077b5]">
+                  Category Ratings
+                </h4>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {Object.entries(selectedFeedback.feedbackData).map(
+                    ([category, data]) => (
+                      <div key={category} className="bg-gray-50 p-4 rounded-lg">
+                        <div className="flex justify-between items-start mb-2">
+                          <h5 className="font-medium text-gray-700">
+                            {category}
+                          </h5>
+                          <span className="text-sm bg-[#0077b5] text-white px-2 py-1 rounded-full">
+                            {data.rating}/5
+                          </span>
+                        </div>
+                        <p className="text-gray-600 text-sm">
+                          {data.comments || "No comments provided"}
+                        </p>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+
   return (
     <div className="min-h-screen bg-[#f3f2ef] antialiased">
-      {/* Suspension Warning Banner */}
-
       <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {state.isLoading ? (
           <ProfileSkeletonLoader />
@@ -192,7 +292,6 @@ const CandidateProfilePage = () => {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="flex items-center gap-3 flex-wrap">
                 <button
                   onClick={toggleBookmark}
@@ -229,9 +328,7 @@ const CandidateProfilePage = () => {
               </div>
             </motion.div>
 
-            {/* Details Section */}
             <div className="grid gap-6 md:grid-cols-2">
-              {/* Contact Information */}
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -270,7 +367,6 @@ const CandidateProfilePage = () => {
                 </div>
               </motion.div>
 
-              {/* Skills and Resume */}
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -316,7 +412,6 @@ const CandidateProfilePage = () => {
               </motion.div>
             </div>
 
-            {/* Additional Info */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -324,17 +419,95 @@ const CandidateProfilePage = () => {
               className="bg-white rounded-xl shadow-md p-6"
             >
               <h2 className="text-lg font-semibold text-[#0077b5] mb-4">
-                Additional Information
+                Performance Overview
               </h2>
-              <div className="space-y-2 text-gray-700 text-sm">
-                <p>
-                  <strong>Average Rating:</strong>{" "}
-                  {state.candidate.statistics.averageRating.toFixed(1)} / 5
-                </p>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="col-span-2 sm:col-span-1">
+                  <div className="bg-[#f8f9fa] p-4 rounded-lg">
+                    <h3 className="text-sm font-medium text-gray-500 mb-2">
+                      Average Rating
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      <div className="text-3xl font-bold text-[#0077b5]">
+                        {state.candidate.statistics.averageRating.toFixed(1)}
+                      </div>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={`w-5 h-5 ${
+                              i <
+                              Math.round(
+                                state.candidate.statistics.averageRating
+                              )
+                                ? "text-yellow-400 fill-current"
+                                : "text-gray-300"
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="text-lg font-semibold text-[#0077b5]">
+                    Interview Feedback History
+                  </h3>
+                  <span className="text-sm text-gray-500">
+                    {state.candidate.statistics.feedbacks.length} records
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {state.candidate.statistics.feedbacks.map(
+                    (feedback, index) => (
+                      <motion.div
+                        key={feedback._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: index * 0.1 }}
+                        className="group bg-white hover:bg-gray-50 border rounded-lg p-4 cursor-pointer transition-all"
+                        onClick={() => openFeedbackModal(feedback)}
+                      >
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <h4 className="font-medium text-gray-700">
+                              Interview #{index + 1}
+                            </h4>
+                            <p className="text-sm text-gray-500">
+                              {new Date(feedback._id).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${
+                                    i < Math.round(feedback.rating)
+                                      ? "text-yellow-400 fill-current"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-sm font-medium text-gray-700">
+                              {feedback.rating.toFixed(1)}
+                            </span>
+                          </div>
+                        </div>
+                      </motion.div>
+                    )
+                  )}
+                </div>
               </div>
             </motion.div>
           </div>
         )}
+        {isFeedbackModalOpen && renderFeedbackModal()}
       </main>
     </div>
   );

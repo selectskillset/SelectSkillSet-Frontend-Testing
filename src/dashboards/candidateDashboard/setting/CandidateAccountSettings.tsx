@@ -5,7 +5,7 @@ import { useCandidateContext } from "../../../context/CandidateContext";
 
 const CandidateAccountSettings: React.FC = () => {
   const navigate = useNavigate();
-  const { profile} = useCandidateContext();
+  const { profile} = useCandidateContext()
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Handle Logout
@@ -37,7 +37,7 @@ const CandidateAccountSettings: React.FC = () => {
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium text-gray-700">Email</span>
           <span className="text-sm text-gray-600">
-            {profile.email} 
+            {profile?.email  || "Loading..."} 
           </span>
         </div>
         <div className="flex justify-between items-center">

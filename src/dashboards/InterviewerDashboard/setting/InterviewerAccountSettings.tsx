@@ -39,7 +39,7 @@ const InterviewerAccountSettings: React.FC = () => {
         <div className="flex justify-between items-center">
           <span className="text-sm font-medium text-gray-700">Email</span>
           <span className="text-sm text-gray-600">
-            {profile?.email || "Loading..."} {/* Display email from context */}
+            {profile?.email || "Loading..."}
           </span>
         </div>
         <div className="flex justify-between items-center">

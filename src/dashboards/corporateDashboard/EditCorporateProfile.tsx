@@ -206,6 +206,7 @@ const EditCorporateProfile = () => {
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
             {[
               "contactName",
               "email",
@@ -215,7 +216,10 @@ const EditCorporateProfile = () => {
             ].map((field) => (
               <div key={field}>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  {field.replace(/([A-Z])/g, " $1").trim()}
+                  {field
+                    .replace(/([A-Z])/g, " $1") // Add space before capital letters
+                    .replace(/^./, (str) => str.toUpperCase()) // Capitalize first letter
+                    .trim()}
                 </label>
                 <input
                   value={profile[field as keyof ProfileState]}
@@ -230,14 +234,14 @@ const EditCorporateProfile = () => {
                   } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
                   placeholder={`Enter ${field
                     .replace(/([A-Z])/g, " $1")
-                    .toLowerCase()}`}
+                    .toLowerCase()
+                    .replace(/^./, (str) => str.toUpperCase())}`}
                 />
                 {errors[field] && (
                   <p className="mt-1.5 text-sm text-red-600">{errors[field]}</p>
                 )}
               </div>
             ))}
-
             {/* Country Selector */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -265,7 +269,6 @@ const EditCorporateProfile = () => {
                 </div>
               </div>
             </div>
-
             {/* Phone Number Field */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

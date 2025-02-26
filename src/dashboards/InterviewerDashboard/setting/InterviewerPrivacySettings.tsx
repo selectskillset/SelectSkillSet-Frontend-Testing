@@ -47,34 +47,7 @@ const InterviewerPrivacySettings: React.FC = () => {
           </label>
         </div>
 
-        {/* Activity Visibility */}
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm font-medium text-gray-800">
-              Activity Visibility
-            </p>
-            <p className="text-xs text-gray-500">
-              Control who can see your activity on the platform.
-            </p>
-          </div>
-          <select className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-[#0A66C2]">
-            <option value="public">Public</option>
-            <option value="private">Private</option>
-          </select>
-        </div>
-
-        {/* Session Management */}
-        <div className="flex justify-between items-center">
-          <div>
-            <p className="text-sm font-medium text-gray-800">Active Sessions</p>
-            <p className="text-xs text-gray-500">
-              View and manage your active sessions.
-            </p>
-          </div>
-          <button className="text-[#0A66C2] hover:text-[#005885] transition duration-300 text-sm font-medium">
-            Manage Sessions
-          </button>
-        </div>
+       
       </div>
     </div>
   );
