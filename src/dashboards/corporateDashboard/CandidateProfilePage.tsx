@@ -459,7 +459,7 @@ const CandidateProfilePage = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <h3 className="text-lg font-semibold text-[#0077b5]">
-                    Interview Feedback History
+                    Interview Feedbacks
                   </h3>
                   <span className="text-sm text-gray-500">
                     {state.candidate.statistics.feedbacks.length} records
