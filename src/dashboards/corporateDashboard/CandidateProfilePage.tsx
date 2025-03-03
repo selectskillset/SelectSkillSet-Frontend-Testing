@@ -304,7 +304,11 @@ const CandidateProfilePage = () => {
                   <div className="flex items-center gap-2 mt-1">
                     <Star className="w-4 h-4 text-yellow-400 fill-current" />
                     <span className="text-gray-700 text-sm">
-                      {state.candidate.statistics.averageRating.toFixed(1)} / 5
+                      {state.candidate?.statistics?.averageRating != null
+                        ? `${state.candidate.statistics.averageRating.toFixed(
+                            1
+                          )} / 5`
+                        : 0}
                     </span>
                   </div>
                 </div>
@@ -320,10 +324,10 @@ const CandidateProfilePage = () => {
                   <Bookmark
                     size={20}
                     fill={state.isBookmarked ? "currentColor" : "none"}
-                    />
-                    <span>{state.isBookmarked ? "Bookmarked" : "Bookmark"}</span>
+                  />
+                  <span>{state.isBookmarked ? "Bookmarked" : "Bookmark"}</span>
                 </button>
-                
+
                 <button
                   onClick={handleEmailContact}
                   className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] transition-colors text-sm font-medium"
@@ -434,7 +438,11 @@ const CandidateProfilePage = () => {
                     </h3>
                     <div className="flex items-center gap-3">
                       <div className="text-3xl font-bold text-[#0077b5]">
-                        {state.candidate.statistics.averageRating.toFixed(1)}
+                        {state.candidate?.statistics?.averageRating != null
+                          ? `${state.candidate.statistics.averageRating.toFixed(
+                              1
+                            )} / 5`
+                          : 0}
                       </div>
                       <div className="flex items-center">
                         {[...Array(5)].map((_, i) => (
