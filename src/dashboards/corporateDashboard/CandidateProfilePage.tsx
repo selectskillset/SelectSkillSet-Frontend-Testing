@@ -25,6 +25,7 @@ interface Feedback {
     }
   >;
   rating: number;
+  date: string;
   _id: string;
 }
 
@@ -44,6 +45,7 @@ interface Candidate {
     averageRating: number;
     feedbacks: Feedback[];
   };
+  isBookmarked: boolean;
 }
 
 const CandidateProfilePage = () => {
@@ -78,7 +80,11 @@ const CandidateProfilePage = () => {
       );
 
       if (data && data._id) {
-        setState((prev) => ({ ...prev, candidate: data }));
+        setState((prev) => ({
+          ...prev,
+          candidate: data,
+          isBookmarked: data.isBookmarked,
+        }));
       } else {
         throw new Error("No valid candidate data found in response");
       }
@@ -110,18 +116,30 @@ const CandidateProfilePage = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const toggleBookmark = useCallback(() => {
-    setState((prev) => {
-      const newState = { ...prev, isBookmarked: !prev.isBookmarked };
+  const toggleBookmark = useCallback(async () => {
+    try {
+      const endpoint = state.isBookmarked
+        ? "/corporate/unbookmarkCandidate"
+        : "/corporate/bookmarkCandidate";
+
+      // Optimistic update
+      setState((prev) => ({ ...prev, isBookmarked: !prev.isBookmarked }));
+
+      await axiosInstance.post(endpoint, { candidateId: id });
+
       toast.success(
-        newState.isBookmarked
-          ? "Candidate bookmarked"
-          : "Removed from bookmarks",
-        { duration: 2000 }
+        state.isBookmarked ? "Removed from bookmarks" : "Candidate bookmarked",
+        {
+          duration: 2000,
+        }
       );
-      return newState;
-    });
-  }, []);
+    } catch (error) {
+      // Rollback on error
+      setState((prev) => ({ ...prev, isBookmarked: !prev.isBookmarked }));
+      toast.error("Failed to update bookmark");
+      console.error("Bookmark error:", error);
+    }
+  }, [id, state.isBookmarked]);
 
   const toggleWishlist = useCallback(() => {
     setState((prev) => {
@@ -294,31 +312,18 @@ const CandidateProfilePage = () => {
 
               <div className="flex items-center gap-3 flex-wrap">
                 <button
+                  className={`flex items-center space-x-2 ${
+                    state.isBookmarked ? "text-yellow-500" : "text-gray-500"
+                  }`}
                   onClick={toggleBookmark}
-                  className={`p-2 rounded-full ${
-                    state.isBookmarked
-                      ? "bg-[#0077b5] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  } hover:bg-[#005885] hover:text-white transition-colors`}
-                  title={state.isBookmarked ? "Remove Bookmark" : "Bookmark"}
                 >
-                  <Bookmark className="w-5 h-5" />
+                  <Bookmark
+                    size={20}
+                    fill={state.isBookmarked ? "currentColor" : "none"}
+                    />
+                    <span>{state.isBookmarked ? "Bookmarked" : "Bookmark"}</span>
                 </button>
-                <button
-                  onClick={toggleWishlist}
-                  className={`p-2 rounded-full ${
-                    state.isWishlisted
-                      ? "bg-red-500 text-white"
-                      : "bg-gray-100 text-gray-600"
-                  } hover:bg-red-600 hover:text-white transition-colors`}
-                  title={
-                    state.isWishlisted
-                      ? "Remove from Wishlist"
-                      : "Add to Wishlist"
-                  }
-                >
-                  <Heart className="w-5 h-5" />
-                </button>
+                
                 <button
                   onClick={handleEmailContact}
                   className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] transition-colors text-sm font-medium"
@@ -478,7 +483,7 @@ const CandidateProfilePage = () => {
                               Interview #{index + 1}
                             </h4>
                             <p className="text-sm text-gray-500">
-                              {new Date(feedback._id).toLocaleDateString()}
+                              {feedback.date}
                             </p>
                           </div>
                           <div className="flex items-center gap-2">
