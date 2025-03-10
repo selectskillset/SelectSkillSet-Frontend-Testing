@@ -2,6 +2,7 @@ import React, { useCallback, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useCandidateContext } from "../../context/CandidateContext";
 import CandidateStatistics from "./CandidateStatistics";
+import CandidateProfileCompletion from "./CandidateProfileCompletion";
 
 const CandidateDashboard: React.FC = () => {
   const { profile, isLoading, fetchProfile, error } = useCandidateContext();
@@ -9,7 +10,6 @@ const CandidateDashboard: React.FC = () => {
   // Fetch profile data on mount if not already fetched
   useEffect(() => {
     if (!profile) {
-    
       fetchProfile();
     }
   }, [profile, fetchProfile]);
@@ -24,7 +24,6 @@ const CandidateDashboard: React.FC = () => {
         <table className="w-full border-separate border-spacing-2">
           <tbody>
             {[
-             
               { label: "Email", value: profile.email },
               { label: "Location", value: profile.location },
               { label: "Phone Number", value: profile.phoneNumber },
@@ -98,7 +97,7 @@ const CandidateDashboard: React.FC = () => {
     >
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* Sidebar */}
-        <aside className="w-full bg-white shadow-xl rounded-lg p-6 border-r border-gray-200 space-y-6 md:sticky top-28 h-[600px] md:overflow-y-auto">
+        <aside className="w-full bg-white shadow-xl rounded-lg p-6 border-r border-gray-200 space-y-6 md:sticky top-28 h-max md:overflow-y-auto ">
           <div className="space-y-4">
             <img
               src={profile?.profilePhoto || "/default-profile.png"}
@@ -133,6 +132,7 @@ const CandidateDashboard: React.FC = () => {
         </aside>
         {/* Main Content */}
         <main className="md:col-span-3 space-y-8">
+          <CandidateProfileCompletion />
           {renderProfileDetails()}
           <CandidateStatistics />
         </main>

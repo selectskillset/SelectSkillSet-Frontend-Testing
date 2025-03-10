@@ -6,6 +6,7 @@ import { InterviewerContext } from "../../context/InterviewerContext";
 import InterviewerStatistics from "./InterviewerStatistics";
 import profileimg from "../../images/interviewerProfile.png";
 import InterviewerDashboardSkeletonLoader from "../../components/ui/InterviewerDashboardSkeleton";
+import InterviewerProfileCompletion from "./InterviewerProfileCompletion";
 
 const InterviewerDashboard = () => {
   const { profile, fetchProfile } = useContext(InterviewerContext);
@@ -52,8 +53,11 @@ const InterviewerDashboard = () => {
           {/* Profile Sidebar */}
           <ProfileSidebar profile={profile} navigate={navigate} />
           {/* Main Content */}
-          <div className="flex-1 space-y-10 w-full md:w-1/4 h-full bg-white shadow-lg rounded-lg p-6">
-            <InterviewerStatistics />
+          <div className="flex-1 space-y-10 w-full md:w-1/4 h-full">
+            <InterviewerProfileCompletion />
+            <div className=" bg-white shadow-lg rounded-lg p-6">
+              <InterviewerStatistics />
+            </div>
           </div>
         </div>
       </div>
