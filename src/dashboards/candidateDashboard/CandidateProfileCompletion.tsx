@@ -87,7 +87,7 @@ const CandidateProfileCompletion = () => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 border border-gray-100"
+      className=" mx-auto bg-white rounded-xl shadow-lg p-6 border border-gray-100"
     >
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
@@ -164,11 +164,6 @@ const CandidateProfileCompletion = () => {
             </div>
           </motion.div>
         ))}
-      </div>
-
-      <div className="bg-[#FFF7E0] border border-[#FFD500] rounded-lg p-4 text-sm text-[#6A5B00]">
-        A complete profile increases your chances of being noticed by employers
-        by 80%
       </div>
     </motion.div>
   );
