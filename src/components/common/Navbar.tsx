@@ -262,9 +262,9 @@ export const Navbar = () => {
       return (
         <>
           <Link
-            to="/admin-users"
+            to="/admin/dashboard/profiles"
             className={`${tabClass} ${
-              isActive("/admin-users")
+              isActive("/admin/dashboard/profiles")
                 ? "text-[#0077B5] font-bold underline"
                 : ""
             }`}
@@ -273,9 +273,9 @@ export const Navbar = () => {
             Users
           </Link>
           <Link
-            to="/admin-settings"
+            to="/admin/settings"
             className={`${tabClass} ${
-              isActive("/admin-settings")
+              isActive("/admin/settings")
                 ? "text-[#0077B5] font-bold underline"
                 : ""
             }`}

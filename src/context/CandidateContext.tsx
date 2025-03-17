@@ -23,6 +23,16 @@ export interface Statistics {
   feedbacks: Feedback[];
 }
 
+// Define Interview Interface
+export interface Interview {
+  id: string;
+  name: string;
+  date: string;
+  time: string;
+  status: string;
+  [key: string]: any; // Allow additional properties
+}
+
 // Create Context
 const CandidateContext = createContext<any>(null);
 
@@ -44,7 +54,7 @@ export const CandidateProvider = ({
   children: React.ReactNode;
 }) => {
   const [profile, setProfile] = useState<any>(null);
-  const [interviews, setInterviews] = useState<any[]>([]);
+  const [interviews, setInterviews] = useState<Interview[]>([]);
   const [statistics, setStatistics] = useState<Statistics | null>(null);
   const [interviewers, setInterviewers] = useState<any[]>([]); // New state for interviewers
   const [isLoadingProfile, setIsLoadingProfile] = useState(false);
@@ -181,6 +191,52 @@ export const CandidateProvider = ({
     }
   }, []);
 
+  // Reschedule Interview Function
+  const rescheduleInterview = useCallback(
+    async (
+      id: string,
+      updateData: {
+        newDate: string;
+        isoDate: string;
+        from: string;
+        to: string;
+      }
+    ) => {
+      try {
+        setIsLoadingInterviews(true);
+        const { data } = await axiosInstance.put<{
+          success: boolean;
+          interview: Interview;
+        }>("/candidate/rescheduleInterviewRequest", {
+          interviewRequestId: id,
+          ...updateData
+        });
+  
+        if (data.success) {
+          setInterviews(prev =>
+            prev.map(interview =>
+              interview.id === id
+                ? {
+                    ...interview,
+                    date: updateData.newDate,
+                    time: `${updateData.from} - ${updateData.to}`,
+                    status: "RescheduleRequested"
+                  }
+                : interview
+            )
+          );
+        }
+        return data;
+      } catch (error: any) {
+        console.error("Error rescheduling interview:", error);
+        throw error;
+      } finally {
+        setIsLoadingInterviews(false);
+      }
+    },
+    []
+  );
+
   return (
     <CandidateContext.Provider
       value={{
@@ -198,6 +254,7 @@ export const CandidateProvider = ({
         fetchInterviewers, // Add fetchInterviewers function
         error,
         updateProfile,
+        rescheduleInterview,
       }}
     >
       {children}

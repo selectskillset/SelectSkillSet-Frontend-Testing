@@ -1,3 +1,4 @@
+// InterviewerContext.tsx
 import React, { createContext, useState, useCallback, useEffect } from "react";
 import axiosInstance from "../components/common/axiosConfig";
 
@@ -14,7 +15,7 @@ interface InterviewRequest {
   profilePhoto: string | null;
   position: string;
   date: string;
-  day: string;
+  time: string;
   status: string;
 }
 
@@ -26,13 +27,13 @@ interface Profile {
   jobTitle: string;
   profilePhoto: string;
   skills: string[];
-  interviewRequests: any[];
+  interviewRequests: InterviewRequest[];
   completedInterviews: number;
   pendingRequests: number;
   totalAccepted: number;
   averageRating: number;
   feedbacks: any[];
-  availability: any[];
+  availability: Availability[];
 }
 
 interface Feedback {
@@ -44,7 +45,7 @@ interface Feedback {
   profilePhoto: string;
 }
 
-interface InterviewerStatisticsType {
+interface InterviewerStatistics {
   completedInterviews: number;
   pendingRequests: number;
   totalAccepted: number;
@@ -56,27 +57,23 @@ interface InterviewerStatisticsType {
 interface InterviewerContextType {
   availabilities: Availability[];
   fetchAvailabilities: () => Promise<void>;
-  addAvailability: (data: {
-    date: string;
-    from: string;
-    to: string;
-  }) => Promise<void>;
+  addAvailability: (data: Availability) => Promise<void>;
   deleteAvailability: (id: string) => Promise<void>;
-
-  // Interview Requests
   interviewRequests: InterviewRequest[];
   fetchInterviewRequests: () => Promise<void>;
   updateInterviewRequest: (
     id: string,
     status: "Approved" | "Cancelled"
   ) => Promise<void>;
-
-  // Profile
   profile: Profile | null;
   fetchProfile: () => Promise<void>;
-
-  statistics: InterviewerStatisticsType | null;
+  statistics: InterviewerStatistics | null;
   fetchStatistics: () => Promise<void>;
+  rescheduleInterviewRequest: (
+    id: string,
+    newDate: string,
+    newTime: string
+  ) => Promise<void>;
 }
 
 export const InterviewerContext = createContext<InterviewerContextType | null>(
@@ -91,82 +88,75 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
     InterviewRequest[]
   >([]);
   const [profile, setProfile] = useState<Profile | null>(null);
-  const [statistics, setStatistics] =
-    useState<InterviewerStatisticsType | null>(null);
+  const [statistics, setStatistics] = useState<InterviewerStatistics | null>(
+    null
+  );
 
-  // Fetch availabilities
+  // Availability functions
   const fetchAvailabilities = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/interviewer/getAvailability");
-      if (response.data?.success) {
-        setAvailabilities(response.data.availability || []);
-      }
+      const { data } = await axiosInstance.get("/interviewer/getAvailability");
+      if (data?.success) setAvailabilities(data.availability || []);
     } catch (error) {
       console.error("Error fetching availabilities:", error);
     }
   }, []);
 
-  // Add availability
   const addAvailability = useCallback(
-    async (data: { date: string; from: string; to: string }) => {
+    async (newAvailability: Availability) => {
       try {
-        const response = await axiosInstance.post(
+        const { data } = await axiosInstance.post(
           "/interviewer/addAvailability",
           {
-            dates: [data],
+            dates: [newAvailability],
           }
         );
-        if (response.data?.success) {
-          await fetchAvailabilities();
-        }
+        if (data?.success) await fetchAvailabilities();
       } catch (error) {
         console.error("Error adding availability:", error);
+        throw error;
       }
     },
     [fetchAvailabilities]
   );
 
-  // Delete availability
   const deleteAvailability = useCallback(async (id: string) => {
     try {
-      const response = await axiosInstance.delete(
+      const { data } = await axiosInstance.delete(
         "/interviewer/deleteAvailability",
-        {
-          data: { id },
-        }
+        { data: { id } }
       );
-      if (response.data?.success) {
+      if (data?.success)
         setAvailabilities((prev) => prev.filter((a) => a._id !== id));
-      }
     } catch (error) {
       console.error("Error deleting availability:", error);
+      throw error;
     }
   }, []);
 
-  // Fetch interview requests
+  // Interview Requests functions
   const fetchInterviewRequests = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(
+      const { data } = await axiosInstance.get(
         "/interviewer/getInterviewRequests"
       );
-      if (response.data?.success) {
-        setInterviewRequests(response.data.interviewRequests || []);
-      }
+      if (data?.success) setInterviewRequests(data.interviewRequests || []);
     } catch (error) {
       console.error("Error fetching interview requests:", error);
     }
   }, []);
 
-  // Update interview request status
   const updateInterviewRequest = useCallback(
     async (id: string, status: "Approved" | "Cancelled") => {
       try {
-        const payload = { interviewRequestId: id, status };
-        const response = await axiosInstance.put(
+        const { data } = await axiosInstance.put(
           "/interviewer/updateInterviewRequest",
-          payload
+          {
+            interviewRequestId: id,
+            status,
+          }
         );
-        if (response.data?.success) {
+        if (data?.success) {
           setInterviewRequests((prev) =>
             prev.map((request) =>
               request.id === id ? { ...request, status } : request
@@ -175,17 +165,64 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
         }
       } catch (error) {
         console.error("Error updating interview request:", error);
+        throw error;
       }
     },
     []
   );
 
-  // Fetch profile
+  const rescheduleInterviewRequest = useCallback(
+    async (
+      id: string,
+      updateData: {
+        newDate: string;
+        isoDate: string;
+        from: string;
+        to: string;
+      }
+    ) => {
+      try {
+        const { data } = await axiosInstance.put(
+          "/interviewer/rescheduleInterviewRequest",
+          {
+            interviewRequestId: id,
+            newDate: updateData.newDate,
+            from: updateData.from,
+            to: updateData.to,
+            // Only include isoDate if your backend actually needs it
+            isoDate: updateData.isoDate,
+          }
+        );
+
+        if (data?.success) {
+          setInterviewRequests((prev) =>
+            prev.map((request) =>
+              request.id === id
+                ? {
+                    ...request,
+                    date: updateData.newDate,
+                    time: `${updateData.from} - ${updateData.to}`,
+                    status: "RescheduleRequested",
+                    isoDate: updateData.isoDate,
+                  }
+                : request
+            )
+          );
+        }
+        return data;
+      } catch (error) {
+        console.error("Error rescheduling interview:", error);
+        throw error;
+      }
+    },
+    []
+  );
+  // Profile functions
   const fetchProfile = useCallback(async () => {
     try {
-      const response = await axiosInstance.get("/interviewer/getProfile");
-      if (response.data?.success) {
-        const profileData = response.data.profile;
+      const { data } = await axiosInstance.get("/interviewer/getProfile");
+      if (data?.success) {
+        const profileData = data.profile;
         setProfile({
           name: `${profileData.firstName || ""} ${
             profileData.lastName || ""
@@ -197,10 +234,10 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
           profilePhoto: profileData.profilePhoto || "",
           skills: profileData.skills || [],
           interviewRequests: profileData.interviewRequests || [],
-          completedInterviews: profileData.statistics.completedInterviews || 0,
-          pendingRequests: profileData.statistics.pendingRequests || 0,
-          totalAccepted: profileData.statistics.totalAccepted || 0,
-          averageRating: profileData.statistics.averageRating || 0,
+          completedInterviews: profileData.statistics?.completedInterviews || 0,
+          pendingRequests: profileData.statistics?.pendingRequests || 0,
+          totalAccepted: profileData.statistics?.totalAccepted || 0,
+          averageRating: profileData.statistics?.averageRating || 0,
           feedbacks: profileData.feedbacks || [],
           availability: profileData.availability || [],
         });
@@ -210,32 +247,36 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  // Fetch interviewer statistics
+  // Statistics functions
   const fetchStatistics = useCallback(async () => {
     try {
-      const response = await axiosInstance.get(
+      const { data } = await axiosInstance.get(
         "/interviewer/get-interviewer-statistics"
       );
-      if (response.data && response.data.statistics) {
-        setStatistics(response.data.statistics);
-      } else {
-        setStatistics(null);
-      }
+      setStatistics(data?.statistics || null);
     } catch (error) {
-      console.error("Error fetching interviewer statistics:", error);
+      console.error("Error fetching statistics:", error);
       setStatistics(null);
     }
-  },[])
+  }, []);
 
- 
-
-  // Fetch data on mount
+  // Initial data fetch
   // useEffect(() => {
-  //   fetchProfile();
-  //   fetchAvailabilities();
-  //   fetchInterviewRequests();
-  //   fetchStatistics();
-  // }, [fetchProfile, fetchAvailabilities, fetchInterviewRequests]);
+  //   const initializeData = async () => {
+  //     await Promise.all([
+  //       fetchAvailabilities(),
+  //       fetchInterviewRequests(),
+  //       fetchProfile(),
+  //       fetchStatistics(),
+  //     ]);
+  //   };
+  //   initializeData();
+  // }, [
+  //   fetchAvailabilities,
+  //   fetchInterviewRequests,
+  //   fetchProfile,
+  //   fetchStatistics,
+  // ]);
 
   return (
     <InterviewerContext.Provider
@@ -251,6 +292,7 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
         fetchProfile,
         statistics,
         fetchStatistics,
+        rescheduleInterviewRequest,
       }}
     >
       {children}

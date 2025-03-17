@@ -7,6 +7,7 @@ import CorporateDetailsPage from "../dashboards/adminDashboard/CorporateDetailsP
 import TablePage from "../dashboards/adminDashboard/TablePage";
 import { AdminProvider } from "../context/AdminContext";
 import AdminLogin from "../dashboards/adminDashboard/AdminLogin";
+import AdminSettingsPage from "../dashboards/adminDashboard/setting/AdminSettingsPage";
 
 // AdminRoutes component that sets up routes for admin dashboard
 const AdminRoutes = () => {
@@ -33,6 +34,7 @@ const AdminRoutes = () => {
                 element={<CorporateDetailsPage />}
               />
               <Route path="/dashboard/table" element={<TablePage />} />
+              <Route path="/settings" element={<AdminSettingsPage />} />
             </Routes>
           </AdminProvider>
         }

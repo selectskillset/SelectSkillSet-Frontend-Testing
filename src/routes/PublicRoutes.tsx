@@ -5,6 +5,8 @@ import FeatureAnimation from "../components/ui/FeatureAnimation";
 import RequestDemoPage from "../pages/requestDemo/RequestDemoPage";
 import TermsAndConditions from "../pages/termsAndConditionPage/TermsAndConditions";
 import InterviewerProfile from "../pages/profile/InterviewerProfile";
+import CandidateApproveReschedule from "../pages/reschedule/CandidateApproveReschedule";
+import InterviewerApproveReschedule from "../pages/reschedule/InterviewerApproveReschedule";
 
 // PublicRoutes component that defines routes for public-facing pages of the website
 const PublicRoutes = () => {
@@ -27,6 +29,12 @@ const PublicRoutes = () => {
 
       {/* Dynamic route for viewing the profile of a specific interviewer based on their ID */}
       <Route path="/interviewer-profile/:id" element={<InterviewerProfile />} />
+
+
+      <Route path="/candidate/approve-reschedule" element={<CandidateApproveReschedule />} />
+      <Route path="/interviewer/approve-reschedule" element={<InterviewerApproveReschedule />} />
+
+
 
      
     </Routes>

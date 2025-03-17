@@ -36,15 +36,6 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-5">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-end">
-          <button
-            onClick={() => navigate("/admin/dashboard/profiles")}
-            className="bg-[#0073b1] text-white py-2 px-4 mb-5 rounded-lg flex gap-2 items-center"
-          >
-            Add Admin <User2Icon size={16} />
-          </button>
-        </div>
-
         {/* Dashboard Stats */}
         <DashboardStats
           totalCandidates={totalCandidates}

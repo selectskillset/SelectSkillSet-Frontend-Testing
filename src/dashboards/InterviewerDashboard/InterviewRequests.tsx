@@ -14,7 +14,7 @@ import {
 import { InterviewerContext } from "../../context/InterviewerContext";
 import Loader from "../../components/ui/Loader";
 import CardSkeleton from "../../components/ui/CardSkeleton";
-import RescheduleModal from "../../components/common/RescheduleModal";
+import InterviewerRescheduleModal from "../../components/common/InterviewerRescheduleModal";
 
 const CandidateModal: React.FC<{
   request: any;
@@ -141,6 +141,8 @@ const CandidateModal: React.FC<{
                     ? "bg-green-100 text-green-700"
                     : request.status === "Cancelled"
                     ? "bg-red-100 text-red-700"
+                    : request.status === "RescheduleRequested"
+                    ? "bg-orange-100 text-orange-700"
                     : "bg-blue-100 text-blue-700"
                 }`}
               >
@@ -155,8 +157,13 @@ const CandidateModal: React.FC<{
 };
 
 const InterviewRequests: React.FC = () => {
-  const { interviewRequests, fetchInterviewRequests, updateInterviewRequest } =
-    React.useContext(InterviewerContext)!;
+  const {
+    interviewRequests,
+    fetchInterviewRequests,
+    updateInterviewRequest,
+    rescheduleInterviewRequest,
+  } = React.useContext(InterviewerContext)!;
+
   const [reschedulingRequest, setReschedulingRequest] = useState<any>(null);
   const [selectedRequest, setSelectedRequest] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -204,6 +211,25 @@ const InterviewRequests: React.FC = () => {
       }
     },
     [updateInterviewRequest]
+  );
+
+  const handleReschedule = useCallback(
+    async (id: string, newDate: string, newTime: string) => {
+      setLoadingRequests((prev) => new Set(prev.add(id)));
+      try {
+        await rescheduleInterviewRequest(id, newDate, newTime);
+      } catch (error) {
+        console.error("Failed to reschedule interview:", error);
+        throw error;
+      } finally {
+        setLoadingRequests((prev) => {
+          const updated = new Set(prev);
+          updated.delete(id);
+          return updated;
+        });
+      }
+    },
+    [rescheduleInterviewRequest]
   );
 
   useEffect(() => {
@@ -292,6 +318,8 @@ const InterviewRequests: React.FC = () => {
                               ? "bg-green-50 text-green-700"
                               : request.status === "Cancelled"
                               ? "bg-red-50 text-red-700"
+                              : request.status === "RescheduleRequested"
+                              ? "bg-orange-50 text-orange-700"
                               : "bg-blue-50 text-blue-700"
                           }`}
                         >
@@ -340,7 +368,8 @@ const InterviewRequests: React.FC = () => {
                               <span className="hidden sm:inline">Decline</span>
                             </button>
                           </div>
-                        ) : request.status === "Approved" ? (
+                        ) : request.status === "Approved" ||
+                          request.status === "RescheduleRequested" ? (
                           <div className="relative">
                             <button
                               id={`menu-${request.id}`}
@@ -352,7 +381,7 @@ const InterviewRequests: React.FC = () => {
                               }}
                               className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                             >
-                              <MoreVertical className="w-5 h-5 text-gray-600" />
+                              <MoreVertical className="w-5 h-5 text-gray-600 bg-red" />
                             </button>
 
                             <AnimatePresence>
@@ -410,15 +439,15 @@ const InterviewRequests: React.FC = () => {
           />
         )}
         {reschedulingRequest && (
-          <RescheduleModal
+          <InterviewerRescheduleModal
             request={reschedulingRequest}
             onClose={() => setReschedulingRequest(null)}
             onConfirm={async (newDate: string, newTime: string) => {
               try {
-                await updateInterviewRequest(
+                await handleReschedule(
                   reschedulingRequest.id,
-                  "Approved",
-                  { date: newDate, time: newTime }
+                  newDate,
+                  newTime
                 );
               } catch (error) {
                 console.error("Failed to reschedule interview:", error);
