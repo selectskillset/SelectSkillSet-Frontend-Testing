@@ -90,7 +90,7 @@ export const Hero = () => {
               Get Started
             </Link>
 
-            <Link
+            {/* <Link
               to="/about"
               className="px-8 py-4 sm:px-10 sm:py-5 bg-white/10 backdrop-blur-lg 
               text-white rounded-lg  font-semibold text-lg sm:text-lg shadow-md 
@@ -98,7 +98,7 @@ export const Hero = () => {
               focus:outline-none focus:ring-2 focus:ring-[#005885]"
             >
               Learn More
-            </Link>
+            </Link> */}
           </motion.div>
         </motion.div>
       </div>
