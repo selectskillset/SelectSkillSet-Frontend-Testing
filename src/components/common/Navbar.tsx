@@ -1,34 +1,162 @@
-import React, { useRef, useEffect, useCallback, useMemo } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Menu, X } from "lucide-react";
-import { motion } from "framer-motion";
+import React, {
+  useRef,
+  useEffect,
+  useCallback,
+  useMemo,
+  useState,
+} from "react";
+import { Link, useNavigate, useLocation, NavLink } from "react-router-dom";
+import {
+  Menu,
+  X,
+  Home,
+  Package,
+  Info,
+  UserPlus,
+  Calendar,
+  Clock,
+  User,
+  Settings,
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import logo from "../../images/selectskillset_logo_test5-removebg-preview.png";
 
-// Framer Motion variants for mobile menu animations
-const mobileMenuVariants = {
-  hidden: { x: "100%" },
-  visible: { x: 0 },
+const MOBILE_MENU_VARIANTS = {
+  hidden: { x: "100%", transition: { duration: 0.3 } },
+  visible: { x: 0, transition: { duration: 0.3, ease: "easeOut" } },
 };
 
-export const Navbar = () => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+const SCROLL_THRESHOLD = 100;
+const THROTTLE_DELAY = 100;
+
+const NAV_LINKS = {
+  common: [
+    { path: "/", label: "Home", icon: <Home size={20} /> },
+    { path: "/products", label: "Products", icon: <Package size={20} /> },
+    { path: "/about", label: "About Us", icon: <Info size={20} /> },
+    {
+      path: "/interviewer-signup",
+      label: "Become Interviewer",
+      icon: <UserPlus size={20} />,
+    },
+    { path: "/login", label: "Login", icon: <UserPlus size={20} /> },
+  ],
+  candidate: [
+    {
+      path: "/candidate-dashboard",
+      label: "Dashboard",
+      icon: <User size={20} />,
+    },
+    {
+      path: "/candidate-schedule-interviews",
+      label: "Schedule Interview",
+      icon: <Calendar size={20} />,
+    },
+    {
+      path: "/candidate-interviews",
+      label: "Upcoming Interviews",
+      icon: <Clock size={20} />,
+    },
+    {
+      path: "/candidate-settings",
+      label: "Settings",
+      icon: <Settings size={20} />,
+    },
+  ],
+  interviewer: [
+    {
+      path: "/interviewer-dashboard",
+      label: "Dashboard",
+      icon: <User size={20} />,
+    },
+    {
+      path: "/interviewer-availability",
+      label: "My Availability",
+      icon: <Calendar size={20} />,
+    },
+    {
+      path: "/interviewer-requests",
+      label: "Interview Requests",
+      icon: <Clock size={20} />,
+    },
+    {
+      path: "/interviewer-settings",
+      label: "Settings",
+      icon: <Settings size={20} />,
+    },
+  ],
+  corporate: [
+    {
+      path: "/corporate-dashboard",
+      label: "Dashboard",
+      icon: <User size={20} />,
+    },
+    {
+      path: "/corporate-settings",
+      label: "Settings",
+      icon: <Settings size={20} />,
+    },
+  ],
+  admin: [
+    {
+      path: "/admin/dashboard/profiles",
+      label: "Users",
+      icon: <User size={20} />,
+    },
+    {
+      path: "/admin/settings",
+      label: "Settings",
+      icon: <Settings size={20} />,
+    },
+  ],
+};
+
+export const Navbar = React.memo(() => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const navigate = useNavigate();
-  const location = useLocation(); // To track the current route
+  const location = useLocation();
   const menuRef = useRef(null);
 
-  // Retrieve tokens from sessionStorage
-  const candidateToken = sessionStorage.getItem("candidateToken");
-  const interviewerToken = sessionStorage.getItem("interviewerToken");
-  const corporateToken = sessionStorage.getItem("corporateToken");
-  const adminToken = sessionStorage.getItem("adminToken");
-
-  // Determine if any user is logged in
-  const userLoggedIn = useMemo(
-    () =>
-      !!(candidateToken || interviewerToken || corporateToken || adminToken),
-    [candidateToken, interviewerToken, corporateToken, adminToken]
+  // Get user tokens with location dependency
+  const tokens = useMemo(
+    () => ({
+      candidate: sessionStorage.getItem("candidateToken"),
+      interviewer: sessionStorage.getItem("interviewerToken"),
+      corporate: sessionStorage.getItem("corporateToken"),
+      admin: sessionStorage.getItem("adminToken"),
+    }),
+    [location] // Recalculate tokens when location changes
   );
 
-  // Close menu if click occurs outside of it
+  // Determine user type
+  const userType = useMemo(() => {
+    if (tokens.candidate) return "candidate";
+    if (tokens.interviewer) return "interviewer";
+    if (tokens.corporate) return "corporate";
+    if (tokens.admin) return "admin";
+    return null;
+  }, [tokens]);
+
+  const userLoggedIn = !!userType;
+
+  // Scroll handling with throttle
+  const handleScroll = useCallback(() => {
+    const currentScrollY = window.scrollY;
+    const shouldHide =
+      currentScrollY > lastScrollY && currentScrollY > SCROLL_THRESHOLD;
+    setIsVisible(!shouldHide);
+    setLastScrollY(currentScrollY);
+  }, [lastScrollY]);
+
+  useEffect(() => {
+    const throttledScroll = throttle(handleScroll, THROTTLE_DELAY);
+    window.addEventListener("scroll", throttledScroll);
+    return () => window.removeEventListener("scroll", throttledScroll);
+  }, [handleScroll]);
+
+  // Click outside handler
   const handleClickOutside = useCallback((event) => {
     if (menuRef.current && !menuRef.current.contains(event.target)) {
       setIsMenuOpen(false);
@@ -40,316 +168,134 @@ export const Navbar = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [handleClickOutside]);
 
-  const closeMenu = useCallback(() => setIsMenuOpen(false), []);
-
-  // Navigate based on the user type
+  // Navigation handlers
   const handleProfileNavigation = useCallback(() => {
-    if (candidateToken) {
-      navigate("/candidate-dashboard");
-    } else if (interviewerToken) {
-      navigate("/interviewer-dashboard");
-    } else if (corporateToken) {
-      navigate("/corporate-dashboard");
-    } else if (adminToken) {
-      navigate("/admin/dashboard");
-    } else {
-      navigate("/");
-    }
-  }, [candidateToken, interviewerToken, corporateToken, adminToken, navigate]);
+    const dashboardPath = userType ? `/${userType}-dashboard` : "/";
+    navigate(dashboardPath);
+  }, [userType, navigate]);
 
-  // Render common menu links for desktop and mobile
-  const renderCommonMenuLinks = (isMobile = false) => {
-    const baseLinkClass = isMobile
-      ? "text-gray-800 hover:text-[#0077B5] text-2xl font-medium transition duration-300 block py-2"
-      : "text-gray-800 hover:text-[#0077B5] text-lg font-medium transition duration-300";
-    const demoButtonClass = isMobile
-      ? "bg-[#0077B5] text-white text-xl font-semibold px-6 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300 w-full mt-4"
-      : "bg-[#0077B5] text-white text-lg font-semibold px-5 py-3 rounded-lg shadow-lg hover:bg-[#005885] transition duration-300 ml-auto";
-    const isActive = (path: string) => location.pathname === path;
+  // Memoized navigation links
+  const currentLinks = useMemo(() => {
+    return userLoggedIn ? NAV_LINKS[userType] : NAV_LINKS.common;
+  }, [userLoggedIn, userType]);
 
-    return (
-      <>
-        <Link
-          to="/"
-          className={`${baseLinkClass} ${
-            isActive("/") ? "text-[#0077B5] font-bold underline" : ""
-          }`}
-          onClick={closeMenu}
+  const renderLinks = useCallback(
+    (isMobile = false) =>
+      currentLinks.map((link) => (
+        <NavLink
+          key={link.path}
+          to={link.path}
+          onClick={() => {
+            if (isMobile) {
+              setIsMenuOpen(false);
+            }
+          }}
+          className={({ isActive }) =>
+            `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300
+          ${isMobile ? "text-xl" : "text-base"}
+          ${
+            isActive
+              ? "text-blue-600 bg-blue-100 font-bold underline text-md"
+              : "hover:bg-blue-50 font-bold hover:text-blue-600 text-md"
+          }`
+          }
         >
-          Home
-        </Link>
-        <Link
-          to="/products"
-          className={`${baseLinkClass} ${
-            isActive("/products") ? "text-[#0077B5] font-bold underline" : ""
-          }`}
-          onClick={closeMenu}
-        >
-          Products
-        </Link>
-        <Link
-          to="/about"
-          className={`${baseLinkClass} ${
-            isActive("/about") ? "text-[#0077B5] font-bold underline" : ""
-          }`}
-          onClick={closeMenu}
-        >
-          About Us
-        </Link>
-        <Link
-          to="/interviewer-signup"
-          className={`${baseLinkClass} ${
-            isActive("/interviewer-signup") ? "text-[#0077B5] font-bold underline" : ""
-          }`}
-          onClick={closeMenu}
-        >
-          Become an Interviewer
-        </Link>
-        <Link
-          to="/login"
-          className={`${baseLinkClass} ${
-            isActive("/login") ? "text-[#0077B5] font-bold underline" : ""
-          }`}
-          onClick={closeMenu}
-        >
-          Login
-        </Link>
-        <Link
-          to="/request-demo"
-          className={demoButtonClass}
-          onClick={closeMenu}
-        >
-          Request Demo
-        </Link>
-      </>
-    );
-  };
-
-  // Render user-specific tabs
-  const renderUserTabs = (isMobile = false) => {
-    const tabClass = isMobile
-      ? " text-2xl font-medium transition duration-300 block py-2"
-      : " text-lg font-medium transition duration-300 ";
-    const isActive = (path: string) => location.pathname === path;
-
-    if (candidateToken) {
-      return (
-        <>
-          <Link
-            to="/candidate-dashboard"
-            className={`${tabClass} ${
-              isActive("/candidate-dashboard")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/candidate-schedule-interviews"
-            className={`${tabClass} ${
-              isActive("/candidate-schedule-interviews")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Schedule Interview
-          </Link>
-          <Link
-            to="/candidate-interviews"
-            className={`${tabClass} ${
-              isActive("/candidate-interviews")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            My Upcoming Interviews
-          </Link>
-          <Link
-            to="/candidate-settings"
-            className={`${tabClass} ${
-              isActive("/candidate-settings")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Settings
-          </Link>
-        </>
-      );
-    } else if (interviewerToken) {
-      return (
-        <>
-          <Link
-            to="/interviewer-dashboard"
-            className={`${tabClass} ${
-              isActive("/interviewer-dashboard")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Dashboard
-          </Link>
-          <Link
-            to="/interviewer-availability"
-            className={`${tabClass} ${
-              isActive("/interviewer-availability")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            My Availability
-          </Link>
-          <Link
-            to="/interviewer-requests"
-            className={`${tabClass} ${
-              isActive("/interviewer-requests")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Interview Requests
-          </Link>
-          <Link
-            to="/interviewer-settings"
-            className={`${tabClass} ${
-              isActive("/interviewer-settings")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Settings
-          </Link>
-        </>
-      );
-    } else if (corporateToken) {
-      return (
-        <>
-          <Link
-            to="/corporate-dashboard"
-            className={`${tabClass} ${
-              isActive("/corporate-dashboard")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Dashboard
-          </Link>
-          
-          <Link
-            to="/corporate-settings"
-            className={`${tabClass} ${
-              isActive("/corporate-settings")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Settings
-          </Link>
-        </>
-      );
-    } else if (adminToken) {
-      return (
-        <>
-          <Link
-            to="/admin/dashboard/profiles"
-            className={`${tabClass} ${
-              isActive("/admin/dashboard/profiles")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Users
-          </Link>
-          <Link
-            to="/admin/settings"
-            className={`${tabClass} ${
-              isActive("/admin/settings")
-                ? "text-[#0077B5] font-bold underline"
-                : ""
-            }`}
-            onClick={closeMenu}
-          >
-            Settings
-          </Link>
-        </>
-      );
-    }
-    return null;
-  };
+          {isMobile && React.cloneElement(link.icon, { size: 24 })}
+          {link.label}
+        </NavLink>
+      )),
+    [currentLinks]
+  );
 
   return (
-    <nav className="bg-white shadow-lg sticky top-0 left-0 w-full z-50">
-      <div className="mx-auto px-6 sm:px-8 lg:px-10">
-        <div className="flex justify-between items-center h-20">
-          {/* Brand/Logo Section */}
-          <div className="flex items-center space-x-4">
-            <motion.span
-              whileHover={{ scale: 1.05 }}
-              onClick={handleProfileNavigation}
-              className="cursor-pointer text-[#0077B5] text-3xl font-extrabold uppercase"
-            >
-              Selectskillset
-            </motion.span>
-          </div>
+    <nav
+      className={`bg-white shadow-lg sticky top-0 z-50 transition-transform duration-300 ${
+        isVisible ? "translate-y-0" : "-translate-y-full"
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-20 items-center">
+          {/* Logo Section */}
+          <motion.div
+            whileHover={{ scale: 1.02 }}
+            className="flex-shrink-0 cursor-pointer"
+            onClick={handleProfileNavigation}
+          >
+            <img src={logo} alt="Selectskillset" className="h-20 w-auto" />
+          </motion.div>
 
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-6 ml-auto">
-            {!userLoggedIn ? renderCommonMenuLinks() : renderUserTabs()}
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-4">
+            {renderLinks()}
+            {!userLoggedIn && <RequestDemoButton />}
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center">
             <button
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              aria-label="Toggle Menu"
-              className="text-gray-800 focus:outline-none"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="p-2 text-gray-800 hover:text-blue-600 transition-colors"
             >
-              {isMenuOpen ? (
-                <X className="w-7 h-7" />
-              ) : (
-                <Menu className="w-7 h-7" />
-              )}
+              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
-      <motion.div
-        ref={menuRef}
-        variants={mobileMenuVariants}
-        initial="hidden"
-        animate={isMenuOpen ? "visible" : "hidden"}
-        transition={{ type: "spring", stiffness: 100, damping: 20 }}
-        className="md:hidden fixed top-0 right-0 h-screen bg-white shadow-xl z-50 w-3/4 overflow-y-auto"
-      >
-        <div className="flex justify-end p-5">
-          <button
-            onClick={closeMenu}
-            aria-label="Close Menu"
-            className="text-gray-800 focus:outline-none"
+      <AnimatePresence>
+        {isMenuOpen && (
+          <motion.div
+            ref={menuRef}
+            variants={MOBILE_MENU_VARIANTS}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            className="md:hidden fixed inset-y-0 right-0 w-full max-w-xs bg-white shadow-2xl z-50 h-[100vh]"
           >
-            <X className="w-7 h-7" />
-          </button>
-        </div>
-        <div className="p-6 space-y-4">
-          {!userLoggedIn ? renderCommonMenuLinks(true) : renderUserTabs(true)}
-        </div>
-      </motion.div>
+            <div className="p-6 h-auto bg-white flex flex-col">
+              <div className="flex justify-end items-center mb-6">
+                <button onClick={() => setIsMenuOpen(false)}>
+                  <X size={24} className="text-gray-800 hover:text-blue-600" />
+                </button>
+              </div>
+
+              <div className="flex-1 space-y-4 ">{renderLinks(true)}</div>
+
+              {!userLoggedIn && (
+                <div className="pt-6 border-t border-gray-100">
+                  <RequestDemoButton mobile />
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
-};
+});
+
+const RequestDemoButton = React.memo(({ mobile }: { mobile?: boolean }) => (
+  <Link
+    to="/request-demo"
+    className={`bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium
+      hover:from-blue-700 hover:to-blue-600 transition-all duration-300 shadow-md
+       ${mobile ? "w-full text-center" : ""} px-6 py-3 rounded-lg`}
+  >
+    Request Demo
+  </Link>
+));
+
+// Throttle utility
+function throttle<T extends (...args: any[]) => any>(fn: T, limit: number) {
+  let lastCall = 0;
+  return (...args: Parameters<T>) => {
+    const now = Date.now();
+    if (now - lastCall >= limit) {
+      lastCall = now;
+      return fn(...args);
+    }
+  };
+}
 
 export default Navbar;

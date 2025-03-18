@@ -56,13 +56,20 @@ export const InterviewerLogin = () => {
   };
 
   return (
-    <div className="min-h-screen  flex flex-col justify-center items-center py-12">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 py-12">
       {/* Login Card */}
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
+      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl">
         {/* Heading */}
-        <h2 className="text-3xl font-bold text-center mb-8 text-[#0A66C2]">
+        <h2 className="text-3xl font-bold text-center mb-8 text-[#0077B5]">
           Interviewer Login
         </h2>
+
+        {/* Loader */}
+        {isLoading && (
+          <div className="flex justify-center mb-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0077B5]"></div>
+          </div>
+        )}
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -79,7 +86,7 @@ export const InterviewerLogin = () => {
               id="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+              className="mt-2 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
               placeholder="Enter your email"
               required
             />
@@ -98,7 +105,7 @@ export const InterviewerLogin = () => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-2 w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
+              className="mt-2 w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
               placeholder="Enter your password"
               required
             />
@@ -106,20 +113,33 @@ export const InterviewerLogin = () => {
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 bottom-1 transform -translate-y-1/2 cursor-pointer text-gray-600"
+              className="absolute right-4 bottom-2 transform -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
           </div>
 
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-[#0077B5] hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
           {/* Login Button */}
           <button
             type="submit"
-            className={`w-full  text-white py-3 rounded-lg bg-[#0077B5] focus:outline-none focus:ring-2 focus:ring-[#0A66C2] transition duration-300 ${
-              isLoading ? "cursor-wait" : ""
-            }`}
             disabled={isLoading}
+            className={`w-full py-3 rounded-lg ${
+              isLoading
+                ? "bg-gray-300 cursor-not-allowed"
+                : "bg-gradient-to-r from-[#0077B5] to-[#004182] text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B5]"
+            } transition duration-300 hover:bg-gradient-to-r hover:from-[#005885] hover:to-[#003366]`}
           >
             {isLoading ? "Logging In..." : "Login"}
           </button>
@@ -131,7 +151,7 @@ export const InterviewerLogin = () => {
             Don't have an account?{" "}
             <button
               onClick={() => navigate("/interviewer-signup")}
-              className="text-[#0A66C2] hover:underline font-medium"
+              className="text-[#0077B5] hover:underline font-medium"
             >
               Sign Up
             </button>

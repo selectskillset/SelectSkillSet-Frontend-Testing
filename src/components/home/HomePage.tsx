@@ -1,7 +1,7 @@
 import { Hero } from "./Hero";
-import { Features } from "./Features";
+import  Features  from "./Features";
 
-import { CallToAction } from "./CallToAction";
+import CallToAction from "./CallToAction";
 // import SliderCards from "./SliderCards";
 import AboutUsComponent from "./AboutUsComponent";
 

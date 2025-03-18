@@ -1,11 +1,11 @@
 import { Routes, Route } from "react-router-dom";
-import { LoginPage } from "../components/auth/LoginPage";
+import LoginPage from "../components/auth/LoginPage";
 import { VerifyOtp } from "../components/auth/VerifyOtp";
-import { CandidateLogin } from "../components/auth/candidate/CandidateLogin";
+import CandidateLogin from "../components/auth/candidate/CandidateLogin";
 import { CandidateSignup } from "../components/auth/candidate/CandidateSignup";
-import { CorporateLogin } from "../components/auth/corporate/CorporateLogin";
+import CorporateLogin from "../components/auth/corporate/CorporateLogin";
 import { CorporateSignup } from "../components/auth/corporate/CorporateSignup";
-import { InterviewerLogin } from "../components/auth/Interviewer/InterviewerLogin";
+import InterviewerLogin from "../components/auth/Interviewer/InterviewerLogin";
 import { InterviewerSignup } from "../components/auth/Interviewer/InterviewerSignup";
 
 // AuthRoutes component that defines routes for all authentication-related pages

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Linkedin, Twitter, Mail } from "lucide-react"; // Lucide icons
+import { Linkedin, Twitter, Mail } from "lucide-react";
+import logo from "../../images/selectskillset_logo_test5-removebg-preview.png";
 
 const Footer: React.FC = () => {
   const [clickCount, setClickCount] = useState(0);
   const navigate = useNavigate();
 
-  // Reset click count after 2 seconds of inactivity
   useEffect(() => {
     if (clickCount > 0) {
       const timer = setTimeout(() => setClickCount(0), 2000);
@@ -15,7 +15,6 @@ const Footer: React.FC = () => {
     }
   }, [clickCount]);
 
-  // Handle click logic for Easter egg
   const handleClick = () => {
     const messages = [
       "You're 5 steps ahead to login",
@@ -24,131 +23,127 @@ const Footer: React.FC = () => {
       "You're 2 steps ahead to login",
       "You're 1 step ahead to login",
     ];
-    setClickCount((prev) => prev + 1);
-    if (clickCount >= 9 && clickCount <= 13) {
-      toast(messages[clickCount - 9]);
-    }
-    if (clickCount === 14) {
-      toast("Redirecting...", { icon: "🚀" });
-      setTimeout(() => navigate("/admin/login"), 1000);
-    }
+
+    setClickCount((prev) => {
+      const newCount = prev + 1;
+      if (newCount >= 10 && newCount <= 14) {
+        toast(messages[newCount - 10]);
+      }
+      if (newCount === 15) {
+        toast("Redirecting...", { icon: "🚀" });
+        setTimeout(() => navigate("/admin/login"), 1000);
+      }
+      return newCount;
+    });
   };
 
   return (
-    <footer className="bg-white text-[#0077B5] shadow-lg py-8 mt-auto">
-      <div className="container mx-auto px-8">
-        {/* Logo with Easter Egg */}
-        <div className="flex justify-center mb-8">
-          <h1
+    <footer className="bg-white text-[#0077B5] border-t border-gray-100">
+      <div className="container mx-auto px-6 md:px-12 lg:px-24 py-12">
+        {/* Top Section */}
+        <div className="flex flex-col md:flex-row justify-around items-center mb-12">
+          <div
             onClick={handleClick}
-            className="text-2xl font-bold cursor-pointer relative select-none transition-transform duration-300 hover:scale-105"
+            className="cursor-pointer mb-8 md:mb-0 relative group"
           >
-            SELECTSKILLSET
-            <span
-              className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white opacity-50 rounded-full ${
-                clickCount > 0 ? "scale-150" : "scale-0"
-              }`}
-              style={{
-                width: "150%",
-                height: "150%",
-                transition: "all 0.3s ease-in-out",
-              }}
-            ></span>
-          </h1>
-        </div>
-
-        {/* Grid Layout for Links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-          {/* About Us Section */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">About us</h2>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/careers"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Careers
-                </Link>
-              </li>
-              
-            </ul>
+            <img
+              src={logo}
+              alt="SelectSkillset Logo"
+              className="w-auto h-24 transition-transform duration-300 
+                group-hover:scale-105 group-active:scale-95"
+            />
+            <div
+              className={`absolute inset-0 bg-white/30 rounded-full 
+                transition-all duration-300 ${
+                  clickCount > 0 ? "scale-150 opacity-100" : "scale-0 opacity-0"
+                }`}
+            />
           </div>
 
-          {/* Help Center Section */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Help center</h2>
-            <ul className="space-y-2">
-              
-              <li>
-                <Link
-                  to="/report-issue"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Report issue
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {/* Quick Links */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
+            <div>
+              <h3 className="font-medium text-lg mb-4">About Us</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/careers"
+                    className="hover:text-[#004182] transition-colors"
+                  >
+                    Careers
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Privacy Policy Section */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Privacy policy</h2>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  to="/terms-and-conditions"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Terms & conditions
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/admin/login"
-                  className="hover:text-[#0077B5] transition-colors duration-300"
-                >
-                  Admin Login
-                </Link>
-              </li>
-              
-            </ul>
-          </div>
+            <div>
+              <h3 className="font-medium text-lg mb-4">Support</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/report-issue"
+                    className="hover:text-[#004182] transition-colors"
+                  >
+                    Report Issue
+                  </Link>
+                </li>
+              </ul>
+            </div>
 
-          {/* Connect with Us Section */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">Connect with us</h2>
-            <div className="flex space-x-4">
-              <Link
-                to="https://www.linkedin.com/company/selectskillset"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[#0077B5] transition-colors duration-300"
-              >
-                <Linkedin size={24} />
-              </Link>
-              <Link
-                to="https://twitter.com/selectskillset"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-[#0077B5] transition-colors duration-300"
-              >
-                <Twitter size={24} />
-              </Link>
-              <Link
-                to="mailto:support@selectskillset.com"
-                className="hover:text-[#0077B5] transition-colors duration-300"
-              >
-                <Mail size={24} />
-              </Link>
+            <div>
+              <h3 className="font-medium text-lg mb-4">Legal</h3>
+              <ul className="space-y-2">
+                <li>
+                  <Link
+                    to="/terms-and-conditions"
+                    className="hover:text-[#004182] transition-colors"
+                  >
+                    Terms & Conditions
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/admin/login"
+                    className="hover:text-[#004182] transition-colors"
+                  >
+                    Admin Login
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-medium text-lg mb-4">Connect</h3>
+              <div className="flex space-x-4">
+                <Link
+                  to="https://www.linkedin.com/company/selectskillset"
+                  target="_blank"
+                  className="hover:text-[#004182] transition-colors"
+                >
+                  <Linkedin size={24} />
+                </Link>
+                <Link
+                  to="https://twitter.com/selectskillset"
+                  target="_blank"
+                  className="hover:text-[#004182] transition-colors"
+                >
+                  <Twitter size={24} />
+                </Link>
+                <Link
+                  to="mailto:support@selectskillset.com"
+                  className="hover:text-[#004182] transition-colors"
+                >
+                  <Mail size={24} />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Copyright Section */}
-        <div className="text-center border-t border-gray-200 pt-6">
-          <p className="text-sm">
-            © {new Date().getFullYear()} SELECTSKILLSET. All Rights Reserved.
+        {/* Bottom Section */}
+        <div className="text-center border-t border-gray-100 pt-8">
+          <p className="text-sm text-gray-600">
+            © {new Date().getFullYear()} SELECTSKILLSET. All rights reserved.
           </p>
         </div>
       </div>
@@ -156,4 +151,4 @@ const Footer: React.FC = () => {
   );
 };
 
-export default Footer;
+export default React.memo(Footer);

@@ -1,12 +1,19 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import image from "../../images/img2.jpg";
+import { Award, Briefcase, ChevronRight, Users } from "lucide-react";
 
 interface AboutUsProps {
   src?: string;
   alt?: string;
   className?: string;
 }
+
+const LINKEDIN_COLORS = {
+  primary: "#0077B5",
+  dark: "#004182",
+  light: "#00A0DC",
+};
 
 const AboutUsComponent: React.FC<AboutUsProps> = ({
   src = image,
@@ -91,7 +98,7 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             transition={{ duration: 0.8 }}
             className="flex justify-center lg:justify-start"
           >
-            <div className="relative w-auto h-[70vmin] p-8 overflow-hidden">
+            <div className="relative w-full h-[70vmin] rounded-3xl overflow-hidden">
               {/* Outer Animated Gradient Border Layer (Highest opacity) */}
               <motion.div
                 initial={{ borderRadius: borderRadiusKeyframesOuter[0] }}
@@ -106,7 +113,6 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
                     "linear-gradient(45deg, #0077B5 0%, #004182 100%)", // LinkedIn colors
                   boxShadow: "-5vmin 5vmin 0 rgba(255, 255, 255, 0.1)",
                   opacity: 1, // Highest opacity for outer layer
-                  transform: "translate(0%, 0%)", // Remove slight shift
                 }}
               />
 
@@ -115,10 +121,9 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
                 initial={{ borderRadius: borderRadiusKeyframesMiddle[0] }}
                 animate={{ borderRadius: borderRadiusKeyframesMiddle }}
                 transition={middleTransition}
-                className="relative w-full h-full overflow-hidden"
+                className="relative w-full h-full overflow-hidden rounded-3xl"
                 style={{
                   opacity: 0.85, // Slightly lower opacity
-                  transform: "translate(0%, 0%)", // Remove slight shift
                 }}
               >
                 <img
@@ -133,24 +138,22 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
                 initial={{ borderRadius: borderRadiusKeyframesOverlay[0] }}
                 animate={{ borderRadius: borderRadiusKeyframesOverlay }}
                 transition={overlayTransition}
-                className="absolute inset-0 pointer-events-none"
+                className="absolute inset-0 pointer-events-none rounded-3xl"
                 style={{
                   background: "rgba(255,255,255,0.12)", // Lighter overlay color
                   opacity: 0.65, // Lowest opacity for overlay
-                  transform: "translate(0%, 0%)", // Remove slight shift for better fit
                 }}
               />
             </div>
           </motion.div>
 
-          {/* Right Column - Content */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-center lg:text-left"
           >
-            <h2 className="text-4xl font-bold text-[#0077B5] mb-6">
+            <h2 className="text-4xl font-extrabold text-[#0077B5] mb-6">
               About SELECTSKILLSET
             </h2>
             <p className="text-lg text-gray-600 mb-8">
@@ -158,22 +161,44 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
               professionals through practice and feedback. Our platform bridges
               the gap between candidates and companies by offering:
             </p>
-            <ul className="text-lg text-gray-600 mb-8 list-disc list-inside">
-              <li>
-                Real-world mock interviews and personalized feedback for
-                candidates.
+
+            {/* Features List */}
+            <ul className="space-y-4 text-lg text-start text-gray-600 mb-8">
+              <li className="flex items-center space-x-3">
+                <Briefcase className="w-5 h-5 text-[#0077B5]" />
+                <span>
+                  Real-world mock interviews and personalized feedback for
+                  candidates.
+                </span>
               </li>
-              <li>
-                Opportunities for freelancers to mentor future IT leaders.
+              <li className="flex items-center space-x-3">
+                <Users className="w-5 h-5 text-[#0077B5]" />
+                <span>
+                  Opportunities for freelancers to mentor future IT leaders.
+                </span>
               </li>
-              <li>
-                Access to pre-assessed, high-quality candidates for HR teams.
+              <li className="flex items-center space-x-3">
+                <Award className="w-5 h-5 text-[#0077B5]" />
+                <span>
+                  Access to pre-assessed, high-quality candidates for HR teams.
+                </span>
               </li>
             </ul>
-            <p className="text-lg text-gray-600">
+
+            {/* Mission Statement */}
+            <p className="text-lg text-gray-600 mb-8">
               Our mission is to close the skills gap and build a stronger, more
               confident IT workforce.
             </p>
+
+            {/* Call-to-Action Button */}
+            <button
+              className="inline-flex items-center bg-[#0077B5] text-white py-3 px-6 rounded-lg 
+                         hover:bg-[#004182] transition duration-300 focus:outline-none focus:ring-2 
+                         focus:ring-offset-2 focus:ring-[#0077B5]"
+            >
+              Learn More <ChevronRight className="w-5 h-5 ml-2" />
+            </button>
           </motion.div>
         </div>
       </div>

@@ -138,7 +138,7 @@ export const InterviewerSignup = () => {
       </div>
 
       {/* Right Section */}
-      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="flex-1 flex flex-col  bg-gray-50  items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg">
           <h2 className="text-2xl font-semibold text-center mb-6 text-gray-800">
             Interviewer Signup
