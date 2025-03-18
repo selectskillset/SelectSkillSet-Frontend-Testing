@@ -111,7 +111,7 @@ export const CorporateLogin = () => {
           </div>
 
           {/* Forgot Password Link */}
-          <div className="text-right">
+          {/* <div className="text-right">
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
@@ -119,7 +119,7 @@ export const CorporateLogin = () => {
             >
               Forgot Password?
             </button>
-          </div>
+          </div> */}
 
           {/* Login Button */}
           <button

@@ -121,7 +121,7 @@ export const InterviewerLogin = () => {
           </div>
 
           {/* Forgot Password Link */}
-          <div className="text-right">
+          {/* <div className="text-right">
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
@@ -129,7 +129,7 @@ export const InterviewerLogin = () => {
             >
               Forgot Password?
             </button>
-          </div>
+          </div> */}
 
           {/* Login Button */}
           <button
