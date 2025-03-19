@@ -125,7 +125,7 @@ const CandidateInterviews = () => {
                 className="w-full accent-[#0077B5]"
               />
               <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>1</span>
+                <span>8</span>
                 <span>15+</span>
               </div>
             </FilterSection>
@@ -141,7 +141,7 @@ const CandidateInterviews = () => {
                   onChange={(e) =>
                     setFilters({ ...filters, rating: +e.target.value })
                   }
-                  className="w-full accent-[#FFD700]"
+                  className="w-full accent-[#0077B5]"
                 />
                 <span className="text-sm font-medium text-gray-600 flex">
                   {filters.rating}★
