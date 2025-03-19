@@ -16,14 +16,12 @@ import {
   RadialLinearScale,
   PointElement,
   LineElement,
-  ArcElement,
 } from "chart.js";
 import { Bar, Radar } from "react-chartjs-2";
 import { Star, X } from "lucide-react";
 import { InterviewerContext } from "../../context/InterviewerContext";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Register Chart.js components
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -33,24 +31,19 @@ ChartJS.register(
   Legend,
   RadialLinearScale,
   PointElement,
-  LineElement,
-  ArcElement
+  LineElement
 );
 
 const InterviewerStatistics = () => {
   const { statistics, fetchStatistics } = useContext(InterviewerContext);
   const [selectedFeedback, setSelectedFeedback] = useState<any | null>(null);
-  const [showAllFeedbacks, setShowAllFeedbacks] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-   
-      fetchStatistics();
-  
-  }, [ fetchStatistics]);
+    fetchStatistics();
+  }, [fetchStatistics]);
 
   const isLoading = !statistics;
-
   const {
     completedInterviews,
     pendingRequests,
@@ -62,120 +55,79 @@ const InterviewerStatistics = () => {
     () => [
       { id: "overview", label: "Overview" },
       { id: "feedbacks", label: "Feedbacks" },
-      { id: "ratings", label: "Feedbacks Analysis" },
+      { id: "ratings", label: "Analysis" },
     ],
     []
   );
 
-  const renderStars = useCallback((rating: number) => {
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    return (
-      <div className="flex items-center space-x-1">
-        {[...Array(5)].map((_, index) => (
-          <Star
-            key={index}
-            className={`w-5 h-5 ${
-              index < fullStars
-                ? "text-yellow-400"
-                : hasHalfStar && index === fullStars
-                ? "text-yellow-400"
-                : "text-gray-200"
-            }`}
-          />
-        ))}
-      </div>
-    );
-  }, []);
-
-  const feedbacksToDisplay = useMemo(
-    () => (showAllFeedbacks ? feedbacks : feedbacks.slice(0, 3)),
-    [feedbacks, showAllFeedbacks]
-  );
-
-  const barChartData = useMemo(
+  const chartData = useMemo(
     () => ({
-      labels: ["Completed", "Pending", "Accepted"],
-      datasets: [
-        {
-          label: "Interview Stats",
-          data: [completedInterviews, pendingRequests, totalAccepted],
-          backgroundColor: ["#0A66C2", "#FFD700", "#2E7D32"],
-          borderWidth: 0,
-          borderRadius: 8,
-          barThickness: 40,
-        },
-      ],
+      bar: {
+        labels: ["Completed", "Pending", "Accepted"],
+        datasets: [
+          {
+            label: "Interview Stats",
+            data: [completedInterviews, pendingRequests, totalAccepted],
+            backgroundColor: ["#0ea5e9", "#94a3b8", "#cbd5e1"],
+            borderWidth: 0,
+            borderRadius: 8,
+          },
+        ],
+      },
+      radar: feedbacks[0]?.feedbackData
+        ? {
+            labels: Object.keys(feedbacks[0].feedbackData),
+            datasets: [
+              {
+                label: "Skill Ratings",
+                data: Object.values(feedbacks[0].feedbackData).map(
+                  (v: any) => v.rating
+                ),
+                backgroundColor: "rgba(14, 165, 233, 0.2)",
+                borderColor: "#0ea5e9",
+                pointBackgroundColor: "#0ea5e9",
+              },
+            ],
+          }
+        : null,
     }),
-    [completedInterviews, pendingRequests, totalAccepted]
+    [completedInterviews, pendingRequests, totalAccepted, feedbacks]
   );
-
-  const radarData = useMemo(() => {
-    if (!feedbacks.length || !feedbacks[0]?.feedbackData) return null;
-    return {
-      labels: Object.keys(feedbacks[0].feedbackData),
-      datasets: [
-        {
-          label: "Skill Ratings",
-          data: Object.values(feedbacks[0].feedbackData).map(
-            (v: any) => v.rating
-          ),
-          backgroundColor: "rgba(10, 102, 194, 0.2)",
-          borderColor: "#0A66C2",
-          pointBackgroundColor: "#0A66C2",
-          pointBorderColor: "#fff",
-        },
-      ],
-    };
-  }, [feedbacks]);
 
   const handleTabChange = useCallback((tabId: string) => {
     setActiveTab(tabId);
     setSelectedFeedback(null);
   }, []);
 
-  const handleFeedbackClick = useCallback((feedback: any) => {
-    setSelectedFeedback(feedback);
-  }, []);
-
-  const handleModalClose = useCallback(() => {
-    setSelectedFeedback(null);
-  }, []);
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-pulse text-lg text-gray-500">
-          Loading statistics...
-        </div>
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingState />;
 
   return (
-    <div className="min-h-screen p-4">
-      {/* Header Section */}
-      <header className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Performance Dashboard
+    <div className="max-w-7xl mx-auto p-4 lg:p-6">
+      <motion.header
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mb-8"
+      >
+        <h1 className="text-2xl lg:text-3xl font-bold text-slate-900">
+          Performance Insights
         </h1>
-        <p className="text-gray-600 mt-2">
-          Analytics for your interview performance
+        <p className="text-slate-600 mt-2">
+          Detailed analytics of your interview activities
         </p>
-      </header>
+      </motion.header>
 
-      {/* Navigation Tabs */}
-      <nav className="mb-8 border-b border-gray-200">
-        <div className="flex space-x-8">
+      <nav className="border-b border-slate-200 mb-8">
+        <div className="flex gap-6">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
-              className={`pb-4 px-1 font-medium ${
-                activeTab === tab.id
-                  ? "text-[#0A66C2] border-b-2 border-[#0A66C2]"
-                  : "text-gray-500 hover:text-gray-700"
-              }`}
+              className={`pb-3 px-1 font-medium relative transition-colors
+                ${
+                  activeTab === tab.id
+                    ? "text-sky-600 after:absolute after:bottom-0 after:inset-x-0 after:h-0.5 after:bg-sky-600"
+                    : "text-slate-500 hover:text-slate-700"
+                }`}
             >
               {tab.label}
             </button>
@@ -183,148 +135,80 @@ const InterviewerStatistics = () => {
         </div>
       </nav>
 
-      {/* Content Sections */}
       <AnimatePresence mode="wait">
         <motion.div
           key={activeTab}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.2 }}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="space-y-8"
         >
           {activeTab === "overview" && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[
-                { label: "Completed Interviews", value: completedInterviews },
-                { label: "Pending Requests", value: pendingRequests },
-                { label: "Total Accepted", value: totalAccepted },
-              ].map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-white p-6 rounded-xl shadow-sm border border-gray-100"
-                >
-                  <h3 className="text-gray-500 font-medium mb-2">
-                    {item.label}
-                  </h3>
-                  <p className="text-4xl font-bold text-gray-900">
-                    {item.value}
-                  </p>
-                </div>
-              ))}
-              <div className="md:col-span-2 lg:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                <h3 className="text-lg font-semibold mb-4">
+            <div className="grid gap-6 md:grid-cols-3">
+              <StatCard label="Completed" value={completedInterviews} />
+              <StatCard label="Pending" value={pendingRequests} />
+              <StatCard label="Accepted" value={totalAccepted} />
+              <div className="md:col-span-3 bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                <h3 className="text-lg font-semibold mb-6">
                   Activity Overview
                 </h3>
-                <Bar
-                  data={barChartData}
-                  options={{
-                    responsive: true,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                      y: { beginAtZero: true, grid: { color: "#f3f4f6" } },
-                      x: { grid: { display: false } },
-                    },
-                  }}
-                />
+                <div className="h-64">
+                  <Bar
+                    data={chartData.bar}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: false,
+                      plugins: { legend: { display: false } },
+                      scales: {
+                        y: {
+                          grid: { color: "#f1f5f9" },
+                          ticks: { color: "#64748b" },
+                        },
+                        x: {
+                          grid: { display: false },
+                          ticks: { color: "#64748b" },
+                        },
+                      },
+                    }}
+                  />
+                </div>
               </div>
             </div>
           )}
 
           {activeTab === "feedbacks" && (
-            <div className="space-y-6">
-              {feedbacks.length === 0 ? (
-                <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center">
-                  <p className="text-gray-500 text-lg">
-                    No feedbacks available yet.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {feedbacksToDisplay.map((feedback) => (
-                      <motion.div
-                        key={feedback.interviewRequestId}
-                        whileHover={{ y: -5 }}
-                        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 cursor-pointer"
-                        onClick={() => handleFeedbackClick(feedback)}
-                      >
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h4 className="font-semibold text-gray-900">
-                              {feedback.candidateName}
-                            </h4>
-                            <p className="text-sm text-gray-500 mt-1">
-                              {feedback.interviewDate}
-                            </p>
-                          </div>
-                          <div className="flex items-center space-x-1">
-                            <span className="text-sm font-medium text-gray-900">
-                              {feedback.rating.toFixed(1)}
-                            </span>
-                            <Star className="w-5 h-5 text-yellow-400" />
-                          </div>
-                        </div>
-                        <div className="mt-4">
-                          <div className="text-sm text-gray-600 line-clamp-3">
-                            {feedback.feedbackData?.overall?.comments}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                  {feedbacks.length > 3 && !showAllFeedbacks && (
-                    <div className="text-center">
-                      <button
-                        className="px-6 py-2.5 bg-[#0A66C2] text-white rounded-lg font-medium hover:bg-[#0056b3] transition-colors shadow-sm"
-                        onClick={() => setShowAllFeedbacks(true)}
-                      >
-                        Show All Feedbacks
-                      </button>
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+            <FeedbackSection
+              feedbacks={feedbacks}
+              onSelect={setSelectedFeedback}
+            />
           )}
 
           {activeTab === "ratings" && (
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h3 className="text-lg font-semibold mb-6">Feedbacks Analysis</h3>
-              {feedbacks.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">
-                    No feedbacks available for analysis.
-                  </p>
-                </div>
-              ) : !radarData ? (
-                <div className="text-center py-8">
-                  <p className="text-gray-500">
-                    Feedback data is incomplete or unavailable for analysis.
-                  </p>
-                </div>
-              ) : (
-                <div className="max-w-2xl mx-auto">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+              <h3 className="text-lg font-semibold mb-6">Skill Analysis</h3>
+              {chartData.radar ? (
+                <div className="h-96">
                   <Radar
-                    data={radarData}
+                    data={chartData.radar}
                     options={{
                       responsive: true,
+                      maintainAspectRatio: false,
                       scales: {
                         r: {
                           beginAtZero: true,
                           max: 5,
-                          ticks: {
-                            stepSize: 1,
-                            color: "#6B7280",
-                            backdropColor: "transparent",
-                          },
-                          grid: { color: "#f3f4f6" },
-                          pointLabels: { color: "#374151" },
+                          grid: { color: "#f1f5f9" },
+                          ticks: { stepSize: 1, color: "#64748b" },
+                          pointLabels: { color: "#0f172a" },
                         },
                       },
                       plugins: { legend: { display: false } },
-                      elements: { line: { tension: 0.3 } },
                     }}
                   />
+                </div>
+              ) : (
+                <div className="text-center py-12 text-slate-500">
+                  No feedback data available for analysis
                 </div>
               )}
             </div>
@@ -332,69 +216,146 @@ const InterviewerStatistics = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Feedback Modal */}
-      <AnimatePresence>
-        {selectedFeedback && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-            onClick={handleModalClose}
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900">
-                      Detailed Feedback
-                    </h3>
-                    <p className="text-gray-500 mt-1">
-                      {selectedFeedback.interviewDate}
-                    </p>
-                  </div>
-                  <button
-                    onClick={handleModalClose}
-                    className="text-gray-400 hover:text-gray-600"
-                  >
-                    <X size={24} />
-                  </button>
-                </div>
-
-                <div className="space-y-6">
-                  {Object.entries(selectedFeedback.feedbackData).map(
-                    ([key, value]) => (
-                      <div key={key} className="bg-gray-50 p-4 rounded-lg">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="font-medium text-gray-900 capitalize">
-                            {key}
-                          </h4>
-                          <div className="flex items-center space-x-1">
-                            <span className="font-medium text-gray-900">
-                              {(value as any).rating.toFixed(1)}
-                            </span>
-                            <Star className="w-5 h-5 text-yellow-400" />
-                          </div>
-                        </div>
-                        <p className="text-gray-600 text-sm leading-relaxed">
-                          {(value as any).comments}
-                        </p>
-                      </div>
-                    )
-                  )}
-                </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <FeedbackModal
+        feedback={selectedFeedback}
+        onClose={() => setSelectedFeedback(null)}
+      />
     </div>
   );
 };
+
+const StatCard = ({ label, value }: { label: string; value: number }) => (
+  <motion.div
+    whileHover={{ y: -4 }}
+    className="bg-white p-6 rounded-xl shadow-sm border border-slate-200"
+  >
+    <h3 className="text-sm font-medium text-slate-600 mb-2">{label}</h3>
+    <p className="text-3xl font-semibold text-slate-900">{value}</p>
+  </motion.div>
+);
+
+const FeedbackSection = ({
+  feedbacks,
+  onSelect,
+}: {
+  feedbacks: any[];
+  onSelect: (feedback: any) => void;
+}) => (
+  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+    {feedbacks.length ? (
+      feedbacks.map((feedback) => (
+        <motion.div
+          key={feedback.interviewRequestId}
+          whileHover={{ scale: 0.98 }}
+          className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 cursor-pointer"
+          onClick={() => onSelect(feedback)}
+        >
+          <div className="flex justify-between items-start">
+            <div>
+              <h4 className="font-semibold text-slate-900">
+                {feedback.candidateName}
+              </h4>
+              <p className="text-sm text-slate-500 mt-1">
+                {new Date(feedback.interviewDate).toLocaleDateString()}
+              </p>
+            </div>
+            <div className="flex items-center gap-1 text-amber-400">
+              <Star size={18} />
+              <span className="font-medium">{feedback.rating.toFixed(1)}</span>
+            </div>
+          </div>
+          <p className="text-slate-600 text-sm mt-4 line-clamp-3">
+            {feedback.feedbackData?.overall?.comments}
+          </p>
+        </motion.div>
+      ))
+    ) : (
+      <div className="col-span-full bg-white p-8 rounded-xl shadow-sm border border-slate-200 text-center">
+        <p className="text-slate-500">No feedback available yet</p>
+      </div>
+    )}
+  </div>
+);
+
+const FeedbackModal = ({
+  feedback,
+  onClose,
+}: {
+  feedback: any;
+  onClose: () => void;
+}) => (
+  <AnimatePresence>
+    {feedback && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-6">
+            <div className="flex justify-between items-start mb-6">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-900">
+                  Feedback Details
+                </h3>
+                <p className="text-slate-500 mt-1">
+                  {new Date(feedback.interviewDate).toLocaleDateString()}
+                </p>
+              </div>
+              <button
+                onClick={onClose}
+                className="text-slate-500 hover:text-slate-700"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-6">
+              {Object.entries(feedback.feedbackData).map(([category, data]) => (
+                <div key={category} className="bg-slate-50 p-4 rounded-lg">
+                  <div className="flex justify-between items-center mb-3">
+                    <h4 className="font-medium text-slate-900 capitalize">
+                      {category}
+                    </h4>
+                    <div className="flex items-center gap-1 text-amber-400">
+                      <Star size={18} />
+                      <span className="font-medium">
+                        {(data as any).rating}/5
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-slate-600 leading-relaxed">
+                    {(data as any).comments || "No comments provided"}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const LoadingState = () => (
+  <div className="min-h-[50vh] flex items-center justify-center">
+    <div className="animate-pulse space-y-6 w-full max-w-2xl">
+      <div className="h-8 bg-slate-200 rounded-full w-1/2" />
+      <div className="h-4 bg-slate-200 rounded-full w-1/3" />
+      <div className="grid grid-cols-3 gap-4">
+        {[...Array(3)].map((_, i) => (
+          <div key={i} className="h-32 bg-slate-200 rounded-xl" />
+        ))}
+      </div>
+    </div>
+  </div>
+);
 
 export default React.memo(InterviewerStatistics);

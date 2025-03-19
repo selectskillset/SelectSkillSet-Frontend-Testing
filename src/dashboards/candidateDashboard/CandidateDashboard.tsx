@@ -1,144 +1,266 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useCandidateContext } from "../../context/CandidateContext";
 import CandidateStatistics from "./CandidateStatistics";
-import CandidateProfileCompletion from "./CandidateProfileCompletion";
+import axiosInstance from "../../components/common/axiosConfig";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  AlertCircle,
+  FileText,
+  User,
+  Briefcase,
+  Star,
+  Plus,
+} from "lucide-react";
 
 const CandidateDashboard: React.FC = () => {
   const { profile, isLoading, fetchProfile, error } = useCandidateContext();
+  const [completion, setCompletion] = useState<{
+    totalPercentage: number;
+    isComplete: boolean;
+    missingSections: MissingSection[];
+  } | null>(null);
+  const navigate = useNavigate();
 
-  // Fetch profile data on mount if not already fetched
   useEffect(() => {
-    if (!profile) {
-      fetchProfile();
-    }
+    const fetchData = async () => {
+      if (!profile) await fetchProfile();
+      try {
+        const response = await axiosInstance.get(
+          "/candidate/profile-completion"
+        );
+        setCompletion(response.data);
+      } catch (error) {
+        console.error("Error fetching completion data:", error);
+      }
+    };
+    fetchData();
   }, [profile, fetchProfile]);
 
-  // Render profile details
-  const renderProfileDetails = useCallback(() => {
-    if (!profile) return null;
+  const renderProfileDetails = useCallback(
+    () => (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+      >
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Profile Details
+        </h3>
+        <div className="space-y-3">
+          {[
+            { label: "Email", value: profile?.email || "Not provided" },
+            { label: "Location", value: profile?.location || "Not provided" },
+            { label: "Phone", value: profile?.phoneNumber || "Not provided" },
+            {
+              label: "LinkedIn",
+              value: profile?.linkedIn ? (
+                <a
+                  href={profile.linkedIn}
+                  className="text-blue-600 hover:underline"
+                >
+                  View Profile
+                </a>
+              ) : (
+                "Not provided"
+              ),
+            },
+            {
+              label: "Resume",
+              value: profile?.resume ? (
+                <a
+                  href={profile.resume}
+                  className="text-blue-600 hover:underline"
+                >
+                  Download
+                </a>
+              ) : (
+                "Not provided"
+              ),
+            },
+          ].map((item, index) => (
+            <div
+              key={index}
+              className="flex justify-between items-center py-2 border-b border-gray-100"
+            >
+              <span className="text-gray-600">{item.label}</span>
+              <span className="text-gray-800">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      </motion.div>
+    ),
+    [profile]
+  );
 
-    return (
-      <div className="bg-white shadow-lg rounded-lg p-6 transition-transform transform">
-        <h3 className="text-xl font-semibold mb-6">Profile Details</h3>
-        <table className="w-full border-separate border-spacing-2">
-          <tbody>
-            {[
-              { label: "Email", value: profile.email },
-              { label: "Location", value: profile.location },
-              { label: "Phone Number", value: profile.phoneNumber },
-              {
-                label: "LinkedIn",
-                value: profile.linkedIn ? (
-                  <a
-                    href={profile.linkedIn}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
-                  >
-                    LinkedIn Profile
-                  </a>
-                ) : (
-                  "Not Provided"
-                ),
-              },
-              {
-                label: "Resume",
-                value: profile.resume ? (
-                  <a
-                    href={profile.resume}
-                    className="text-blue-500 hover:underline"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Download Resume
-                  </a>
-                ) : (
-                  "Not Provided"
-                ),
-              },
-            ].map((item, index) => (
-              <tr key={index}>
-                <td className="px-4 py-2 font-medium text-gray-600">
-                  {item.label}
-                </td>
-                <td className="px-4 py-2">{item.value}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  const renderProfileCompletion = () => (
+    <motion.div
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-5"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+    >
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-semibold text-gray-800">Profile Strength</h3>
+        <span className="text-blue-600 font-medium">
+          {completion?.totalPercentage}%
+        </span>
       </div>
-    );
-  }, [profile]);
+      <div className="w-full bg-gray-100 rounded-full h-2">
+        <motion.div
+          className="bg-gradient-to-r from-blue-500 to-blue-400 h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${completion?.totalPercentage}%` }}
+          transition={{ duration: 1 }}
+        />
+      </div>
+      {completion?.missingSections.slice(0, 3).map((section, index) => (
+        <div key={index} className="mt-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-lg">
+              <SectionIcon section={section.section} />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-gray-800">
+                {section.section}
+              </p>
+              <p className="text-xs text-gray-500">+{section.percentage}%</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/edit-candidate-profile")}
+            className="p-1.5 hover:bg-gray-50 rounded-lg text-blue-600"
+          >
+            <Plus size={18} />
+          </button>
+        </div>
+      ))}
+      {completion?.missingSections.length > 3 && (
+        <button className="w-full mt-4 text-blue-600 text-sm hover:bg-gray-50 py-2 rounded-lg">
+          View all {completion.missingSections.length} remaining sections
+        </button>
+      )}
+    </motion.div>
+  );
 
-  // Loading state
-  if (isLoading) {
-    return (
-      <div className="text-gray-500 text-center flex justify-center items-center h-screen">
-        Loading...
-      </div>
-    );
-  }
-
-  // Error state
-  if (error) {
-    return (
-      <div className="text-red-600 text-center flex justify-center items-center h-screen">
-        {error}
-      </div>
-    );
-  }
+  if (isLoading) return <LoadingState />;
+  if (error) return <ErrorState error={error} />;
 
   return (
     <motion.div
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.3 }}
-      className="min-h-screen py-8 px-4 sm:px-6 lg:px-8"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen py-8 px-4 sm:px-6 lg:px-8 bg-gray-50"
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sidebar */}
-        <aside className="w-full bg-white shadow-xl rounded-lg p-6 border-r border-gray-200 space-y-6 md:sticky top-28 h-max md:overflow-y-auto ">
-          <div className="space-y-4">
+        <aside className="space-y-6 lg:sticky lg:top-6 h-fit">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 text-center">
             <img
               src={profile?.profilePhoto || "/default-profile.png"}
               alt="Profile"
-              className="w-24 h-24 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
+              className="w-32 h-32 rounded-full object-cover mx-auto border-4 border-white shadow-lg"
             />
-            <h2 className="text-xl font-bold text-gray-800 text-center">
+            <h2 className="text-xl font-bold text-gray-800 mt-4">
               {profile?.name || "Unknown User"}
             </h2>
-            <p className="text-sm text-gray-600 text-center">
-              {profile?.jobTitle || "Job Title Not Provided"}
+            <p className="text-gray-600 mt-1">
+              {profile?.jobTitle || "No title provided"}
             </p>
-          </div>
-          {/* Skills */}
-          <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">Skills</h3>
-            <div className="flex flex-wrap gap-2">
-              {profile?.skills.length > 0 ? (
-                profile.skills.map((skill: string, index: number) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <p className="text-gray-500">No skills available.</p>
-              )}
+            <div className="mt-4 flex flex-wrap gap-2 justify-center">
+              {profile?.skills?.map((skill, index) => (
+                <span
+                  key={index}
+                  className="px-3 py-1 bg-blue-100 text-blue-700 text-sm rounded-full"
+                >
+                  {skill}
+                </span>
+              ))}
             </div>
           </div>
+          {renderProfileCompletion()}
         </aside>
+
         {/* Main Content */}
-        <main className="md:col-span-3 space-y-8">
-          <CandidateProfileCompletion />
+        <main className="lg:col-span-3 space-y-6">
           {renderProfileDetails()}
           <CandidateStatistics />
+          <motion.div
+            className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <ActionCard
+                icon={<Briefcase size={24} className="text-blue-600" />}
+                title="Apply for Jobs"
+                description="Browse latest job postings"
+                link="/jobs"
+              />
+              <ActionCard
+                icon={<FileText size={24} className="text-green-600" />}
+                title="Resume Builder"
+                description="Improve your resume score"
+                link="/resume-builder"
+              />
+            </div>
+          </motion.div>
         </main>
       </div>
     </motion.div>
   );
 };
+
+const SectionIcon = ({ section }: { section: string }) => {
+  const iconProps = { size: 20, className: "text-blue-600" };
+  if (section.includes("Basic")) return <User {...iconProps} />;
+  if (section.includes("Resume")) return <FileText {...iconProps} />;
+  if (section.includes("Work")) return <Briefcase {...iconProps} />;
+  if (section.includes("Skills")) return <Star {...iconProps} />;
+  return <AlertCircle {...iconProps} />;
+};
+
+const ActionCard = ({
+  icon,
+  title,
+  description,
+  link,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  link: string;
+}) => (
+  <Link
+    to={link}
+    className="p-4 border border-gray-100 rounded-xl hover:border-blue-100 hover:bg-blue-50 transition-all"
+  >
+    <div className="flex items-center gap-4">
+      <div className="p-2 bg-white rounded-lg shadow-sm">{icon}</div>
+      <div>
+        <h4 className="font-semibold text-gray-800">{title}</h4>
+        <p className="text-sm text-gray-600">{description}</p>
+      </div>
+    </div>
+  </Link>
+);
+
+const LoadingState = () => (
+  <div className="h-screen flex items-center justify-center">
+    <div className="animate-pulse space-y-6 w-96">
+      <div className="h-32 bg-gray-200 rounded-xl" />
+      <div className="h-64 bg-gray-200 rounded-xl" />
+    </div>
+  </div>
+);
+
+const ErrorState = ({ error }: { error: string }) => (
+  <div className="h-screen flex items-center justify-center text-red-600">
+    <AlertCircle size={24} className="mr-2" />
+    {error}
+  </div>
+);
 
 export default CandidateDashboard;

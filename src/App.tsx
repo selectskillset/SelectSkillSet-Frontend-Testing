@@ -19,9 +19,6 @@ import CorporateRoutes from "./routes/CorporateRoutes";
 import InterviewerRoutes from "./routes/InterviewerRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
 
-
-
-
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
@@ -73,9 +70,7 @@ function App() {
                 boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
               },
               success: {
-                style: {
-                  background: "#28a745",
-                },
+                style: { background: "#0077B5", color: "white" },
               },
               error: {
                 style: {

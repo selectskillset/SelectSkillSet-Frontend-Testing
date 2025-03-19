@@ -10,6 +10,8 @@ import {
   Watch,
   Timer,
   MoreVertical,
+  ChevronRight,
+  ChevronLeft,
 } from "lucide-react";
 import CandidateRescheduleModal from "../../components/common/CandidateRescheduleModal";
 
@@ -34,6 +36,8 @@ const CandidateUpcomingInterviews: React.FC = () => {
   const [reschedulingInterview, setReschedulingInterview] =
     useState<Interview | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
   // Memoized interview processing
   const processedInterviews = useMemo(() => {
@@ -49,6 +53,14 @@ const CandidateUpcomingInterviews: React.FC = () => {
       (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
     );
   }, [interviews, searchQuery]);
+
+  // Pagination logic
+  const paginatedInterviews = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return processedInterviews.slice(startIndex, startIndex + itemsPerPage);
+  }, [processedInterviews, currentPage]);
+
+  const totalPages = Math.ceil(processedInterviews.length / itemsPerPage);
 
   // Fetch interviews on mount
   useEffect(() => {
@@ -113,7 +125,7 @@ const CandidateUpcomingInterviews: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto p-6 space-y-6 border border-gray-100 rounded-xl bg-white shadow-sm"
+      className="max-w-7xl mx-auto p-6 space-y-6 border border-gray-100 rounded-xl bg-white shadow-sm my-5"
     >
       {/* Header Section */}
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
@@ -141,121 +153,30 @@ const CandidateUpcomingInterviews: React.FC = () => {
       {/* Interview List */}
       <ul className="space-y-3">
         <AnimatePresence>
-          {processedInterviews.map((interview, index) => (
-            <motion.li
+          {paginatedInterviews.map((interview, index) => (
+            <InterviewItem
               key={interview.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ delay: index * 0.05 }}
-              className="group bg-white rounded-lg p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all"
-            >
-              <Link
-                to={`/interviewer-profile/${interview.interviewerId}`}
-                className="block space-y-3"
-                aria-label={`View ${interview.interviewerName}'s profile`}
-              >
-                {/* Interviewer Header */}
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-[#0A66C2] overflow-hidden">
-                      <img
-                        src={
-                          interview.interviewerPhoto || "/default-avatar.png"
-                        }
-                        alt={interview.interviewerName}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                    </div>
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-900 line-clamp-1">
-                        {interview.interviewerName || "Interview Session"}
-                      </h2>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className={getStatusStyle(interview.status)}>
-                      {interview.status === "Approved" && (
-                        <UserCheck className="w-4 h-4 mr-2" />
-                      )}
-                      {interview.status === "Cancelled" && (
-                        <XCircle className="w-4 h-4 mr-2" />
-                      )}
-                      {interview.status === "Requested" && (
-                        <Timer className="w-4 h-4 mr-2" />
-                      )}
-                      {interview.status}
-                    </span>
-                    {interview.status === "Approved" && (
-                      <div className="relative">
-                        <button
-                          id={`menu-${interview.id}`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            setOpenMenuId(
-                              openMenuId === interview.id ? null : interview.id
-                            );
-                          }}
-                          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                          aria-label="Interview options"
-                        >
-                          <MoreVertical className="w-5 h-5 text-gray-600" />
-                        </button>
-                        <AnimatePresence>
-                          {openMenuId === interview.id && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 min-w-[160px] z-10 border border-gray-100"
-                            >
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  setReschedulingInterview(interview);
-                                  setOpenMenuId(null);
-                                }}
-                                className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
-                                aria-label="Reschedule interview"
-                              >
-                                <Clock className="w-4 h-4 text-blue-500" />
-                                Reschedule
-                              </button>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Interview Details */}
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-2 text-[#0A66C2]" />
-                    <span>{interview.date}</span>
-                  </div>
-                  <span className="text-gray-300">•</span>
-                  <div className="flex items-center">
-                    <span className="text-gray-900 font-medium">
-                      {interview.from} - {interview.to}
-                    </span>
-                    <span className="ml-1">GMT</span>
-                  </div>
-                </div>
-
-                {/* Additional Info */}
-                {interview.additionalNotes && (
-                  <p className="text-gray-600 text-sm mt-2 line-clamp-2">
-                    {interview.additionalNotes}
-                  </p>
-                )}
-              </Link>
-            </motion.li>
+              interview={interview}
+              index={index}
+              getStatusStyle={getStatusStyle}
+              openMenuId={openMenuId}
+              setOpenMenuId={setOpenMenuId}
+              setReschedulingInterview={setReschedulingInterview}
+            />
           ))}
         </AnimatePresence>
       </ul>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-6">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
 
       {/* Empty State */}
       {!processedInterviews.length && (
@@ -294,6 +215,179 @@ const CandidateUpcomingInterviews: React.FC = () => {
           )}
       </AnimatePresence>
     </motion.div>
+  );
+};
+
+interface InterviewItemProps {
+  interview: Interview;
+  index: number;
+  getStatusStyle: (status: string) => string;
+  openMenuId: string | null;
+  setOpenMenuId: React.Dispatch<React.SetStateAction<string | null>>;
+  setReschedulingInterview: React.Dispatch<
+    React.SetStateAction<Interview | null>
+  >;
+}
+
+const InterviewItem: React.FC<InterviewItemProps> = ({
+  interview,
+  index,
+  getStatusStyle,
+  openMenuId,
+  setOpenMenuId,
+  setReschedulingInterview,
+}) => {
+  return (
+    <motion.li
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ delay: index * 0.05 }}
+      className="group bg-white rounded-lg p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all "
+    >
+      <Link
+        to={`/interviewer-profile/${interview.interviewerId}`}
+        className="block space-y-3"
+        aria-label={`View ${interview.interviewerName}'s profile`}
+      >
+        {/* Interviewer Header */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-[#0A66C2] overflow-hidden">
+              <img
+                src={interview.interviewerPhoto || "/default-avatar.png"}
+                alt={interview.interviewerName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900 line-clamp-1">
+                {interview.interviewerName || "Interview Session"}
+              </h2>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className={getStatusStyle(interview.status)}>
+              {interview.status === "Approved" && (
+                <UserCheck className="w-4 h-4 mr-2" />
+              )}
+              {interview.status === "Cancelled" && (
+                <XCircle className="w-4 h-4 mr-2" />
+              )}
+              {interview.status === "Requested" && (
+                <Timer className="w-4 h-4 mr-2" />
+              )}
+              {interview.status}
+            </span>
+            {interview.status === "Approved" && (
+              <div className="relative">
+                <button
+                  id={`menu-${interview.id}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setOpenMenuId(
+                      openMenuId === interview.id ? null : interview.id
+                    );
+                  }}
+                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Interview options"
+                >
+                  <MoreVertical className="w-5 h-5 text-gray-600" />
+                </button>
+                <AnimatePresence>
+                  {openMenuId === interview.id && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 min-w-[160px] z-10 border border-gray-100"
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setReschedulingInterview(interview);
+                          setOpenMenuId(null);
+                        }}
+                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
+                        aria-label="Reschedule interview"
+                      >
+                        <Clock className="w-4 h-4 text-blue-500" />
+                        Reschedule
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Interview Details */}
+        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+          <div className="flex items-center">
+            <Clock className="w-4 h-4 mr-2 text-[#0A66C2]" />
+            <span>{interview.date}</span>
+          </div>
+          <span className="text-gray-300">•</span>
+          <div className="flex items-center">
+            <span className="text-gray-900 font-medium">
+              {interview.from} - {interview.to}
+            </span>
+            <span className="ml-1">GMT</span>
+          </div>
+        </div>
+
+        {/* Additional Info */}
+        {interview.additionalNotes && (
+          <p className="text-gray-600 text-sm mt-2 line-clamp-2">
+            {interview.additionalNotes}
+          </p>
+        )}
+      </Link>
+    </motion.li>
+  );
+};
+
+const Pagination: React.FC<{
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}> = ({ currentPage, totalPages, onPageChange }) => {
+  return (
+    <div className="flex items-center justify-between">
+      <button
+        onClick={() => onPageChange(currentPage - 1)}
+        disabled={currentPage === 1}
+        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-lg"
+      >
+        <ChevronLeft size={20} />
+      </button>
+
+      <div className="flex gap-1">
+        {Array.from({ length: totalPages }).map((_, index) => (
+          <button
+            key={index}
+            onClick={() => onPageChange(index + 1)}
+            className={`w-8 h-8 rounded-lg text-sm ${
+              currentPage === index + 1
+                ? "bg-[#0A66C2] text-white"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {index + 1}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={() => onPageChange(currentPage + 1)}
+        disabled={currentPage === totalPages}
+        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-lg"
+      >
+        <ChevronRight size={20} />
+      </button>
+    </div>
   );
 };
 

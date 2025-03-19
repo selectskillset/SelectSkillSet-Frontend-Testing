@@ -1,14 +1,18 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
+import { User, Mail, Building, Send } from "lucide-react";
 import requestDemo from "../../images/RequestDemo.svg";
-import { Toaster, toast } from "react-hot-toast";
 
-const RequestDemoPage: React.FC = () => {
+const RequestDemoPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     company: "",
     message: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -17,149 +21,145 @@ const RequestDemoPage: React.FC = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Simulate form submission logic
-    console.log("Form Data Submitted:", formData);
+    if (!formData.name || !formData.email || !formData.company) {
+      return toast.error("Please fill in all required fields");
+    }
 
-    // Show success toast notification
-    toast.success(
-      "Thank you for requesting a demo! We will get back to you soon.",
-      {
-        position: "top-center",
-      }
-    );
-
-    // Reset form data after submission
-    setFormData({
-      name: "",
-      email: "",
-      company: "",
-      message: "",
-    });
+    setIsLoading(true);
+    try {
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      toast.success("Demo request submitted successfully!");
+      setFormData({
+        name: "",
+        email: "",
+        company: "",
+        message: "",
+      });
+      navigate("/");
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center  py-12 px-4 sm:px-6 lg:px-8">
-      {/* Toaster for Notifications */}
-      <Toaster />
+    <div className="min-h-screen bg-gray-50 flex items-center">
+      <div className="container mx-auto px-6 lg:px-24">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          {/* Left Section - Visual */}
+          <div className="hidden lg:block relative rounded-lg overflow-hidden">
+            <img
+              src={requestDemo}
+              alt="Request Demo"
+              className="w-full h-full object-cover"
+              style={{ transform: "scale(1.1)" }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0077B5]/20 to-[#004182]/20" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-white text-center p-8">
+                <h2 className="text-4xl font-extrabold mb-4 drop-shadow-lg">
+                  Transform Your Hiring Process
+                </h2>
+                <p className="text-lg font-medium drop-shadow">
+                  Experience seamless talent acquisition with our platform
+                </p>
+              </div>
+            </div>
+          </div>
 
-      {/* Container */}
-      <div className="max-w-6xl w-full bg-white rounded-2xl shadow-xl overflow-hidden lg:flex">
-        {/* Left Section: Image */}
-        <div className="hidden lg:block lg:w-1/2 relative">
-          <img
-            src={requestDemo}
-            alt="Request Demo"
-            className="absolute inset-0 w-full h-full object-contain opacity-90"
-          />
-          {/* Gradient Overlay */}
-          {/* Text Content */}
-          <div className="relative z-10 p-8 text-[#0077B5] backdrop-blur-sm">
-            <h2 className="text-4xl font-bold mb-4 text-shadow-sm">
+          {/* Right Section - Form */}
+          <div className="bg-white rounded-lg p-8 shadow-xl">
+            <h2 className="text-3xl font-extrabold text-[#0077B5] mb-6 text-center">
               Request a Demo
             </h2>
-            <p className="text-lg font-medium leading-relaxed">
-              Discover how our platform can help you streamline your workflow
-              and achieve your goals.
+            <p className="text-gray-600 mb-8 text-center">
+              Let us show you how Selectskillset can revolutionize your workflow
             </p>
+
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Name Field */}
+              <div className="relative">
+                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#0077B5]" />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg 
+                             focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
+                  placeholder="Full Name"
+                />
+              </div>
+
+              {/* Email Field */}
+              <div className="relative">
+                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#0077B5]" />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg 
+                             focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
+                  placeholder="Work Email"
+                />
+              </div>
+
+              {/* Company Field */}
+              <div className="relative">
+                <Building className="absolute left-4 top-1/2 transform -translate-y-1/2 text-[#0077B5]" />
+                <input
+                  type="text"
+                  id="company"
+                  name="company"
+                  value={formData.company}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg 
+                             focus:outline-none focus:ring-2 focus:ring-[#0077B5]"
+                  placeholder="Company Name"
+                />
+              </div>
+
+              {/* Message Field */}
+              <div className="relative">
+                <textarea
+                  id="message"
+                  name="message"
+                  value={formData.message}
+                  onChange={handleChange}
+                  rows={4}
+                  className="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-lg 
+                            focus:outline-none focus:ring-2 focus:ring-[#0077B5] resize-none"
+                  placeholder="Tell us about your needs..."
+                />
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full py-3 rounded-lg text-white transition-all 
+                           duration-300 ${
+                             isLoading
+                               ? "bg-gray-300 cursor-not-allowed"
+                               : "bg-gradient-to-r from-[#0077B5] to-[#004182] hover:from-[#005885] hover:to-[#003366]"
+                           }`}
+              >
+                {isLoading ? "Submitting..." : "Request Demo"}
+                {!isLoading && <Send className="inline-block ml-2 w-5 h-5" />}
+              </button>
+            </form>
           </div>
-        </div>
-
-        {/* Right Section: Form */}
-        <div className="lg:w-1/2 p-8 space-y-8">
-          <h2 className="text-3xl font-semibold text-center text-gray-800 mb-6">
-            Get in Touch
-          </h2>
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Name Field */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] transition duration-300"
-                placeholder="Enter your full name"
-              />
-            </div>
-
-            {/* Email Field */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] transition duration-300"
-                placeholder="Enter your email address"
-              />
-            </div>
-
-            {/* Company Field */}
-            <div>
-              <label
-                htmlFor="company"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Company Name
-              </label>
-              <input
-                type="text"
-                id="company"
-                name="company"
-                value={formData.company}
-                onChange={handleChange}
-                required
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] transition duration-300"
-                placeholder="Enter your company name"
-              />
-            </div>
-
-            {/* Message Field */}
-            <div>
-              <label
-                htmlFor="message"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Message
-              </label>
-              <textarea
-                id="message"
-                name="message"
-                value={formData.message}
-                onChange={handleChange}
-                rows={4}
-                className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] transition duration-300 resize-none"
-                placeholder="Tell us more about your needs..."
-              ></textarea>
-            </div>
-
-            {/* Submit Button */}
-            <button
-              type="submit"
-              className="w-full bg-[#0077B5] text-white py-3 rounded-lg "
-            >
-              Submit Request
-            </button>
-          </form>
         </div>
       </div>
     </div>
