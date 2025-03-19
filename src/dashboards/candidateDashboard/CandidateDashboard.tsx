@@ -11,6 +11,8 @@ import {
   Briefcase,
   Star,
   Plus,
+  CalendarDays,
+  Award,
 } from "lucide-react";
 
 const CandidateDashboard: React.FC = () => {
@@ -192,18 +194,19 @@ const CandidateDashboard: React.FC = () => {
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Quick Actions
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-2  gap-4">
+            
               <ActionCard
-                icon={<Briefcase size={24} className="text-blue-600" />}
-                title="Apply for Jobs"
-                description="Browse latest job postings"
-                link="/jobs"
+                icon={<CalendarDays size={24} className="text-orange-600" />}
+                title="Schedule Interviews"
+                description="Book mock interviews with experts"
+                link="/candidate-schedule-interviews"
               />
               <ActionCard
-                icon={<FileText size={24} className="text-green-600" />}
-                title="Resume Builder"
-                description="Improve your resume score"
-                link="/resume-builder"
+                icon={<Award size={24} className="text-purple-600" />}
+                title="Skill Assessment"
+                description="Test your technical competencies"
+                link="/skill-assessment"
               />
             </div>
           </motion.div>
