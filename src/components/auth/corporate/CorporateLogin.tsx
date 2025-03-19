@@ -11,57 +11,47 @@ export const CorporateLogin = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
-      toast.error("Please fill in all fields.");
-      return;
+      return toast.error("Please fill in all fields");
     }
 
-    setLoading(true); // Show loader
     try {
+      setLoading(true);
       const response = await axiosInstance.post("/corporate/login", {
         email,
         password,
       });
-      if (response.data.success) {
-        const { token } = response.data;
-        // Store the token in sessionStorage
-        sessionStorage.setItem("corporateToken", token);
-        toast.success("Login successful!");
-        // Redirect to the corporate dashboard
-        navigate("/corporate-dashboard");
+
+      // Check for valid response structure
+      if (response.data?.token) {
+        sessionStorage.setItem("corporateToken", response.data.token);
+        toast.success("Login successful");
+        navigate("/corporate-dashboard", { replace: true }); // Force navigation
       } else {
-        toast.error(response.data.message || "Login failed. Please try again.");
+        toast.error(response.data.message || "Invalid response from server");
       }
-    } catch (err: any) {
-      toast.error(
-        err.response?.data?.message || "Something went wrong. Please try again."
-      );
+    } catch (error: any) {
+      // Handle both network errors and API errors
+      if (error.response) {
+        toast.error(error.response.data.message || "Login failed");
+      } else {
+        toast.error("Network error - Please check your connection");
+      }
     } finally {
-      setLoading(false); // Hide loader
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-gray-50 py-12">
-      {/* Login Card */}
       <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-xl">
-        {/* Heading */}
-        <h2 className="text-3xl font-bold text-center mb-8 text-[#0077B5]">
+        <h2 className="text-3xl font-extrabold text-center mb-8 text-[#0077B5]">
           Corporate Login
         </h2>
 
-        {/* Loader */}
-        {loading && (
-          <div className="flex justify-center mb-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0077B5]"></div>
-          </div>
-        )}
-
-        {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Field */}
           <div>
@@ -99,37 +89,25 @@ export const CorporateLogin = () => {
               placeholder="Enter your password"
               required
             />
-            {/* Show/Hide Password Icon */}
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 bottom-2 transform -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
+              className="absolute right-4 bottom-2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
           </div>
 
-          {/* Forgot Password Link */}
-          {/* <div className="text-right">
-            <button
-              type="button"
-              onClick={() => navigate("/forgot-password")}
-              className="text-sm text-[#0077B5] hover:underline"
-            >
-              Forgot Password?
-            </button>
-          </div> */}
-
           {/* Login Button */}
           <button
             type="submit"
+            className={`w-full text-white py-3 rounded-lg bg-gradient-to-r 
+                         from-[#0077B5] to-[#004182] focus:outline-none focus:ring-2 
+                         focus:ring-offset-2 focus:ring-[#0077B5] transition duration-300 
+                         hover:bg-gradient-to-r hover:from-[#005885] hover:to-[#003366]
+                         ${loading ? "cursor-wait" : ""}`}
             disabled={loading}
-            className={`w-full py-3 rounded-lg ${
-              loading
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-gradient-to-r from-[#0077B5] to-[#004182] text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B5]"
-            } transition duration-300 hover:bg-gradient-to-r hover:from-[#005885] hover:to-[#003366]`}
           >
             {loading ? "Logging In..." : "Login"}
           </button>

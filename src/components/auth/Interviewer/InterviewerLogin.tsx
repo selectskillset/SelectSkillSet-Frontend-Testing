@@ -64,13 +64,6 @@ export const InterviewerLogin = () => {
           Interviewer Login
         </h2>
 
-        {/* Loader */}
-        {isLoading && (
-          <div className="flex justify-center mb-6">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#0077B5]"></div>
-          </div>
-        )}
-
         {/* Form */}
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Email Field */}
@@ -134,12 +127,12 @@ export const InterviewerLogin = () => {
           {/* Login Button */}
           <button
             type="submit"
+            className={`w-full text-white py-3 rounded-lg bg-gradient-to-r 
+                         from-[#0077B5] to-[#004182] focus:outline-none focus:ring-2 
+                         focus:ring-offset-2 focus:ring-[#0077B5] transition duration-300 
+                         hover:bg-gradient-to-r hover:from-[#005885] hover:to-[#003366]
+                         ${isLoading ? "cursor-wait" : ""}`}
             disabled={isLoading}
-            className={`w-full py-3 rounded-lg ${
-              isLoading
-                ? "bg-gray-300 cursor-not-allowed"
-                : "bg-gradient-to-r from-[#0077B5] to-[#004182] text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B5]"
-            } transition duration-300 hover:bg-gradient-to-r hover:from-[#005885] hover:to-[#003366]`}
           >
             {isLoading ? "Logging In..." : "Login"}
           </button>
