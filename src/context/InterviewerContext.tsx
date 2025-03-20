@@ -15,6 +15,7 @@ interface InterviewRequest {
   profilePhoto: string | null;
   position: string;
   date: string;
+  day: string;
   time: string;
   status: string;
 }

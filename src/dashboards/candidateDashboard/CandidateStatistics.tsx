@@ -421,8 +421,7 @@ const FeedbackCard: React.FC<{ feedback: Feedback; onClick: () => void }> = ({
   onClick,
 }) => (
   <motion.div
-    whileHover={{ scale: 1.02 }}
-    className="bg-white p-4 rounded-2xl shadow-md cursor-pointer hover:shadow-lg transition-shadow border border-gray-100"
+    className="bg-white p-4 rounded-lg shadow-sm cursor-pointer   border border-gray-100"
     onClick={onClick}
   >
     <div className="flex items-center space-x-4">
@@ -461,7 +460,7 @@ const ChartCard: React.FC<{ title: string; children: React.ReactNode }> = ({
   title,
   children,
 }) => (
-  <div className="bg-white p-6 rounded-2xl shadow-md border border-gray-100">
+  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
     <h3 className="text-lg md:text-xl font-medium text-gray-800 mb-6">
       {title}
     </h3>

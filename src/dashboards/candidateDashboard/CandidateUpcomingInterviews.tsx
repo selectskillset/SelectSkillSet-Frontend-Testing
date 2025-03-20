@@ -153,7 +153,7 @@ const CandidateUpcomingInterviews: React.FC = () => {
       {/* Interview List */}
       <ul className="space-y-3">
         <AnimatePresence>
-          {paginatedInterviews.map((interview, index) => (
+          {paginatedInterviews.reverse().map((interview, index) => (
             <InterviewItem
               key={interview.id}
               interview={interview}

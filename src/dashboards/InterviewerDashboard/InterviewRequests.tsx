@@ -242,6 +242,17 @@ const InterviewRequests: React.FC = () => {
     return () => window.removeEventListener("click", handleClickOutside);
   }, [openMenuId]);
 
+  const formatDate = (dateString) => {
+    if (!dateString) return "TBD";
+    
+    const [month, day, year] = dateString.split('/');
+    const paddedDay = day.padStart(2, '0');
+    const paddedMonth = month.padStart(2, '0');
+    const shortYear = year.slice(-2);
+    
+    return `${paddedDay}/${paddedMonth}/${shortYear}`;
+  };
+
   return (
     <div className="min-h-screen p-4 sm:p-6 lg:p-8 bg-gray-50">
       <motion.div
@@ -268,7 +279,7 @@ const InterviewRequests: React.FC = () => {
           ) : sortedRequests.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence>
-                {sortedRequests.map((request) => (
+                {sortedRequests.reverse().map((request) => (
                   <motion.div
                     key={request.id}
                     initial={{ opacity: 0, scale: 0.95 }}
@@ -303,7 +314,8 @@ const InterviewRequests: React.FC = () => {
                           </p>
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <Calendar className="w-4 h-4 text-blue-500" />
-                            <span>{request.date || "TBD"}</span>
+                            <span>{request.day || "TBD"}</span>
+                            <span>{formatDate(request.date) || "TBD"}</span>
                             <span className="text-gray-300">|</span>
                             <Clock className="w-4 h-4 text-purple-500" />
                             <span>{request.time || "TBD"}</span>
