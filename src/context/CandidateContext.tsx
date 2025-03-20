@@ -87,6 +87,7 @@ export const CandidateProvider = ({
           phoneNumber: profileData.phoneNumber || "Phone number not provided",
           jobTitle: profileData.jobTitle || "Job title not provided",
           profilePhoto: profileData.profilePhoto || "",
+          experiences: profileData.experiences || [],
           linkedIn: profileData.linkedIn || "",
           resume: profileData.resume || "",
           feedback: profileData.statistics?.feedbacks || [],

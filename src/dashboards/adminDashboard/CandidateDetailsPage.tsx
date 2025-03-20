@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import axiosInstance from "../../components/common/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,16 +20,55 @@ import {
   XCircle,
   AlertTriangle,
   MoreVertical,
+  Briefcase,
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
+import { format, parse } from "date-fns";
 
-const CandidateDetailsPage = () => {
-  const { id } = useParams();
+interface Experience {
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  _id: string;
+}
+
+interface Interview {
+  interviewerId: string;
+  date: string;
+  from: string;
+  to: string;
+  price: string;
+  status: string;
+  _id: string;
+}
+
+interface Candidate {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  countryCode: string;
+  profilePhoto: string;
+  skills: string[];
+  jobTitle: string;
+  linkedIn: string;
+  location: string;
+  resume: string;
+  phoneNumber: string;
+  isSuspended: boolean;
+  experiences: Experience[];
+  scheduledInterviews: Interview[];
+}
+
+const CandidateDetailsPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState({
-    candidate: null,
+    candidate: null as Candidate | null,
     isLoading: true,
     isDropdownOpen: false,
     isDeleteModalOpen: false,
@@ -35,36 +80,81 @@ const CandidateDetailsPage = () => {
 
   const interviewsPerPage = 2;
 
-  useEffect(() => {
-    const fetchCandidate = async () => {
-      try {
-        const { data } = await axiosInstance.get(
-          `/admin/getOneCandidate/${id}`
-        );
-        if (data.success) {
-          setState((prev) => ({ ...prev, candidate: data.data }));
-        }
-      } finally {
-        setState((prev) => ({ ...prev, isLoading: false }));
+  const fetchCandidate = useCallback(async () => {
+    try {
+      const { data } = await axiosInstance.get<{
+        success: boolean;
+        data: Candidate;
+      }>(`/admin/getOneCandidate/${id}`);
+      if (data.success) {
+        setState((prev) => ({ ...prev, candidate: data.data }));
       }
-    };
-    fetchCandidate();
+    } catch (error) {
+      console.error("Error fetching candidate:", error);
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
   }, [id]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setState((prev) => ({ ...prev, isDropdownOpen: false }));
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    fetchCandidate();
+  }, [fetchCandidate]);
+
+  const formatExperienceDate = useCallback((dateString: string): string => {
+    try {
+      const [day, month, year] = dateString.split("/");
+      const date = new Date(`${month}/${day}/${year}`);
+      return format(date, "MMM yyyy");
+    } catch {
+      return dateString;
+    }
   }, []);
 
-  const handleStatusUpdate = async () => {
+  const formatInterviewDate = useCallback((dateString: string): string => {
+    try {
+      const parsedDate = parse(dateString, "EEEE, M/d/yyyy", new Date());
+      return format(parsedDate, "MMM do, yyyy");
+    } catch {
+      return dateString;
+    }
+  }, []);
+
+  const getStatusIcon = useCallback((status: string) => {
+    switch (status.toLowerCase()) {
+      case "approved":
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case "completed":
+        return <CheckCircle className="w-4 h-4 text-blue-500" />;
+      case "re-scheduled":
+        return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+      default:
+        return <XCircle className="w-4 h-4 text-red-500" />;
+    }
+  }, []);
+
+  const totalInterviews = useMemo(
+    () => state.candidate?.scheduledInterviews?.length || 0,
+    [state.candidate]
+  );
+
+  const totalPages = useMemo(
+    () => Math.ceil(totalInterviews / interviewsPerPage),
+    [totalInterviews]
+  );
+
+  const currentInterviews = useMemo(
+    () =>
+      state.candidate?.scheduledInterviews?.slice(
+        (state.currentPage - 1) * interviewsPerPage,
+        state.currentPage * interviewsPerPage
+      ) || [],
+    [state.candidate, state.currentPage]
+  );
+
+  const handleStatusUpdate = useCallback(async () => {
     setState((prev) => ({ ...prev, isUpdating: true }));
     try {
-      const action = state.candidate.isSuspended ? "activate" : "suspend";
+      const action = state.candidate?.isSuspended ? "activate" : "suspend";
       const { data } = await axiosInstance.put(`/admin/toggleCandidate/${id}`, {
         action,
         ...(action === "suspend" && { reason: state.suspensionReason }),
@@ -73,10 +163,12 @@ const CandidateDetailsPage = () => {
       if (data.success) {
         setState((prev) => ({
           ...prev,
-          candidate: {
-            ...prev.candidate,
-            isSuspended: !prev.candidate.isSuspended,
-          },
+          candidate: prev.candidate
+            ? {
+                ...prev.candidate,
+                isSuspended: !prev.candidate.isSuspended,
+              }
+            : null,
           suspensionReason: "",
           isSuspendModalOpen: false,
         }));
@@ -84,19 +176,23 @@ const CandidateDetailsPage = () => {
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
-  };
+  }, [state.candidate, state.suspensionReason, id]);
 
-  // Derived values
-  const totalInterviews = state.candidate?.scheduledInterviews?.length || 0;
-  const totalPages = Math.ceil(totalInterviews / interviewsPerPage);
-  const currentInterviews = state.candidate?.scheduledInterviews?.slice(
-    (state.currentPage - 1) * interviewsPerPage,
-    state.currentPage * interviewsPerPage
-  );
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setState((prev) => ({ ...prev, isDropdownOpen: false }));
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Suspension Warning Banner */}
+    <div className="min-h-screen space-y-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AnimatePresence>
         {state.candidate?.isSuspended && (
           <motion.div
@@ -126,11 +222,8 @@ const CandidateDetailsPage = () => {
             <div className="bg-white rounded-xl shadow-sm p-6 flex flex-wrap items-center justify-between gap-6">
               <div className="flex items-center gap-5 flex-1 min-w-[300px]">
                 <img
-                  src={
-                    state.candidate.profilePhoto ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt="Profile"
+                  src={state.candidate.profilePhoto || "/default-avatar.jpg"}
+                  alt={`${state.candidate.firstName} ${state.candidate.lastName}`}
                   className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
                 />
                 <div>
@@ -139,14 +232,14 @@ const CandidateDetailsPage = () => {
                   </h1>
                   <div className="mt-1 space-y-1">
                     <p className="text-gray-600">{state.candidate.jobTitle}</p>
-                    <p className="text-sm text-gray-500">
-                      {state.candidate.location}
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <MapPin className="w-4 h-4" />
+                      <span>{state.candidate.location}</span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Actions Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() =>
@@ -156,6 +249,7 @@ const CandidateDetailsPage = () => {
                     }))
                   }
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Actions menu"
                 >
                   <MoreVertical className="text-gray-600" />
                 </button>
@@ -203,59 +297,43 @@ const CandidateDetailsPage = () => {
             {/* Details Grid */}
             <div className="grid gap-6 md:grid-cols-2">
               {/* Contact Information */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-xl  shadow-sm p-6 space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Mail className="w-5 h-5 text-gray-500" /> Contact Information
                 </h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">Email: </span>
-                      <span className="text-gray-600">
-                        {state.candidate.email}
-                      </span>
-                    </div>
+                    <span className="text-gray-600">
+                      {state.candidate.email}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">Phone: </span>
-                      <span className="text-gray-600">
-                        {state.candidate.phoneNumber || "Not provided"}
-                      </span>
-                    </div>
+                    <span className="text-gray-600">
+                      {state.candidate.countryCode}{" "}
+                      {state.candidate.phoneNumber}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Linkedin className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">
-                        LinkedIn:{" "}
-                      </span>
-                      <span className="text-gray-600">
-                        {state.candidate.linkedIn ? (
-                          <a
-                            href={state.candidate.linkedIn}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-600 hover:underline"
-                          >
-                            {`/${
-                              state.candidate.linkedIn.split(
-                                "linkedin.com/in/"
-                              )[1]
-                            }`}
-                          </a>
-                        ) : (
-                          "Not provided"
+                  {state.candidate.linkedIn && (
+                    <div className="flex items-center gap-3">
+                      <Linkedin className="w-4 h-4 text-gray-400" />
+                      <a
+                        href={state.candidate.linkedIn}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline truncate"
+                      >
+                        {state.candidate.linkedIn.replace(
+                          /^https?:\/\/[^/]+\//,
+                          ""
                         )}
-                      </span>
+                      </a>
                     </div>
-                  </div>
+                  )}
                 </div>
               </div>
 
-              {/* Skills and Resume */}
               <div className="bg-white rounded-xl shadow-sm p-6 space-y-6">
                 <div>
                   <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
@@ -293,22 +371,52 @@ const CandidateDetailsPage = () => {
                 </div>
               </div>
 
-              {/* Scheduled Interviews */}
+              <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-gray-500" /> Experience
+                  </h2>
+                  <div className="space-y-4">
+                    {state.candidate.experiences?.map((exp, index) => (
+                      <div
+                        key={index}
+                        className="border-l-4 border-indigo-100 pl-4"
+                      >
+                        <h3 className="font-medium text-gray-900">
+                          {exp.position}
+                        </h3>
+                        <p className="text-gray-600 text-sm">{exp.company}</p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          {formatExperienceDate(exp.startDate)} -{" "}
+                          {exp.current
+                            ? "Present"
+                            : formatExperienceDate(exp.endDate)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
               <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-gray-500" /> Scheduled
                   Interviews
                 </h2>
-                {currentInterviews?.length > 0 ? (
+                {currentInterviews.length > 0 ? (
                   <>
                     <div className="divide-y divide-gray-100">
-                      {currentInterviews.map((interview, index) => (
-                        <div key={index} className="py-4">
+                      {currentInterviews.map((interview) => (
+                        <motion.div
+                          key={interview._id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="py-4"
+                        >
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-gray-600">
-                                {interview.date}
+                                {formatInterviewDate(interview.date)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -318,22 +426,16 @@ const CandidateDetailsPage = () => {
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              {interview.status === "Approved" ? (
-                                <CheckCircle className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <XCircle className="w-4 h-4 text-red-500" />
-                              )}
+                              {getStatusIcon(interview.status)}
                               <span className="capitalize text-gray-700">
                                 {interview.status.toLowerCase()}
                               </span>
                             </div>
-                          </div>
-                          <div className="mt-2 space-y-1">
-                            <p className="text-sm text-gray-600">
+                            <div className="text-sm text-gray-600">
                               Price: ${interview.price}
-                            </p>
+                            </div>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
 
@@ -383,10 +485,7 @@ const CandidateDetailsPage = () => {
                 setState((prev) => ({ ...prev, isDeleteModalOpen: false }))
               }
             >
-              <div
-                className="bg-white rounded-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="bg-white rounded-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   Delete Candidate Account
                 </h3>
@@ -403,26 +502,27 @@ const CandidateDetailsPage = () => {
                       }))
                     }
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                    disabled={state.isUpdating}
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setState((prev) => ({ ...prev, isUpdating: true }));
-                      axiosInstance
-                        .delete(`/admin/deleteOneCandidate/${id}`)
-                        .finally(() => {
-                          setState((prev) => ({
-                            ...prev,
-                            isUpdating: false,
-                            isDeleteModalOpen: false,
-                          }));
-                          navigate("/admin/dashboard");
-                        });
+                      try {
+                        await axiosInstance.delete(
+                          `/admin/deleteOneCandidate/${id}`
+                        );
+                        navigate("/admin/dashboard");
+                      } finally {
+                        setState((prev) => ({
+                          ...prev,
+                          isUpdating: false,
+                          isDeleteModalOpen: false,
+                        }));
+                      }
                     }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                     disabled={state.isUpdating}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                   >
                     {state.isUpdating ? "Deleting..." : "Confirm Delete"}
                   </button>
@@ -442,10 +542,7 @@ const CandidateDetailsPage = () => {
                 setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
               }
             >
-              <div
-                className="bg-white rounded-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="bg-white rounded-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   {state.candidate?.isSuspended
                     ? "Activate Account"
@@ -460,9 +557,10 @@ const CandidateDetailsPage = () => {
                         suspensionReason: e.target.value,
                       }))
                     }
-                    className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 mb-4"
+                    className="w-full border border-gray-200 rounded-lg p-3 mb-4"
                     rows={3}
                     placeholder="Enter suspension reason..."
+                    aria-label="Suspension reason"
                   />
                 )}
                 <div className="flex justify-end gap-3">
@@ -474,17 +572,16 @@ const CandidateDetailsPage = () => {
                       }))
                     }
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                    disabled={state.isUpdating}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleStatusUpdate}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                     disabled={
                       state.isUpdating ||
                       (!state.candidate?.isSuspended && !state.suspensionReason)
                     }
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {state.isUpdating
                       ? "Processing..."

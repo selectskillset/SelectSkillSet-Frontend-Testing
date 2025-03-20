@@ -89,6 +89,31 @@ const CandidateDashboard: React.FC = () => {
               <span className="text-gray-800">{item.value}</span>
             </div>
           ))}
+  
+          {/* Experience Section */}
+          {profile?.experiences?.length > 0 && (
+            <div className="pt-4">
+              <h4 className="text-lg font-medium text-gray-800 mb-3">Experience</h4>
+              {profile.experiences.map((exp, idx) => (
+                <div
+                  key={idx}
+                  className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h5 className="text-gray-800 font-medium">{exp.company}</h5>
+                      <p className="text-gray-700">{exp.position}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-gray-600">
+                        {exp.startDate} - {exp.current ? "Present" : exp.endDate}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </motion.div>
     ),

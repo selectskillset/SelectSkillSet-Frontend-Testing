@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback, useMemo } from "react";
 import axiosInstance from "../../components/common/axiosConfig";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -12,16 +12,53 @@ import {
   XCircle,
   AlertTriangle,
   MoreVertical,
+  MapPin,
+  Briefcase,
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
+import { format, parse } from "date-fns";
 
-const InterviewerDetailsPage = () => {
-  const { id } = useParams();
+interface Experience {
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string;
+  current: boolean;
+  _id: string;
+}
+interface InterviewRequest {
+  _id: string;
+  date: string;
+  time: string;
+  status: string;
+  candidateName: string;
+  position: string;
+}
+
+interface Interviewer {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePhoto: string;
+  jobTitle: string;
+  experience: number;
+  phoneNumber: string;
+  location: string;
+  price: number;
+  skills: string[];
+  isSuspended: boolean;
+  interviewRequests: InterviewRequest[];
+  experiences: Experience[];
+}
+
+const InterviewerDetailsPage: React.FC = () => {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const dropdownRef = useRef(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const [state, setState] = useState({
-    interviewer: null,
+    interviewer: null as Interviewer | null,
     isLoading: true,
     isDropdownOpen: false,
     isDeleteModalOpen: false,
@@ -33,36 +70,91 @@ const InterviewerDetailsPage = () => {
 
   const requestsPerPage = 3;
 
-  useEffect(() => {
-    const fetchInterviewer = async () => {
-      try {
-        const { data } = await axiosInstance.get(
-          `/admin/getOneInterviewer/${id}`
-        );
-        if (data.success) {
-          setState((prev) => ({ ...prev, interviewer: data.data }));
-        }
-      } finally {
-        setState((prev) => ({ ...prev, isLoading: false }));
+  const fetchInterviewer = useCallback(async () => {
+    try {
+      const { data } = await axiosInstance.get<{
+        success: boolean;
+        data: Interviewer;
+      }>(`/admin/getOneInterviewer/${id}`);
+      if (data.success) {
+        setState((prev) => ({ ...prev, interviewer: data.data }));
       }
-    };
-    fetchInterviewer();
+    } catch (error) {
+      console.error("Error fetching interviewer:", error);
+    } finally {
+      setState((prev) => ({ ...prev, isLoading: false }));
+    }
   }, [id]);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setState((prev) => ({ ...prev, isDropdownOpen: false }));
+    fetchInterviewer();
+  }, [fetchInterviewer]);
+
+   const formatExperienceDate = useCallback((dateString: string): string => {
+      try {
+        const [day, month, year] = dateString.split("/");
+        const date = new Date(`${month}/${day}/${year}`);
+        return format(date, "MMM yyyy");
+      } catch {
+        return dateString;
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+  const formatDate = useCallback((dateString: string): string => {
+    try {
+      const parsedDate = parse(dateString, "EEEE, M/d/yyyy", new Date());
+      return format(parsedDate, "MMM do, yyyy");
+    } catch {
+      return dateString;
+    }
   }, []);
 
-  const handleStatusUpdate = async () => {
+  const formatTime = useCallback((timeString: string): string => {
+    try {
+      const [time, period] = timeString.split(" ");
+      const [hours, minutes] = time.split(":");
+      return `${hours.padStart(2, "0")}:${minutes} ${period}`;
+    } catch {
+      return timeString;
+    }
+  }, []);
+
+  const getStatusIcon = useCallback((status: string) => {
+    switch (status.toLowerCase()) {
+      case "approved":
+        return <CheckCircle className="w-4 h-4 text-green-500" />;
+      case "completed":
+        return <CheckCircle className="w-4 h-4 text-blue-500" />;
+      case "re-scheduled":
+        return <AlertTriangle className="w-4 h-4 text-amber-500" />;
+      default:
+        return <XCircle className="w-4 h-4 text-red-500" />;
+    }
+  }, []);
+
+  const totalRequests = useMemo(
+    () => state.interviewer?.interviewRequests?.length || 0,
+    [state.interviewer]
+  );
+
+  const totalPages = useMemo(
+    () => Math.ceil(totalRequests / requestsPerPage),
+    [totalRequests]
+  );
+
+  const currentRequests = useMemo(
+    () =>
+      state.interviewer?.interviewRequests?.slice(
+        (state.currentPage - 1) * requestsPerPage,
+        state.currentPage * requestsPerPage
+      ) || [],
+    [state.interviewer, state.currentPage]
+  );
+
+  const handleStatusUpdate = useCallback(async () => {
     setState((prev) => ({ ...prev, isUpdating: true }));
     try {
-      const action = state.interviewer.isSuspended ? "activate" : "suspend";
+      const action = state.interviewer?.isSuspended ? "activate" : "suspend";
       const { data } = await axiosInstance.put(
         `/admin/toggleInterviewer/${id}`,
         {
@@ -71,7 +163,7 @@ const InterviewerDetailsPage = () => {
         }
       );
 
-      if (data.success) {
+      if (data.success && state.interviewer) {
         setState((prev) => ({
           ...prev,
           interviewer: {
@@ -85,19 +177,23 @@ const InterviewerDetailsPage = () => {
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
-  };
+  }, [state.interviewer, state.suspensionReason, id]);
 
-  // Derived values
-  const totalRequests = state.interviewer?.interviewRequests?.length || 0;
-  const totalPages = Math.ceil(totalRequests / requestsPerPage);
-  const currentRequests = state.interviewer?.interviewRequests?.slice(
-    (state.currentPage - 1) * requestsPerPage,
-    state.currentPage * requestsPerPage
-  );
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target as Node)
+      ) {
+        setState((prev) => ({ ...prev, isDropdownOpen: false }));
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Suspension Warning Banner */}
+    <div className="min-h-screen space-y-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AnimatePresence>
         {state.interviewer?.isSuspended && (
           <motion.div
@@ -125,14 +221,15 @@ const InterviewerDetailsPage = () => {
         ) : (
           <div className="space-y-8">
             {/* Profile Header */}
-            <div className="bg-white rounded-xl shadow-sm p-6 flex flex-wrap items-center justify-between gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-sm p-6 flex flex-wrap items-center justify-between gap-6"
+            >
               <div className="flex items-center gap-5 flex-1 min-w-[300px]">
                 <img
-                  src={
-                    state.interviewer.profilePhoto ||
-                    "https://via.placeholder.com/150"
-                  }
-                  alt="Profile"
+                  src={state.interviewer.profilePhoto || "/default-avatar.jpg"}
+                  alt={`${state.interviewer.firstName} ${state.interviewer.lastName}`}
                   className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
                 />
                 <div>
@@ -143,14 +240,16 @@ const InterviewerDetailsPage = () => {
                     <p className="text-gray-600">
                       {state.interviewer.jobTitle}
                     </p>
-                    <p className="text-sm text-gray-500">
-                      {state.interviewer.experience} years experience
-                    </p>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <Briefcase className="w-4 h-4" />
+                      <span>
+                        {state.interviewer.experience} years experience
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Actions Dropdown */}
               <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() =>
@@ -160,6 +259,7 @@ const InterviewerDetailsPage = () => {
                     }))
                   }
                   className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  aria-label="Actions menu"
                 >
                   <MoreVertical className="text-gray-600" />
                 </button>
@@ -202,44 +302,33 @@ const InterviewerDetailsPage = () => {
                   )}
                 </AnimatePresence>
               </div>
-            </div>
+            </motion.div>
 
             {/* Details Grid */}
             <div className="grid gap-6 md:grid-cols-2">
               {/* Contact Information */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+              <div className="bg-white rounded-xl shadow-sm p-6 space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
                   <Mail className="w-5 h-5 text-gray-500" /> Contact Information
                 </h2>
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Mail className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">Email: </span>
-                      <span className="text-gray-600">
-                        {state.interviewer.email}
-                      </span>
-                    </div>
+                    <span className="text-gray-600">
+                      {state.interviewer.email}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">Phone: </span>
-                      <span className="text-gray-600">
-                        {state.interviewer.phoneNumber || "Not provided"}
-                      </span>
-                    </div>
+                    <span className="text-gray-600">
+                      {state.interviewer.phoneNumber || "Not provided"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    <FileText className="w-4 h-4 text-gray-400" />
-                    <div>
-                      <span className="font-medium text-gray-700">
-                        Location:{" "}
-                      </span>
-                      <span className="text-gray-600">
-                        {state.interviewer.location}
-                      </span>
-                    </div>
+                    <MapPin className="w-4 h-4 text-gray-400" />
+                    <span className="text-gray-600">
+                      {state.interviewer.location}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -273,36 +362,64 @@ const InterviewerDetailsPage = () => {
                 </div>
               </div>
 
+              <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
+                <div>
+                  <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-gray-500" /> Experience
+                  </h2>
+                  <div className="space-y-4">
+                    {state.interviewer.experiences?.map((exp, index) => (
+                      <div
+                        key={index}
+                        className="border-l-4 border-indigo-100 pl-4"
+                      >
+                        <h3 className="font-medium text-gray-900">
+                          {exp.position}
+                        </h3>
+                        <p className="text-gray-600 text-sm">{exp.company}</p>
+                        <p className="text-gray-500 text-sm mt-1">
+                          {formatExperienceDate(exp.startDate)} -{" "}
+                          {exp.current
+                            ? "Present"
+                            : formatExperienceDate(exp.endDate)}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
               {/* Interview Requests */}
               <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
                 <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-gray-500" /> Interview
                   Requests
                 </h2>
-                {currentRequests?.length > 0 ? (
+                {currentRequests.length > 0 ? (
                   <>
                     <div className="divide-y divide-gray-100">
-                      {currentRequests.map((request, index) => (
-                        <div key={index} className="py-4">
+                      {currentRequests.map((request) => (
+                        <motion.div
+                          key={request._id}
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="py-4"
+                        >
                           <div className="flex flex-wrap items-center gap-4 text-sm">
                             <div className="flex items-center gap-2">
                               <Calendar className="w-4 h-4 text-gray-400" />
                               <span className="text-gray-600">
-                                {request.date}
+                                {formatDate(request.date)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-400" />
                               <span className="text-gray-600">
-                                {request.time}
+                                {formatTime(request.time)}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              {request.status === "Approved" ? (
-                                <CheckCircle className="w-4 h-4 text-green-500" />
-                              ) : (
-                                <XCircle className="w-4 h-4 text-red-500" />
-                              )}
+                              {getStatusIcon(request.status)}
                               <span className="capitalize text-gray-700">
                                 {request.status.toLowerCase()}
                               </span>
@@ -316,7 +433,7 @@ const InterviewerDetailsPage = () => {
                               Position: {request.position}
                             </p>
                           </div>
-                        </div>
+                        </motion.div>
                       ))}
                     </div>
 
@@ -366,10 +483,7 @@ const InterviewerDetailsPage = () => {
                 setState((prev) => ({ ...prev, isDeleteModalOpen: false }))
               }
             >
-              <div
-                className="bg-white rounded-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="bg-white rounded-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   Delete Interviewer Account
                 </h3>
@@ -386,26 +500,27 @@ const InterviewerDetailsPage = () => {
                       }))
                     }
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                    disabled={state.isUpdating}
                   >
                     Cancel
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       setState((prev) => ({ ...prev, isUpdating: true }));
-                      axiosInstance
-                        .delete(`/admin/deleteOneInterviewer/${id}`)
-                        .finally(() => {
-                          setState((prev) => ({
-                            ...prev,
-                            isUpdating: false,
-                            isDeleteModalOpen: false,
-                          }));
-                          navigate("/admin/dashboard");
-                        });
+                      try {
+                        await axiosInstance.delete(
+                          `/admin/deleteOneInterviewer/${id}`
+                        );
+                        navigate("/admin/dashboard");
+                      } finally {
+                        setState((prev) => ({
+                          ...prev,
+                          isUpdating: false,
+                          isDeleteModalOpen: false,
+                        }));
+                      }
                     }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
                     disabled={state.isUpdating}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
                   >
                     {state.isUpdating ? "Deleting..." : "Confirm Delete"}
                   </button>
@@ -425,10 +540,7 @@ const InterviewerDetailsPage = () => {
                 setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
               }
             >
-              <div
-                className="bg-white rounded-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="bg-white rounded-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-semibold mb-4">
                   {state.interviewer?.isSuspended
                     ? "Activate Account"
@@ -443,9 +555,10 @@ const InterviewerDetailsPage = () => {
                         suspensionReason: e.target.value,
                       }))
                     }
-                    className="w-full border border-gray-200 rounded-lg p-3 focus:ring-2 focus:ring-indigo-500 mb-4"
+                    className="w-full border border-gray-200 rounded-lg p-3 mb-4"
                     rows={3}
                     placeholder="Enter suspension reason..."
+                    aria-label="Suspension reason"
                   />
                 )}
                 <div className="flex justify-end gap-3">
@@ -457,18 +570,17 @@ const InterviewerDetailsPage = () => {
                       }))
                     }
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                    disabled={state.isUpdating}
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleStatusUpdate}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
                     disabled={
                       state.isUpdating ||
                       (!state.interviewer?.isSuspended &&
                         !state.suspensionReason)
                     }
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50"
                   >
                     {state.isUpdating
                       ? "Processing..."

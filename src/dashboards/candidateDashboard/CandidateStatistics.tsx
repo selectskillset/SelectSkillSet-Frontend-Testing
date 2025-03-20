@@ -425,7 +425,7 @@ const FeedbackCard: React.FC<{ feedback: Feedback; onClick: () => void }> = ({
     onClick={onClick}
   >
     <div className="flex items-center space-x-4">
-      {feedback.interviewer.profilePhoto ? (
+      {feedback?.interviewer?.profilePhoto ? (
         <img
           src={feedback.interviewer.profilePhoto}
           alt="Profile"
@@ -434,13 +434,13 @@ const FeedbackCard: React.FC<{ feedback: Feedback; onClick: () => void }> = ({
         />
       ) : (
         <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-medium">
-          {feedback.interviewer.firstName[0]}
-          {feedback.interviewer.lastName[0]}
+          {feedback?.interviewer?.firstName[0]}
+          {feedback?.interviewer?.lastName[0]}
         </div>
       )}
       <div className="flex-1">
         <h4 className="text-md md:text-lg font-medium text-gray-800">
-          {feedback.interviewer.firstName} {feedback.interviewer.lastName}
+          {feedback?.interviewer?.firstName} {feedback?.interviewer?.lastName}
         </h4>
         <p className="text-sm text-gray-500">
           {new Date(feedback.interviewDate).toLocaleDateString()}

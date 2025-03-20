@@ -48,8 +48,44 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
       onChange(index, field, e.target.value);
     };
 
+  const formatDateForInput = (dateString: string) => {
+    if (!dateString) return "";
+
+    // Convert from dd/mm/yy to Date object
+    const [day, month, year] = dateString.split("/");
+    const fullYear = `20${year}`; // Assuming 21st century dates
+    return `${fullYear}-${month}-${day}`;
+  };
+
+  const parseDateInput = (dateString: string) => {
+    if (!dateString) return "";
+
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+
+      // Convert to dd/mm/yy format
+      const day = String(date.getDate()).padStart(2, "0");
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const year = String(date.getFullYear()).slice(-2);
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      return "";
+    }
+  };
+
+  const handleDateChange =
+    (field: "startDate" | "endDate") =>
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const formattedDate = parseDateInput(e.target.value);
+      onChange(index, field, formattedDate);
+    };
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(index, "current", e.target.checked);
+    if (e.target.checked) {
+      onChange(index, "endDate", "");
+    }
   };
 
   return (
@@ -117,9 +153,9 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
             Start Date
           </label>
           <input
-            type="month"
-            value={exp.startDate}
-            onChange={handleChange("startDate")}
+            type="date"
+            value={formatDateForInput(exp.startDate)}
+            onChange={handleDateChange("startDate")}
             className={`w-full px-4 py-2.5 rounded-lg border ${
               errors[`experience-${index}-startDate`]
                 ? "border-red-500"
@@ -139,9 +175,9 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
             End Date
           </label>
           <input
-            type="month"
-            value={exp.endDate || ""}
-            onChange={handleChange("endDate")}
+            type="date"
+            value={formatDateForInput(exp.endDate)}
+            onChange={handleDateChange("endDate")}
             disabled={exp.current}
             className={`w-full px-4 py-2.5 rounded-lg border ${
               errors[`experience-${index}-endDate`]
