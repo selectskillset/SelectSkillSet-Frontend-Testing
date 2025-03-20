@@ -244,12 +244,12 @@ const InterviewRequests: React.FC = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return "TBD";
-    
-    const [month, day, year] = dateString.split('/');
-    const paddedDay = day.padStart(2, '0');
-    const paddedMonth = month.padStart(2, '0');
+
+    const [month, day, year] = dateString.split("/");
+    const paddedDay = day.padStart(2, "0");
+    const paddedMonth = month.padStart(2, "0");
     const shortYear = year.slice(-2);
-    
+
     return `${paddedDay}/${paddedMonth}/${shortYear}`;
   };
 
@@ -312,11 +312,12 @@ const InterviewRequests: React.FC = () => {
                           <p className="text-sm text-gray-600 truncate">
                             {request.position || "N/A"}
                           </p>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <div className="flex items-center gap-2 text-sm text-gray-500 ">
                             <Calendar className="w-4 h-4 text-blue-500" />
                             <span>{request.day || "TBD"}</span>
                             <span>{formatDate(request.date) || "TBD"}</span>
-                            <span className="text-gray-300">|</span>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-gray-500 ">
                             <Clock className="w-4 h-4 text-purple-500" />
                             <span>{request.time || "TBD"}</span>
                           </div>
