@@ -1,10 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   XCircle,
   Camera,
   UploadCloud,
   Pencil,
   ChevronDown,
+  Plus,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import toast from "react-hot-toast";
@@ -13,6 +15,14 @@ import { skillsData } from "../../components/common/SkillsData";
 import { jobTitles } from "../../components/common/JobTitles";
 import { countryData } from "../../components/common/countryData";
 import { useNavigate } from "react-router-dom";
+
+type Experience = {
+  company: string;
+  position: string;
+  startDate: string;
+  endDate: string | null;
+  current: boolean;
+};
 
 type ProfileState = {
   firstName: string;
@@ -24,6 +34,166 @@ type ProfileState = {
   skills: string[];
   resume: File | null;
   profilePhoto: File | null;
+  experiences: Experience[];
+};
+
+// interface Experience {
+//   company: string;
+//   position: string;
+//   startDate: string;
+//   endDate?: string;
+//   current: boolean;
+// }
+
+interface ExperienceEntryProps {
+  exp: Experience;
+  index: number;
+  onChange: (index: number, field: keyof Experience, value: any) => void;
+  onRemove: (index: number) => void;
+  errors: { [key: string]: string };
+}
+
+const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
+  exp,
+  index,
+  onChange,
+  onRemove,
+  errors,
+}) => {
+  const handleChange =
+    (field: keyof Experience) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      onChange(index, field, e.target.value);
+    };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(index, "current", e.target.checked);
+  };
+
+  return (
+    <div className="relative space-y-4 p-4 border rounded-lg bg-gray-50">
+      {/* Remove Button */}
+      <button
+        onClick={() => onRemove(index)}
+        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+        aria-label="Remove entry"
+      >
+        <X />
+      </button>
+
+      {/* Company Name */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Company Name
+        </label>
+        <input
+          type="text"
+          value={exp.company}
+          onChange={handleChange("company")}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors[`experience-${index}-company`]
+              ? "border-red-500"
+              : "border-gray-300"
+          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          placeholder="Enter company name"
+        />
+        {errors[`experience-${index}-company`] && (
+          <p className="mt-1.5 text-sm text-red-600">
+            {errors[`experience-${index}-company`]}
+          </p>
+        )}
+      </div>
+
+      {/* Position */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Position
+        </label>
+        <input
+          type="text"
+          value={exp.position}
+          onChange={handleChange("position")}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors[`experience-${index}-position`]
+              ? "border-red-500"
+              : "border-gray-300"
+          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          placeholder="Enter your position"
+        />
+        {errors[`experience-${index}-position`] && (
+          <p className="mt-1.5 text-sm text-red-600">
+            {errors[`experience-${index}-position`]}
+          </p>
+        )}
+      </div>
+
+      {/* Start Date and End Date */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Start Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Start Date
+          </label>
+          <input
+            type="month"
+            value={exp.startDate}
+            onChange={handleChange("startDate")}
+            className={`w-full px-4 py-2.5 rounded-lg border ${
+              errors[`experience-${index}-startDate`]
+                ? "border-red-500"
+                : "border-gray-300"
+            } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          />
+          {errors[`experience-${index}-startDate`] && (
+            <p className="mt-1.5 text-sm text-red-600">
+              {errors[`experience-${index}-startDate`]}
+            </p>
+          )}
+        </div>
+
+        {/* End Date */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            End Date
+          </label>
+          <input
+            type="month"
+            value={exp.endDate || ""}
+            onChange={handleChange("endDate")}
+            disabled={exp.current}
+            className={`w-full px-4 py-2.5 rounded-lg border ${
+              errors[`experience-${index}-endDate`]
+                ? "border-red-500"
+                : exp.current
+                ? "border-gray-300 bg-gray-100 cursor-not-allowed"
+                : "border-gray-300"
+            } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          />
+          {errors[`experience-${index}-endDate`] && (
+            <p className="mt-1.5 text-sm text-red-600">
+              {errors[`experience-${index}-endDate`]}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Current Employment Checkbox */}
+      <div className="flex items-center">
+        <input
+          type="checkbox"
+          checked={exp.current}
+          onChange={handleCheckboxChange}
+          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+          id={`current-${index}`}
+        />
+        <label
+          htmlFor={`current-${index}`}
+          className="ml-2 text-sm text-gray-700"
+        >
+          I currently work here
+        </label>
+      </div>
+    </div>
+  );
 };
 
 const EditCandidateProfile = () => {
@@ -38,6 +208,7 @@ const EditCandidateProfile = () => {
     skills: [],
     resume: null,
     profilePhoto: null,
+    experiences: [],
   });
   const [existingResume, setExistingResume] = useState("");
   const [existingProfilePhoto, setExistingProfilePhoto] = useState("");
@@ -57,17 +228,18 @@ const EditCandidateProfile = () => {
         const { data } = await axiosInstance.get("/candidate/getProfile");
         const profileData = data.profile;
 
-        // Find country based on stored country code
         const country =
           countryData.find((c) => c.code === profileData.countryCode) ||
           countryData[0];
 
         setSelectedCountry(country);
+
         setProfile({
           ...profileData,
           phoneNumber: profileData.phoneNumber,
           resume: null,
           profilePhoto: null,
+          experiences: profileData.experiences || [],
         });
         setExistingResume(profileData.resume);
         setExistingProfilePhoto(profileData.profilePhoto);
@@ -112,6 +284,41 @@ const EditCandidateProfile = () => {
     [selectedCountry.maxLength]
   );
 
+  const handleExperienceChange = useCallback(
+    (index: number, field: keyof Experience, value: any) => {
+      setProfile((prev) => {
+        const updated = [...prev.experiences];
+        updated[index] = { ...updated[index], [field]: value };
+        if (field === "current" && value) updated[index].endDate = null;
+        return { ...prev, experiences: updated };
+      });
+    },
+    []
+  );
+
+  const addNewExperience = useCallback(() => {
+    setProfile((prev) => ({
+      ...prev,
+      experiences: [
+        ...prev.experiences,
+        {
+          company: "",
+          position: "",
+          startDate: "",
+          endDate: null,
+          current: false,
+        },
+      ],
+    }));
+  }, []);
+
+  const removeExperience = useCallback((index: number) => {
+    setProfile((prev) => ({
+      ...prev,
+      experiences: prev.experiences.filter((_, i) => i !== index),
+    }));
+  }, []);
+
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
     if (!profile.firstName.trim())
@@ -120,13 +327,22 @@ const EditCandidateProfile = () => {
     if (!profile.jobTitle.trim()) newErrors.jobTitle = "Job title is required";
     if (!profile.skills.length)
       newErrors.skills = "At least one skill is required";
-
-    // Phone validation
     if (!profile.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
     } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits`;
     }
+
+    profile.experiences.forEach((exp, index) => {
+      if (!exp.company.trim())
+        newErrors[`experience-${index}-company`] = "Company name is required";
+      if (!exp.position.trim())
+        newErrors[`experience-${index}-position`] = "Position is required";
+      if (!exp.startDate)
+        newErrors[`experience-${index}-startDate`] = "Start date is required";
+      if (!exp.current && !exp.endDate)
+        newErrors[`experience-${index}-endDate`] = "End date is required";
+    });
 
     setErrors(newErrors);
     return !Object.keys(newErrors).length;
@@ -145,10 +361,19 @@ const EditCandidateProfile = () => {
       phoneNumber: profile.phoneNumber,
       countryCode: selectedCountry.code,
       skills: profile.skills,
+      experiences: profile.experiences.map((exp) => ({
+        ...exp,
+        endDate: exp.current ? null : exp.endDate,
+      })),
     };
 
     Object.entries(payload).forEach(([key, value]) => {
-      formData.append(key, key === "skills" ? JSON.stringify(value) : value);
+      formData.append(
+        key,
+        key === "skills" || key === "experiences"
+          ? JSON.stringify(value)
+          : value
+      );
     });
 
     if (profile.profilePhoto)
@@ -169,7 +394,6 @@ const EditCandidateProfile = () => {
     }
   }, [profile, selectedCountry, navigate, validateForm]);
 
-  // Skills handlers
   const handleSkillInput = useCallback(
     (value: string) => {
       setSkillInput(value);
@@ -208,7 +432,6 @@ const EditCandidateProfile = () => {
     [skillInput, handleAddSkill]
   );
 
-  // Job Title handlers
   const handleJobTitleInput = useCallback((value: string) => {
     setJobTitleInput(value);
     setSuggestedJobTitles(
@@ -259,7 +482,6 @@ const EditCandidateProfile = () => {
           Edit Profile
         </h2>
 
-        {/* Profile Photo Section */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative w-32 h-32 rounded-full border-4 border-blue-100 bg-gray-100 overflow-hidden">
             {profile.profilePhoto || existingProfilePhoto ? (
@@ -298,7 +520,6 @@ const EditCandidateProfile = () => {
           </label>
         </div>
 
-        {/* Form Fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {(["firstName", "lastName", "location", "linkedIn"] as const).map(
             (field) => (
@@ -321,7 +542,6 @@ const EditCandidateProfile = () => {
             )
           )}
 
-          {/* Job Title Field */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Job Title
@@ -356,7 +576,6 @@ const EditCandidateProfile = () => {
             )}
           </div>
 
-          {/* Country Selector */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Country
@@ -384,7 +603,6 @@ const EditCandidateProfile = () => {
             </div>
           </div>
 
-          {/* Phone Number Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number
@@ -409,7 +627,6 @@ const EditCandidateProfile = () => {
           </div>
         </div>
 
-        {/* Skills Section */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Skills
@@ -457,7 +674,32 @@ const EditCandidateProfile = () => {
           )}
         </div>
 
-        {/* Resume Upload */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold text-gray-900">Experience</h3>
+            <button
+              onClick={addNewExperience}
+              className="flex items-center px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg"
+            >
+              <Plus className="w-5 h-5 mr-1" />
+              Add Experience
+            </button>
+          </div>
+
+          <div className="space-y-4">
+            {profile.experiences.map((exp, index) => (
+              <ExperienceEntry
+                key={index}
+                exp={exp}
+                index={index}
+                onChange={handleExperienceChange}
+                onRemove={removeExperience}
+                errors={errors}
+              />
+            ))}
+          </div>
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Resume
@@ -486,7 +728,6 @@ const EditCandidateProfile = () => {
           </label>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-end space-x-4 pt-6">
           <button
             onClick={() => navigate("/candidate-dashboard")}
