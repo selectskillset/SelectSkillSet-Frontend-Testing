@@ -60,7 +60,7 @@ function App() {
           -------------------------------------------------- */}
           <Toaster
             toastOptions={{
-              duration: 5000,
+              duration: 2000,
               style: {
                 fontSize: "18px",
                 padding: "16px",

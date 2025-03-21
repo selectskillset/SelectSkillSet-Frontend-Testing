@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   FileText,
   X,
+  Wallet,
 } from "lucide-react";
 
 // Import Section Components
@@ -16,10 +17,12 @@ import InterviewerNotificationSettings from "./InterviewerNotificationSettings";
 import InterviewerContactSupport from "./InterviewerContactSupport";
 import InterviewerReportProblem from "./InterviewerReportProblem";
 import InterviewerTermsAndConditions from "./InterviewerTermsAndConditions";
+import InterviewerBankAccountSettings from "./InterviewerBankAccountSettings";
 
 // Enum for settings sections
 enum InterviewerSettingsSection {
   ACCOUNT = "Account Settings",
+  BANK_ACCOUNT = "Bank Account",
   PRIVACY = "Privacy",
   NOTIFICATIONS = "Notifications",
   SUPPORT = "Contact Support",
@@ -35,6 +38,7 @@ const InterviewerSettingsPage: React.FC = () => {
   // Define settings options with icons
   const settingsOptions = [
     { icon: <Settings size={20} />, label: InterviewerSettingsSection.ACCOUNT },
+    { icon: <Wallet size={20} />, label: InterviewerSettingsSection.BANK_ACCOUNT },
     { icon: <Lock size={20} />, label: InterviewerSettingsSection.PRIVACY },
     {
       icon: <Bell size={20} />,
@@ -106,6 +110,9 @@ const InterviewerSettingsPage: React.FC = () => {
       >
         {activeSection === InterviewerSettingsSection.ACCOUNT && (
           <InterviewerAccountSettings />
+        )}
+        {activeSection === InterviewerSettingsSection.BANK_ACCOUNT && (
+          <InterviewerBankAccountSettings />
         )}
         {activeSection === InterviewerSettingsSection.PRIVACY && (
           <InterviewerPrivacySettings />
