@@ -16,6 +16,7 @@ export const InterviewerSignup = () => {
     password: "",
     phoneNumber: "",
     countryCode: "",
+    hasExperience: false,
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,7 +60,8 @@ export const InterviewerSignup = () => {
 
   // Form validation
   const validateForm = () => {
-    const { firstName, lastName, email, password, phoneNumber } = formData;
+    const { firstName, lastName, email, password, phoneNumber, hasExperience } =
+      formData;
 
     if (!firstName || !lastName || !email || !password || !phoneNumber) {
       toast.error("Please fill in all fields");
@@ -91,9 +93,19 @@ export const InterviewerSignup = () => {
       return false;
     }
 
+    if (!hasExperience) {
+      toast.error(
+        "You must have more than 8 years of experience to register as an interviewer"
+      );
+      return false;
+    }
+
     return true;
   };
 
+  const handleExperienceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, hasExperience: e.target.checked });
+  };
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,15 +124,19 @@ export const InterviewerSignup = () => {
         payload
       );
       setIsLoading(false);
-      if (response.data.success) {
+      if (response.data) {
         toast.success("Registration successful");
         navigate("/verify-otp?userType=interviewer");
       } else {
-        toast.error(response.data.message || "Registration failed");
+        toast.error(response.message || "Registration failed");
       }
     } catch (error) {
       setIsLoading(false);
-      toast.error("An error occurred, please try again later");
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+      } else {
+        toast.error("An error occurred, please try again later");
+      }
     }
   };
 
@@ -284,6 +300,20 @@ export const InterviewerSignup = () => {
                 placeholder={`Enter your phone number (${selectedCountry.maxLength} digits)`}
                 required
               />
+            </div>
+
+            <div className="flex items-center space-x-2 my-3">
+              <input
+                type="checkbox"
+                id="experience"
+                checked={formData.hasExperience}
+                onChange={handleExperienceChange}
+                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+              />
+              <label htmlFor="experience" className="text-sm text-gray-700">
+                I confirm that I have more than 8 years of professional
+                experience
+              </label>
             </div>
 
             <div className="flex items-center space-x-2 my-5">
