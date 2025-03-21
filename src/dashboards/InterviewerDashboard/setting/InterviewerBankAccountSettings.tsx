@@ -162,7 +162,7 @@ const InterviewerBankAccountSettings: React.FC = () => {
 
   return (
     <div className="p-6">
-      <div className="rounded-xl shadow-sm p-8 bg-white">
+      <div className="rounded-xl shadow-sm p-8 ">
         <div className="mb-8 flex items-center gap-3 border-b pb-4">
           <Lock className="text-[#0A66C2]" size={24} />
           <h1 className="text-2xl font-semibold text-gray-800">
