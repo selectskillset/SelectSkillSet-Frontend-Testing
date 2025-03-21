@@ -89,7 +89,7 @@ const CandidateInterviews = () => {
       <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto px-6 py-8">
         {/* Sidebar Filters */}
         <motion.aside
-          initial={{ opacity: 0, x: -20 }}
+         
           animate={{ opacity: 1, x: 0 }}
           className="bg-white rounded-xl p-6 shadow-sm sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto lg:block hidden"
         >
@@ -220,7 +220,7 @@ const CandidateInterviews = () => {
             {filteredInterviewers.length > 0 ? (
               <motion.div
                 key="results"
-                initial={{ opacity: 0 }}
+              
                 animate={{ opacity: 1 }}
                 className="grid gap-6 md:grid-cols-2 xl:grid-cols-1"
               >
@@ -234,7 +234,7 @@ const CandidateInterviews = () => {
             ) : (
               <motion.div
                 key="no-results"
-                initial={{ opacity: 0 }}
+             
                 animate={{ opacity: 1 }}
                 className="bg-white p-12 rounded-xl text-center shadow-sm"
               >
@@ -420,7 +420,7 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
 
 const MobileFilterSidebar = ({ filters, setFilters, onClose, onFindMatch }) => (
   <motion.div
-    initial={{ x: "-100%" }}
+   
     animate={{ x: 0 }}
     exit={{ x: "-100%" }}
     className="fixed inset-0 z-50 bg-white p-6"
@@ -535,15 +535,69 @@ const MobileFilterSidebar = ({ filters, setFilters, onClose, onFindMatch }) => (
 );
 
 const LoadingState = () => (
-  <div className="min-h-screen flex items-center justify-center">
-    <div className="animate-pulse space-y-6 w-full max-w-3xl">
-      <div className="h-8 bg-gray-200 rounded-full w-1/2 mx-auto" />
-      <div className="h-4 bg-gray-200 rounded-full w-1/3 mx-auto" />
-      <div className="grid grid-cols-1 gap-6">
-        {[...Array(3)].map((_, i) => (
-          <div key={i} className="h-32 bg-gray-200 rounded-xl" />
-        ))}
+  <div className="min-h-screen bg-gray-100 text-gray-900 p-6">
+    <div className="max-w-7xl mx-auto grid lg:grid-cols-[300px_1fr] gap-8">
+      {/* Skeleton Sidebar */}
+      <div className="bg-white rounded-xl p-6 shadow-sm sticky top-6 h-[calc(100vh-3rem)] hidden lg:block">
+        <div className="space-y-6 animate-pulse">
+          <div className="border-b pb-6 space-y-4">
+            <div className="h-6 bg-gray-200 rounded w-1/2" />
+            <div className="h-10 bg-gray-200 rounded-lg" />
+          </div>
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="space-y-4">
+              <div className="h-4 bg-gray-200 rounded w-1/3" />
+              <div className="h-8 bg-gray-200 rounded-lg" />
+              <div className="h-3 bg-gray-200 rounded w-full" />
+            </div>
+          ))}
+          <div className="h-10 bg-gray-200 rounded-lg" />
+        </div>
       </div>
+
+      {/* Skeleton Main Content */}
+      <main className="space-y-8">
+        <header className="bg-white p-6 rounded-xl shadow-sm">
+          <div className="animate-pulse">
+            <div className="h-8 bg-gray-200 rounded w-1/3 mb-4" />
+            <div className="h-4 bg-gray-200 rounded w-1/4" />
+          </div>
+        </header>
+
+        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+              <div className="flex gap-6">
+                <div className="relative flex-shrink-0">
+                  <div className="w-20 h-20 rounded-xl bg-gray-200" />
+                </div>
+                <div className="flex-1 space-y-4">
+                  <div className="flex justify-between">
+                    <div className="space-y-2">
+                      <div className="h-5 bg-gray-200 rounded w-32" />
+                      <div className="h-4 bg-gray-200 rounded w-24" />
+                    </div>
+                    <div className="h-4 bg-gray-200 rounded w-24" />
+                  </div>
+                  <div className="flex gap-2">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-6 bg-gray-200 rounded-full w-16" />
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="h-4 bg-gray-200 rounded w-24" />
+                    <div className="h-4 bg-gray-200 rounded w-24" />
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="h-8 bg-gray-200 rounded-lg w-24" />
+                    <div className="h-8 bg-gray-200 rounded-lg w-24" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   </div>
 );
