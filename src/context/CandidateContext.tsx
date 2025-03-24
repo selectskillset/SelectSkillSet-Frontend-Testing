@@ -1,9 +1,16 @@
-import { createContext, useContext, useState, useCallback } from "react";
+// src/context/CandidateContext.tsx
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+} from "react";
 import axiosInstance from "../components/common/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
-// Define Feedback Interface
-export interface Feedback {
+// Type Definitions
+interface Feedback {
   feedbackData: Record<string, any>;
   rating: number;
   interviewRequestId: string;
@@ -15,37 +22,69 @@ export interface Feedback {
   };
 }
 
-// Define Statistics Interface
-export interface Statistics {
+interface Statistics {
   completedInterviews: number;
   averageRating: number;
   totalFeedbackCount: number;
   feedbacks: Feedback[];
 }
 
-// Define Interview Interface
-export interface Interview {
+interface Interview {
   id: string;
   name: string;
   date: string;
   time: string;
   status: string;
-  [key: string]: any; // Allow additional properties
+  [key: string]: any;
+}
+
+interface CandidateProfile {
+  name: string;
+  email: string;
+  skills: string[];
+  location: string;
+  phoneNumber: string;
+  jobTitle: string;
+  profilePhoto: string;
+  experiences: any[];
+  linkedIn: string;
+  resume: string;
+  feedback: Feedback[];
+}
+
+interface CandidateState {
+  profile: CandidateProfile | null;
+  interviews: Interview[];
+  statistics: Statistics | null;
+  interviewers: any[];
+  loading: {
+    profile: boolean;
+    interviews: boolean;
+    statistics: boolean;
+    interviewers: boolean;
+  };
+  error: string | null;
+}
+
+interface CandidateContextType extends CandidateState {
+  fetchProfile: () => Promise<void>;
+  fetchInterviews: () => Promise<void>;
+  fetchStatistics: () => Promise<void>;
+  fetchInterviewers: () => Promise<void>;
+  updateProfile: (updatedData: Partial<CandidateProfile>) => Promise<void>;
+  rescheduleInterview: (
+    id: string,
+    updateData: {
+      newDate: string;
+      isoDate: string;
+      from: string;
+      to: string;
+    }
+  ) => Promise<void>;
 }
 
 // Create Context
-const CandidateContext = createContext<any>(null);
-
-// Custom Hook to Use Context
-export const useCandidateContext = () => {
-  const context = useContext(CandidateContext);
-  if (!context) {
-    throw new Error(
-      "useCandidateContext must be used within a CandidateProvider"
-    );
-  }
-  return context;
-};
+const CandidateContext = createContext<CandidateContextType | null>(null);
 
 // Provider Component
 export const CandidateProvider = ({
@@ -53,34 +92,66 @@ export const CandidateProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
-  const [profile, setProfile] = useState<any>(null);
-  const [interviews, setInterviews] = useState<Interview[]>([]);
-  const [statistics, setStatistics] = useState<Statistics | null>(null);
-  const [interviewers, setInterviewers] = useState<any[]>([]); // New state for interviewers
-  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
-  const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
-  const [isLoadingStatistics, setIsLoadingStatistics] = useState(false);
-  const [isLoadingInterviewers, setIsLoadingInterviewers] = useState(false); // New loading flag
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [state, setState] = useState<CandidateState>({
+    profile: null,
+    interviews: [],
+    statistics: null,
+    interviewers: [],
+    loading: {
+      profile: false,
+      interviews: false,
+      statistics: false,
+      interviewers: false,
+    },
+    error: null,
+  });
 
-  // Fetch candidate profile
-  const fetchProfile = useCallback(async () => {
-    try {
-      setIsLoadingProfile(true);
-      const token = sessionStorage.getItem("candidateToken");
-      if (!token) {
-        navigate("/login");
-        return;
+  const handleApiRequest = useCallback(
+    async <T,>(
+      apiCall: () => Promise<T>,
+      loadingKey: keyof CandidateState["loading"]
+    ) => {
+      try {
+        const token = sessionStorage.getItem("candidateToken");
+        if (!token) {
+          navigate("candidate-login");
+          return;
+        }
+
+        setState((prev) => ({
+          ...prev,
+          loading: { ...prev.loading, [loadingKey]: true },
+          error: null,
+        }));
+
+        await apiCall();
+      } catch (err: any) {
+        console.error(`API Error (${loadingKey}):`, err);
+        setState((prev) => ({
+          ...prev,
+          error: err.response?.data?.message || err.message,
+        }));
+      } finally {
+        setState((prev) => ({
+          ...prev,
+          loading: { ...prev.loading, [loadingKey]: false },
+        }));
       }
-      const response = await axiosInstance.get("/candidate/getProfile");
+    },
+    [navigate]
+  );
 
-      if (response.data?.success && response.data.profile) {
-        const profileData = response.data.profile || {};
-        setProfile({
-          name: `${profileData.firstName || ""} ${
-            profileData.lastName || ""
-          }`.trim(),
+  // Profile Management
+  const fetchProfile = useCallback(async () => {
+    await handleApiRequest(async () => {
+      const response = await axiosInstance.get("/candidate/getProfile");
+      const profileData = response.data?.profile || {};
+
+      setState((prev) => ({
+        ...prev,
+        profile: {
+          name: `${profileData.firstName || ""} ${profileData.lastName || ""}`.trim(),
           email: profileData.email || "Email not provided",
           skills: profileData.skills || [],
           location: profileData.location || "Location not provided",
@@ -91,108 +162,43 @@ export const CandidateProvider = ({
           linkedIn: profileData.linkedIn || "",
           resume: profileData.resume || "",
           feedback: profileData.statistics?.feedbacks || [],
-        });
-      } else {
-        setError("Failed to fetch profile data.");
-      }
-    } catch (err: any) {
-      console.error("Error fetching profile:", err);
-      setError(err.message || "An error occurred while fetching profile.");
-    } finally {
-      setIsLoadingProfile(false);
-    }
-  }, [navigate]);
+        },
+      }));
+    }, "profile");
+  }, [handleApiRequest]);
 
-  // Fetch candidate interviews
+  const updateProfile = useCallback(
+    async (updatedData: Partial<CandidateProfile>) => {
+      await handleApiRequest(async () => {
+        const response = await axiosInstance.put(
+          "/candidate/updateProfile",
+          updatedData
+        );
+
+        if (response.data.success) {
+          setState((prev) => ({
+            ...prev,
+            profile: prev.profile
+              ? { ...prev.profile, ...updatedData }
+              : null,
+          }));
+        }
+      }, "profile");
+    },
+    [handleApiRequest]
+  );
+
+  // Interview Management
   const fetchInterviews = useCallback(async () => {
-    try {
-      setIsLoadingInterviews(true);
-      const token = sessionStorage.getItem("candidateToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
+    await handleApiRequest(async () => {
       const response = await axiosInstance.get("/candidate/myInterviews");
-      if (response.data?.success) {
-        setInterviews(response.data.interviews || []);
-      } else {
-        setError("Failed to fetch interviews.");
-      }
-    } catch (err: any) {
-      console.error("Error fetching interviews:", err);
-      setError(err.message || "An error occurred while fetching interviews.");
-    } finally {
-      setIsLoadingInterviews(false);
-    }
-  }, [navigate]);
+      setState((prev) => ({
+        ...prev,
+        interviews: response.data.interviews || [],
+      }));
+    }, "interviews");
+  }, [handleApiRequest]);
 
-  // Fetch candidate statistics
-  const fetchStatistics = useCallback(async () => {
-    try {
-      setIsLoadingStatistics(true);
-      const token = sessionStorage.getItem("candidateToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-      const response = await axiosInstance.get(
-        "/candidate/get-candidate-statistics"
-      );
-      if (response.data) {
-        setStatistics(response.data.statistics || null);
-      } else {
-        setError("Failed to fetch statistics.");
-      }
-    } catch (err: any) {
-      console.error("Error fetching statistics:", err);
-      setError(err.message || "An error occurred while fetching statistics.");
-    } finally {
-      setIsLoadingStatistics(false);
-    }
-  }, [navigate]);
-
-  // Fetch interviewers
-  const fetchInterviewers = useCallback(async () => {
-    try {
-      setIsLoadingInterviewers(true);
-      const token = sessionStorage.getItem("candidateToken");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-      const { data } = await axiosInstance.get("/candidate/interviewers");
-      if (data.success) {
-        setInterviewers(data.interviewers); // Update interviewers state
-      } else {
-        setError("Failed to fetch interviewers.");
-      }
-    } catch (err: any) {
-      console.error("Error fetching interviewers:", err);
-      setError(err.message || "An error occurred while fetching interviewers.");
-    } finally {
-      setIsLoadingInterviewers(false);
-    }
-  }, [navigate]);
-
-  // Update profile data
-  const updateProfile = useCallback(async (updatedData: any) => {
-    try {
-      const response = await axiosInstance.put(
-        "/candidate/updateProfile",
-        updatedData
-      );
-      if (response.data.success) {
-        setProfile((prevProfile: any) => ({ ...prevProfile, ...updatedData }));
-      } else {
-        throw new Error(response.data.message || "Failed to update profile.");
-      }
-    } catch (err: any) {
-      console.error("Error updating profile:", err);
-      setError(err.message || "An error occurred while updating profile.");
-    }
-  }, []);
-
-  // Reschedule Interview Function
   const rescheduleInterview = useCallback(
     async (
       id: string,
@@ -203,62 +209,84 @@ export const CandidateProvider = ({
         to: string;
       }
     ) => {
-      try {
-        setIsLoadingInterviews(true);
+      await handleApiRequest(async () => {
         const { data } = await axiosInstance.put<{
           success: boolean;
           interview: Interview;
         }>("/candidate/rescheduleInterviewRequest", {
           interviewRequestId: id,
-          ...updateData
+          ...updateData,
         });
-  
+
         if (data.success) {
-          setInterviews(prev =>
-            prev.map(interview =>
+          setState((prev) => ({
+            ...prev,
+            interviews: prev.interviews.map((interview) =>
               interview.id === id
                 ? {
                     ...interview,
                     date: updateData.newDate,
                     time: `${updateData.from} - ${updateData.to}`,
-                    status: "RescheduleRequested"
+                    status: "RescheduleRequested",
                   }
                 : interview
-            )
-          );
+            ),
+          }));
         }
-        return data;
-      } catch (error: any) {
-        console.error("Error rescheduling interview:", error);
-        throw error;
-      } finally {
-        setIsLoadingInterviews(false);
-      }
+      }, "interviews");
     },
-    []
+    [handleApiRequest]
+  );
+
+  // Statistics Management
+  const fetchStatistics = useCallback(async () => {
+    await handleApiRequest(async () => {
+      const response = await axiosInstance.get(
+        "/candidate/get-candidate-statistics"
+      );
+      setState((prev) => ({
+        ...prev,
+        statistics: response.data.statistics || null,
+      }));
+    }, "statistics");
+  }, [handleApiRequest]);
+
+  // Interviewers Management
+  const fetchInterviewers = useCallback(async () => {
+    await handleApiRequest(async () => {
+      const { data } = await axiosInstance.get("/candidate/interviewers");
+      setState((prev) => ({
+        ...prev,
+        interviewers: data.interviewers || [],
+      }));
+    }, "interviewers");
+  }, [handleApiRequest]);
+
+  const contextValue = useMemo(
+    () => ({
+      ...state,
+      fetchProfile,
+      fetchInterviews,
+      fetchStatistics,
+      fetchInterviewers,
+      updateProfile,
+      rescheduleInterview,
+    }),
+    [state, fetchProfile, fetchInterviews, fetchStatistics, fetchInterviewers, updateProfile, rescheduleInterview]
   );
 
   return (
-    <CandidateContext.Provider
-      value={{
-        profile,
-        isLoadingProfile,
-        fetchProfile,
-        interviews,
-        isLoadingInterviews,
-        fetchInterviews,
-        statistics,
-        isLoadingStatistics,
-        fetchStatistics,
-        interviewers, // Add interviewers to context
-        isLoadingInterviewers, // Add loading flag for interviewers
-        fetchInterviewers, // Add fetchInterviewers function
-        error,
-        updateProfile,
-        rescheduleInterview,
-      }}
-    >
+    <CandidateContext.Provider value={contextValue}>
       {children}
     </CandidateContext.Provider>
   );
+};
+
+// Custom Hook
+export const useCandidate = () => {
+  const context = useContext(CandidateContext);
+  if (!context) {
+    throw new Error("useCandidate must be used within a CandidateProvider");
+  }
+  return context;
 };

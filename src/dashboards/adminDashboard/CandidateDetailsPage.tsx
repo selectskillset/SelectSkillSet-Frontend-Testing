@@ -28,6 +28,10 @@ import { format, parse } from "date-fns";
 interface Experience {
   company: string;
   position: string;
+  description: string;
+  employmentType: string;
+  location: string;
+  totalExperience: string;
   startDate: string;
   endDate: string;
   current: boolean;
@@ -100,15 +104,7 @@ const CandidateDetailsPage: React.FC = () => {
     fetchCandidate();
   }, [fetchCandidate]);
 
-  const formatExperienceDate = useCallback((dateString: string): string => {
-    try {
-      const [day, month, year] = dateString.split("/");
-      const date = new Date(`${month}/${day}/${year}`);
-      return format(date, "MMM yyyy");
-    } catch {
-      return dateString;
-    }
-  }, []);
+ 
 
   const formatInterviewDate = useCallback((dateString: string): string => {
     try {
@@ -190,6 +186,20 @@ const CandidateDetailsPage: React.FC = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const getCompanyLogoUrl = (companyName: string) => {
+    const formattedName = companyName
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+
+    return {
+      clearbit: `http://logo.clearbit.com/${formattedName}.com`,
+      initials: `https://api.dicebear.com/7.x/initials/svg?seed=${companyName.charAt(
+        0
+      )}&size=48&backgroundType=gradientLinear&fontWeight=500`,
+    };
+  };
 
   return (
     <div className="min-h-screen space-y-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -377,23 +387,63 @@ const CandidateDetailsPage: React.FC = () => {
                     <Briefcase className="w-5 h-5 text-gray-500" /> Experience
                   </h2>
                   <div className="space-y-4">
-                    {state.candidate.experiences?.map((exp, index) => (
-                      <div
-                        key={index}
-                        className="border-l-4 border-indigo-100 pl-4"
-                      >
-                        <h3 className="font-medium text-gray-900">
-                          {exp.position}
-                        </h3>
-                        <p className="text-gray-600 text-sm">{exp.company}</p>
-                        <p className="text-gray-500 text-sm mt-1">
-                          {formatExperienceDate(exp.startDate)} -{" "}
-                          {exp.current
-                            ? "Present"
-                            : formatExperienceDate(exp.endDate)}
-                        </p>
-                      </div>
-                    ))}
+                    {state.candidate.experiences?.map((exp, index) => {
+                      const logoUrls = getCompanyLogoUrl(exp.company);
+                      return (
+                        <div
+                          key={index}
+                          className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
+                        >
+                          <div className="flex gap-4">
+                            {/* Company Logo */}
+                            <div className="flex-shrink-0">
+                              <img
+                                src={logoUrls.clearbit}
+                                alt={exp.company}
+                                className="w-12 h-12 rounded-lg object-contain border border-gray-200"
+                                onError={(e) => {
+                                  (e.target as HTMLImageElement).src =
+                                    logoUrls.initials;
+                                }}
+                              />
+                            </div>
+
+                            {/* Experience Details */}
+                            <div className="flex-1">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <h5 className="text-gray-800 font-medium text-lg">
+                                    {exp.position}
+                                  </h5>
+                                  <p className="text-gray-700 font-medium">
+                                    {exp.company}
+                                  </p>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    {exp.location} ·{" "}
+                                    {exp.employmentType || "Full-time"}
+                                  </p>
+                                </div>
+                                <div className="text-right">
+                                  <p className="text-sm text-gray-600">
+                                    {exp.startDate} -{" "}
+                                    {exp.current ? "Present" : exp.endDate}
+                                  </p>
+                                  <p className="text-sm text-gray-500 mt-1">
+                                    {exp.totalExperience}
+                                  </p>
+                                </div>
+                              </div>
+
+                              {exp.description && (
+                                <p className="mt-2 text-gray-600 text-sm">
+                                  {exp.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

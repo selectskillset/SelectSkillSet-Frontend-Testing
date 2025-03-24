@@ -34,6 +34,7 @@ interface Profile {
   totalAccepted: number;
   averageRating: number;
   feedbacks: any[];
+  experiences: any[];
   availability: Availability[];
 }
 
@@ -233,6 +234,7 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
           phoneNumber: profileData.phoneNumber || "Phone number not provided",
           jobTitle: profileData.jobTitle || "Job title not provided",
           profilePhoto: profileData.profilePhoto || "",
+          experiences: profileData.experiences || [],
           skills: profileData.skills || [],
           interviewRequests: profileData.interviewRequests || [],
           completedInterviews: profileData.statistics?.completedInterviews || 0,

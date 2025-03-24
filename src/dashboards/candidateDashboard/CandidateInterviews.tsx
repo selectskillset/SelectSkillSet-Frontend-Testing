@@ -13,13 +13,13 @@ import {
 import profilePlaceholder from "../../images/interviewerProfile.png";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { useCandidateContext } from "../../context/CandidateContext";
+import { useCandidate } from "../../context/CandidateContext";
 import toast from "react-hot-toast";
 import FindUserLoader from "../../components/ui/FindUserLoader";
 
 const CandidateInterviews = () => {
   const { interviewers, isLoadingInterviewers, fetchInterviewers } =
-    useCandidateContext();
+    useCandidate();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState({
     experience: 3,

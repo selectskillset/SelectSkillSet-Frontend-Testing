@@ -14,7 +14,7 @@ import {
   ArcElement,
 } from "chart.js";
 import { Briefcase, ClipboardList, Star, X } from "lucide-react";
-import { useCandidateContext } from "../../context/CandidateContext";
+import { useCandidate } from "../../context/CandidateContext";
 import { motion, AnimatePresence } from "framer-motion";
 
 ChartJS.register(
@@ -133,7 +133,7 @@ const barOptions = {
 
 const CandidateStatistics: React.FC = () => {
   const { statistics, isLoading, fetchStatistics, error } =
-    useCandidateContext();
+    useCandidate();
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
     null
   );

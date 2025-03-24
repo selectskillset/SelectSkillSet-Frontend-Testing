@@ -11,6 +11,7 @@ import {
   AlertCircle,
   DollarSign,
   User,
+  FileText,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { InterviewerContext } from "../../context/InterviewerContext";
@@ -48,7 +49,113 @@ const InterviewerDashboard = () => {
       }
     };
     fetchData();
-  }, [fetchProfile]);
+  }, []);
+
+  const getCompanyLogoUrl = (companyName: string) => {
+    const formattedName = companyName
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+    return {
+      clearbit: `http://logo.clearbit.com/${formattedName}.com`,
+      initials: `https://api.dicebear.com/7.x/initials/svg?seed=${companyName.charAt(
+        0
+      )}&size=48&backgroundType=gradientLinear&fontWeight=500`,
+    };
+  };
+
+  const renderExperienceSection = () => (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
+    >
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">
+        Profile Details
+      </h3>
+      <div className="space-y-3">
+        {[
+          { label: "Email", value: profile?.email || "Not provided" },
+          { label: "Location", value: profile?.location || "Not provided" },
+          { label: "Phone", value: profile?.phoneNumber || "Not provided" },
+        ].map((item, index) => (
+          <div
+            key={index}
+            className="flex justify-between items-center py-2 border-b border-gray-100"
+          >
+            <span className="text-gray-600">{item.label}</span>
+            <span className="text-gray-800">{item.value}</span>
+          </div>
+        ))}
+
+        {/* Experience Section */}
+        {profile?.experiences?.length > 0 && (
+          <div className="pt-4">
+            <h4 className="text-lg font-medium text-gray-800 mb-3">
+              Experience
+            </h4>
+            {profile.experiences.map((exp, idx) => {
+              const logoUrls = getCompanyLogoUrl(exp.company);
+
+              return (
+                <div
+                  key={idx}
+                  className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
+                >
+                  <div className="flex gap-4">
+                    {/* Company Logo */}
+                    <div className="flex-shrink-0">
+                      <img
+                        src={logoUrls.clearbit}
+                        alt={exp.company}
+                        className="w-12 h-12 rounded-lg object-contain border border-gray-200"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            logoUrls.initials;
+                        }}
+                      />
+                    </div>
+
+                    {/* Experience Details */}
+                    <div className="flex-1">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h5 className="text-gray-800 font-medium text-lg">
+                            {exp.position}
+                          </h5>
+                          <p className="text-gray-700 font-medium">
+                            {exp.company}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {exp.location} · {exp.employmentType || "Full-time"}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-600">
+                            {exp.startDate} -{" "}
+                            {exp.current ? "Present" : exp.endDate}
+                          </p>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {exp.totalExperience}
+                          </p>
+                        </div>
+                      </div>
+
+                      {exp.description && (
+                        <p className="mt-2 text-gray-600 text-sm">
+                          {exp.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </motion.div>
+  );
 
   const renderProfileCompletion = () => (
     <motion.div
@@ -128,17 +235,6 @@ const InterviewerDashboard = () => {
             </h2>
             <p className="text-gray-600 mt-1">{profile?.jobTitle}</p>
 
-            <div className="mt-4 space-y-3 ">
-              <div className="flex items-center text-sm text-gray-600 justify-center">
-                <MapPin className="w-4 h-4 mr-2 text-gray-500" />
-                <span>{profile?.location}</span>
-              </div>
-              <div className="flex items-center text-sm text-gray-600 justify-center">
-                <Phone className="w-4 h-4 mr-2 text-gray-500" />
-                <span>{profile?.phoneNumber}</span>
-              </div>
-            </div>
-
             <div className="mt-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
                 Expertise
@@ -160,6 +256,7 @@ const InterviewerDashboard = () => {
 
         {/* Main Content */}
         <main className="lg:col-span-3 space-y-6">
+          {renderExperienceSection()}
           <motion.div
             className="bg-white rounded-xl shadow-sm border border-gray-100 p-6"
             initial={{ opacity: 0, y: 20 }}

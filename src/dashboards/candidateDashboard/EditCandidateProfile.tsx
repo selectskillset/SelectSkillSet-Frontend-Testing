@@ -19,6 +19,9 @@ import { useNavigate } from "react-router-dom";
 type Experience = {
   company: string;
   position: string;
+  employmentType: string;
+  description: string;
+  location: string;
   startDate: string;
   endDate: string | null;
   current: boolean;
@@ -160,6 +163,67 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
             {errors[`experience-${index}-position`]}
           </p>
         )}
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Location
+        </label>
+        <input
+          type="text"
+          value={exp.location}
+          onChange={handleChange("location")}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors[`experience-${index}-location`]
+              ? "border-red-500"
+              : "border-gray-300"
+          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          placeholder="Enter Job location"
+        />
+        {errors[`experience-${index}-location`] && (
+          <p className="mt-1.5 text-sm text-red-600">
+            {errors[`experience-${index}-location`]}
+          </p>
+        )}
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Employment Type
+        </label>
+        <select
+          value={exp.employmentType}
+          onChange={handleChange("employmentType")}
+          className={`w-full px-4 py-2.5 rounded-lg border ${
+            errors[`experience-${index}-employmentType`]
+              ? "border-red-500"
+              : "border-gray-300"
+          } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+        >
+          <option value="">Select Employment Type</option>
+          <option value="Full-Time">Full-Time</option>
+          <option value="Part-Time">Part-Time</option>
+          <option value="Contract">Contract</option>
+          <option value="Internship">Internship</option>
+          <option value="Freelance">Freelance</option>
+          <option value="Temporary">Temporary</option>
+        </select>
+        {errors[`experience-${index}-employmentType`] && (
+          <p className="mt-1.5 text-sm text-red-600">
+            {errors[`experience-${index}-employmentType`]}
+          </p>
+        )}
+      </div>
+
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Description
+        </label>
+        <textarea
+          value={exp.description}
+          onChange={handleChange("description")}
+          className={`w-full px-4 py-2.5 rounded-lg border focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
+          placeholder="List your major duties and successes, highlighting specific projects"
+          rows="4"
+        ></textarea>
       </div>
 
       {/* Start Date and End Date */}
@@ -340,6 +404,9 @@ const EditCandidateProfile = () => {
         {
           company: "",
           position: "",
+          location: "",
+          employmentType: "",
+          description: "",
           startDate: "",
           endDate: null,
           current: false,
@@ -374,6 +441,12 @@ const EditCandidateProfile = () => {
         newErrors[`experience-${index}-company`] = "Company name is required";
       if (!exp.position.trim())
         newErrors[`experience-${index}-position`] = "Position is required";
+      if (!exp.location.trim())
+        newErrors[`experience-${index}-location`] = "Location is required";
+      if (!exp.employmentType.trim())
+        newErrors[`experience-${index}-employmentType`] =
+          "Employment Type is required";
+
       if (!exp.startDate)
         newErrors[`experience-${index}-startDate`] = "Start date is required";
       if (!exp.current && !exp.endDate)

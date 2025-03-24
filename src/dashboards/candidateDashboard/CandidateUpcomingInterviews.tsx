@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { useCandidateContext } from "../../context/CandidateContext";
+import { useCandidate } from "../../context/CandidateContext";
 import {
   Clock,
   Search,
@@ -30,7 +30,7 @@ interface Interview {
 
 const CandidateUpcomingInterviews: React.FC = () => {
   const { interviews, isLoading, fetchInterviews, error, rescheduleInterview } =
-    useCandidateContext();
+    useCandidate();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [reschedulingInterview, setReschedulingInterview] =

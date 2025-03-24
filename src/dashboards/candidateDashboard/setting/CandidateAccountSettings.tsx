@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Trash2, LogOut, Edit } from "lucide-react";
-import { useCandidateContext } from "../../../context/CandidateContext";
+import { useCandidate } from "../../../context/CandidateContext";
 
 const CandidateAccountSettings: React.FC = () => {
   const navigate = useNavigate();
-  const { profile} = useCandidateContext()
+  const { profile} = useCandidate()
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Handle Logout

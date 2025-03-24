@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { useCandidateContext } from "../../context/CandidateContext";
+import { useCandidate } from "../../context/CandidateContext";
 import CandidateStatistics from "./CandidateStatistics";
 import axiosInstance from "../../components/common/axiosConfig";
 import { Link, useNavigate } from "react-router-dom";
@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 const CandidateDashboard: React.FC = () => {
-  const { profile, isLoading, fetchProfile, error } = useCandidateContext();
+  const { profile, isLoading, fetchProfile, error } = useCandidate();
   const [completion, setCompletion] = useState<{
     totalPercentage: number;
     isComplete: boolean;
@@ -26,7 +26,7 @@ const CandidateDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!profile) await fetchProfile();
+      fetchProfile();
       try {
         const response = await axiosInstance.get(
           "/candidate/profile-completion"
@@ -37,7 +37,21 @@ const CandidateDashboard: React.FC = () => {
       }
     };
     fetchData();
-  }, [profile, fetchProfile]);
+  }, []);
+
+  const getCompanyLogoUrl = (companyName: string) => {
+    const formattedName = companyName
+      .replace(/[^a-zA-Z0-9 ]/g, "")
+      .replace(/\s+/g, "")
+      .toLowerCase();
+
+    return {
+      clearbit: `http://logo.clearbit.com/${formattedName}.com`,
+      initials: `https://api.dicebear.com/7.x/initials/svg?seed=${companyName.charAt(
+        0
+      )}&size=48&backgroundType=gradientLinear&fontWeight=500`,
+    };
+  };
 
   const renderProfileDetails = useCallback(
     () => (
@@ -89,29 +103,71 @@ const CandidateDashboard: React.FC = () => {
               <span className="text-gray-800">{item.value}</span>
             </div>
           ))}
-  
+
           {/* Experience Section */}
           {profile?.experiences?.length > 0 && (
             <div className="pt-4">
-              <h4 className="text-lg font-medium text-gray-800 mb-3">Experience</h4>
-              {profile.experiences.map((exp, idx) => (
-                <div
-                  key={idx}
-                  className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <h5 className="text-gray-800 font-medium">{exp.company}</h5>
-                      <p className="text-gray-700">{exp.position}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-gray-600">
-                        {exp.startDate} - {exp.current ? "Present" : exp.endDate}
-                      </p>
+              <h4 className="text-lg font-medium text-gray-800 mb-3">
+                Experience
+              </h4>
+              {profile.experiences.map((exp, idx) => {
+                const logoUrls = getCompanyLogoUrl(exp.company);
+
+                return (
+                  <div
+                    key={idx}
+                    className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
+                  >
+                    <div className="flex gap-4">
+                      {/* Company Logo */}
+                      <div className="flex-shrink-0">
+                        <img
+                          src={logoUrls.clearbit}
+                          alt={exp.company}
+                          className="w-12 h-12 rounded-lg object-contain border border-gray-200"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              logoUrls.initials;
+                          }}
+                        />
+                      </div>
+
+                      {/* Experience Details */}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="text-gray-800 font-medium text-lg">
+                              {exp.position}
+                            </h5>
+                            <p className="text-gray-700 font-medium">
+                              {exp.company}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {exp.location} ·{" "}
+                              {exp.employmentType || "Full-time"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-600">
+                              {exp.startDate} -{" "}
+                              {exp.current ? "Present" : exp.endDate}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {exp.totalExperience}
+                            </p>
+                          </div>
+                        </div>
+
+                        {exp.description && (
+                          <p className="mt-2 text-gray-600 text-sm">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
@@ -220,7 +276,6 @@ const CandidateDashboard: React.FC = () => {
               Quick Actions
             </h3>
             <div className="grid grid-cols-2  gap-4">
-            
               <ActionCard
                 icon={<CalendarDays size={24} className="text-orange-600" />}
                 title="Schedule Interviews"
