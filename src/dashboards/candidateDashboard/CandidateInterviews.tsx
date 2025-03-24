@@ -11,6 +11,8 @@ import {
   Sparkles,
   BadgeCheck,
   AlertCircle,
+  Check,
+  CheckCircle,
 } from "lucide-react";
 import profilePlaceholder from "../../images/interviewerProfile.png";
 import { useNavigate } from "react-router-dom";
@@ -296,9 +298,15 @@ const InterviewerCard = ({ interviewer }) => {
             className="w-20 h-20 rounded-xl object-cover border-2 border-[#0077B5]/20"
           />
           {interviewer.isVerified && (
-            <div className="absolute -top-2 -right-2 bg-blue-500 text-white  rounded-full">
-              <BadgeCheck size={30} />
-            </div>
+            <>
+              <div className="absolute -top-2 -right-2 bg-blue-500 text-white  rounded-full">
+                <BadgeCheck size={30} />
+              </div>
+              <div className="absolute right-1 bg-[#FFD700] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+                <CheckCircle size={10}  />
+                <span>Verified</span>
+              </div>
+            </>
           )}
           {isTopRated && (
             <div className="absolute -right-1 bg-[#FFD700] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
