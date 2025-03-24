@@ -27,6 +27,7 @@ interface Profile {
   phoneNumber: string;
   jobTitle: string;
   profilePhoto: string;
+  isVerified: boolean;
   skills: string[];
   interviewRequests: InterviewRequest[];
   completedInterviews: number;
@@ -234,6 +235,7 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
           phoneNumber: profileData.phoneNumber || "Phone number not provided",
           jobTitle: profileData.jobTitle || "Job title not provided",
           profilePhoto: profileData.profilePhoto || "",
+          isVerified: profileData.isVerified || false,
           experiences: profileData.experiences || [],
           skills: profileData.skills || [],
           interviewRequests: profileData.interviewRequests || [],

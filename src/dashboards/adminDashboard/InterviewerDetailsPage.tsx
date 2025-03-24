@@ -14,6 +14,9 @@ import {
   MoreVertical,
   MapPin,
   Briefcase,
+  
+  BadgeCheck,
+  AlertCircle,
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
 import { format, parse } from "date-fns";
@@ -30,6 +33,7 @@ interface Experience {
   current: boolean;
   _id: string;
 }
+
 interface InterviewRequest {
   _id: string;
   date: string;
@@ -52,6 +56,7 @@ interface Interviewer {
   price: number;
   skills: string[];
   isSuspended: boolean;
+  isVerified: boolean;
   interviewRequests: InterviewRequest[];
   experiences: Experience[];
 }
@@ -67,6 +72,7 @@ const InterviewerDetailsPage: React.FC = () => {
     isDropdownOpen: false,
     isDeleteModalOpen: false,
     isSuspendModalOpen: false,
+    isVerifyModalOpen: false,
     suspensionReason: "",
     currentPage: 1,
     isUpdating: false,
@@ -94,7 +100,28 @@ const InterviewerDetailsPage: React.FC = () => {
     fetchInterviewer();
   }, [fetchInterviewer]);
 
-   
+  const handleVerification = useCallback(async () => {
+    setState((prev) => ({ ...prev, isUpdating: true }));
+    try {
+      const { data } = await axiosInstance.put(
+        `/admin/verifyInterviewer/${id}`,
+        { verify: !state.interviewer?.isVerified }
+      );
+
+      if (data.success && state.interviewer) {
+        setState((prev) => ({
+          ...prev,
+          interviewer: {
+            ...prev.interviewer,
+            isVerified: !prev.interviewer.isVerified,
+          },
+          isVerifyModalOpen: false,
+        }));
+      }
+    } finally {
+      setState((prev) => ({ ...prev, isUpdating: false }));
+    }
+  }, [state.interviewer, id]);
 
   const formatDate = useCallback((dateString: string): string => {
     try {
@@ -201,7 +228,6 @@ const InterviewerDetailsPage: React.FC = () => {
       )}&size=48&backgroundType=gradientLinear&fontWeight=500`,
     };
   };
-
   return (
     <div className="min-h-screen space-y-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AnimatePresence>
@@ -216,6 +242,21 @@ const InterviewerDetailsPage: React.FC = () => {
             <span className="text-amber-800 font-medium">
               This account is currently suspended. All interview requests are
               paused.
+            </span>
+          </motion.div>
+        )}
+
+        {!state.interviewer?.isVerified && (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="bg-blue-100 p-4 flex items-center justify-center gap-3"
+          >
+            <AlertTriangle className="text-blue-600" />
+            <span className="text-blue-800 font-medium">
+              This account is not verified. Please verify after reviewing
+              profile.
             </span>
           </motion.div>
         )}
@@ -237,11 +278,24 @@ const InterviewerDetailsPage: React.FC = () => {
               className="bg-white rounded-xl shadow-sm p-6 flex flex-wrap items-center justify-between gap-6"
             >
               <div className="flex items-center gap-5 flex-1 min-w-[300px]">
-                <img
-                  src={state.interviewer.profilePhoto || "/default-avatar.jpg"}
-                  alt={`${state.interviewer.firstName} ${state.interviewer.lastName}`}
-                  className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
-                />
+                <div className="relative">
+                  <img
+                    src={
+                      state.interviewer.profilePhoto || "/default-avatar.jpg"
+                    }
+                    alt={`${state.interviewer.firstName} ${state.interviewer.lastName}`}
+                    className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
+                  />
+                  {state.interviewer.isVerified ? (
+                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white  rounded-full">
+                      <BadgeCheck size={30} />
+                    </div>
+                  ) : (
+                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white  rounded-full">
+                      <AlertCircle  size={30} />
+                    </div>
+                  )}
+                </div>
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     {state.interviewer.firstName} {state.interviewer.lastName}
@@ -283,6 +337,19 @@ const InterviewerDetailsPage: React.FC = () => {
                       className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5"
                     >
                       <div className="py-1">
+                        <button
+                          onClick={() =>
+                            setState((prev) => ({
+                              ...prev,
+                              isVerifyModalOpen: true,
+                            }))
+                          }
+                          className="w-full px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 text-left"
+                        >
+                          {state.interviewer.isVerified
+                            ? "Unverify Account"
+                            : "Verify Account"}
+                        </button>
                         <button
                           onClick={() =>
                             setState((prev) => ({
@@ -520,33 +587,34 @@ const InterviewerDetailsPage: React.FC = () => {
           </div>
         )}
 
-        {/* Modals */}
         <AnimatePresence>
-          {/* Delete Modal */}
-          {state.isDeleteModalOpen && (
+          {state.isVerifyModalOpen && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
               onClick={() =>
-                setState((prev) => ({ ...prev, isDeleteModalOpen: false }))
+                setState((prev) => ({ ...prev, isVerifyModalOpen: false }))
               }
             >
               <div className="bg-white rounded-xl max-w-md w-full p-6">
                 <h3 className="text-lg font-semibold mb-4">
-                  Delete Interviewer Account
+                  {state.interviewer?.isVerified
+                    ? "Unverify Account"
+                    : "Verify Account"}
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  This action will permanently delete the interviewer's account
-                  and all associated data.
+                  {state.interviewer?.isVerified
+                    ? "This will mark the interviewer's profile as unverified."
+                    : "This will mark the interviewer's profile as verified."}
                 </p>
                 <div className="flex justify-end gap-3">
                   <button
                     onClick={() =>
                       setState((prev) => ({
                         ...prev,
-                        isDeleteModalOpen: false,
+                        isVerifyModalOpen: false,
                       }))
                     }
                     className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
@@ -554,89 +622,15 @@ const InterviewerDetailsPage: React.FC = () => {
                     Cancel
                   </button>
                   <button
-                    onClick={async () => {
-                      setState((prev) => ({ ...prev, isUpdating: true }));
-                      try {
-                        await axiosInstance.delete(
-                          `/admin/deleteOneInterviewer/${id}`
-                        );
-                        navigate("/admin/dashboard");
-                      } finally {
-                        setState((prev) => ({
-                          ...prev,
-                          isUpdating: false,
-                          isDeleteModalOpen: false,
-                        }));
-                      }
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    onClick={handleVerification}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     disabled={state.isUpdating}
-                  >
-                    {state.isUpdating ? "Deleting..." : "Confirm Delete"}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Suspend/Activate Modal */}
-          {state.isSuspendModalOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-              onClick={() =>
-                setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
-              }
-            >
-              <div className="bg-white rounded-xl max-w-md w-full p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  {state.interviewer?.isSuspended
-                    ? "Activate Account"
-                    : "Suspend Account"}
-                </h3>
-                {!state.interviewer?.isSuspended && (
-                  <textarea
-                    value={state.suspensionReason}
-                    onChange={(e) =>
-                      setState((prev) => ({
-                        ...prev,
-                        suspensionReason: e.target.value,
-                      }))
-                    }
-                    className="w-full border border-gray-200 rounded-lg p-3 mb-4"
-                    rows={3}
-                    placeholder="Enter suspension reason..."
-                    aria-label="Suspension reason"
-                  />
-                )}
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() =>
-                      setState((prev) => ({
-                        ...prev,
-                        isSuspendModalOpen: false,
-                      }))
-                    }
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleStatusUpdate}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                    disabled={
-                      state.isUpdating ||
-                      (!state.interviewer?.isSuspended &&
-                        !state.suspensionReason)
-                    }
                   >
                     {state.isUpdating
                       ? "Processing..."
-                      : state.interviewer?.isSuspended
-                      ? "Activate Account"
-                      : "Suspend Account"}
+                      : state.interviewer?.isVerified
+                      ? "Confirm Unverify"
+                      : "Confirm Verify"}
                   </button>
                 </div>
               </div>

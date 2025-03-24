@@ -9,6 +9,8 @@ import {
   ChevronRight,
   X,
   Sparkles,
+  BadgeCheck,
+  AlertCircle,
 } from "lucide-react";
 import profilePlaceholder from "../../images/interviewerProfile.png";
 import { useNavigate } from "react-router-dom";
@@ -89,7 +91,6 @@ const CandidateInterviews = () => {
       <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto px-6 py-8">
         {/* Sidebar Filters */}
         <motion.aside
-         
           animate={{ opacity: 1, x: 0 }}
           className="bg-white rounded-xl p-6 shadow-sm sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto lg:block hidden"
         >
@@ -220,7 +221,6 @@ const CandidateInterviews = () => {
             {filteredInterviewers.length > 0 ? (
               <motion.div
                 key="results"
-              
                 animate={{ opacity: 1 }}
                 className="grid gap-6 md:grid-cols-2 xl:grid-cols-1"
               >
@@ -234,7 +234,6 @@ const CandidateInterviews = () => {
             ) : (
               <motion.div
                 key="no-results"
-             
                 animate={{ opacity: 1 }}
                 className="bg-white p-12 rounded-xl text-center shadow-sm"
               >
@@ -296,9 +295,14 @@ const InterviewerCard = ({ interviewer }) => {
             alt={interviewer.firstName}
             className="w-20 h-20 rounded-xl object-cover border-2 border-[#0077B5]/20"
           />
+          {interviewer.isVerified && (
+            <div className="absolute -top-2 -right-2 bg-blue-500 text-white  rounded-full">
+              <BadgeCheck size={30} />
+            </div>
+          )}
           {isTopRated && (
-            <div className="absolute -top-2 -right-2 bg-[#FFD700] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
-              <Star size={12} className="fill-white" />
+            <div className="absolute -right-1 bg-[#FFD700] text-white px-2 py-1 rounded-full text-xs flex items-center gap-1">
+              <Star size={10} className="fill-white" />
               <span>Top Rated</span>
             </div>
           )}
@@ -331,8 +335,14 @@ const InterviewerCard = ({ interviewer }) => {
           <div className="grid grid-cols-2 gap-4 text-sm mb-4">
             <div className="flex items-center gap-2">
               <Briefcase size={16} className="text-[#0077B5]" />
-              <span>{interviewer.experience}+ years</span>
+              <span>
+                {interviewer.experience
+                  ? `${interviewer.experience.split(" ")[0]}+`
+                  : "N/A"}{" "}
+                years
+              </span>
             </div>
+
             <div className="flex items-center gap-2">
               <DollarSign size={16} className="text-[#0077B5]" />
               <span>${interviewer.price}/hr</span>
@@ -420,7 +430,6 @@ const Pagination = ({ currentPage, totalPages, onPageChange }) => (
 
 const MobileFilterSidebar = ({ filters, setFilters, onClose, onFindMatch }) => (
   <motion.div
-   
     animate={{ x: 0 }}
     exit={{ x: "-100%" }}
     className="fixed inset-0 z-50 bg-white p-6"
@@ -566,7 +575,10 @@ const LoadingState = () => (
 
         <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-1">
           {[...Array(3)].map((_, i) => (
-            <div key={i} className="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+            <div
+              key={i}
+              className="bg-white rounded-xl shadow-sm p-6 animate-pulse"
+            >
               <div className="flex gap-6">
                 <div className="relative flex-shrink-0">
                   <div className="w-20 h-20 rounded-xl bg-gray-200" />
@@ -581,7 +593,10 @@ const LoadingState = () => (
                   </div>
                   <div className="flex gap-2">
                     {[...Array(3)].map((_, i) => (
-                      <div key={i} className="h-6 bg-gray-200 rounded-full w-16" />
+                      <div
+                        key={i}
+                        className="h-6 bg-gray-200 rounded-full w-16"
+                      />
                     ))}
                   </div>
                   <div className="grid grid-cols-2 gap-4">
