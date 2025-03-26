@@ -14,7 +14,6 @@ import {
   MoreVertical,
   MapPin,
   Briefcase,
-  
   BadgeCheck,
   AlertCircle,
 } from "lucide-react";
@@ -197,6 +196,8 @@ const InterviewerDetailsPage: React.FC = () => {
           isSuspendModalOpen: false,
         }));
       }
+    } catch (error) {
+      console.error("Error updating status:", error);
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
@@ -228,6 +229,7 @@ const InterviewerDetailsPage: React.FC = () => {
       )}&size=48&backgroundType=gradientLinear&fontWeight=500`,
     };
   };
+
   return (
     <div className="min-h-screen space-y-6 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <AnimatePresence>
@@ -292,7 +294,7 @@ const InterviewerDetailsPage: React.FC = () => {
                     </div>
                   ) : (
                     <div className="absolute bottom-0 right-0 bg-blue-500 text-white  rounded-full">
-                      <AlertCircle  size={30} />
+                      <AlertCircle size={30} />
                     </div>
                   )}
                 </div>
@@ -307,7 +309,10 @@ const InterviewerDetailsPage: React.FC = () => {
                     <div className="flex items-center gap-2 text-sm text-gray-500">
                       <Briefcase className="w-4 h-4" />
                       <span>
-                        {state.interviewer.experience} years experience
+                        {state.interviewer.experience
+                          ? `${state.interviewer.experience.split(" ")[0]}+`
+                          : "N/A"}{" "}
+                        years
                       </span>
                     </div>
                   </div>
@@ -587,6 +592,7 @@ const InterviewerDetailsPage: React.FC = () => {
           </div>
         )}
 
+        {/* Verification Modal */}
         <AnimatePresence>
           {state.isVerifyModalOpen && (
             <motion.div
@@ -634,6 +640,81 @@ const InterviewerDetailsPage: React.FC = () => {
                   </button>
                 </div>
               </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Suspend/Activate Modal */}
+        <AnimatePresence>
+          {state.isSuspendModalOpen && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+              onClick={() =>
+                setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
+              }
+            >
+              <motion.div 
+                className="bg-white rounded-xl max-w-md w-full p-6"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h3 className="text-lg font-semibold mb-4">
+                  {state.interviewer?.isSuspended ? "Activate Account" : "Suspend Account"}
+                </h3>
+                
+                {!state.interviewer?.isSuspended && (
+                  <div className="mb-4">
+                    <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
+                      Suspension Reason
+                    </label>
+                    <input
+                      type="text"
+                      id="reason"
+                      value={state.suspensionReason}
+                      onChange={(e) => setState(prev => ({
+                        ...prev,
+                        suspensionReason: e.target.value
+                      }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      placeholder="Enter reason for suspension"
+                      required
+                    />
+                  </div>
+                )}
+                
+                <p className="text-gray-600 mb-6">
+                  {state.interviewer?.isSuspended
+                    ? "This will reactivate the interviewer's account."
+                    : "This will suspend the interviewer's account and pause all interview requests."}
+                </p>
+                
+                <div className="flex justify-end gap-3">
+                  <button
+                    onClick={() => setState(prev => ({
+                      ...prev,
+                      isSuspendModalOpen: false,
+                      suspensionReason: ""
+                    }))}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleStatusUpdate}
+                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                    disabled={state.isUpdating || 
+                      (!state.interviewer?.isSuspended && !state.suspensionReason)}
+                  >
+                    {state.isUpdating 
+                      ? "Processing..." 
+                      : state.interviewer?.isSuspended 
+                        ? "Activate Account" 
+                        : "Suspend Account"}
+                  </button>
+                </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
