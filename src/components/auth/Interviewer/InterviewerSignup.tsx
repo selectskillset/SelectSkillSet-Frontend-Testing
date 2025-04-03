@@ -6,6 +6,7 @@ import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import signupImg from "../../../images/signup.svg";
 import { countryData } from "../../common/countryData";
 import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
+import PrivacyPolicyModal from "../../common/PrivacyPolicyModal";
 
 export const InterviewerSignup = () => {
   const navigate = useNavigate();
@@ -25,7 +26,10 @@ export const InterviewerSignup = () => {
   );
 
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [hasAcceptedPrivacyPolicy, setHasAcceptedPrivacyPolicy] =
+    useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,6 +104,11 @@ export const InterviewerSignup = () => {
       return false;
     }
 
+    if (!hasAcceptedPrivacyPolicy) {
+      toast.error("You must accept the privacy policy to proceed.");
+      return false;
+    }
+
     return true;
   };
 
@@ -115,6 +124,8 @@ export const InterviewerSignup = () => {
       ...formData,
       countryCode: selectedCountry.code,
       hasAcceptedTerms,
+      hasAcceptedPrivacyPolicy, // Include privacy policy acceptance
+      gdprConsent: true, // Explicit GDPR consent
     };
     sessionStorage.setItem("userData", JSON.stringify(payload));
     setIsLoading(true);
@@ -316,25 +327,49 @@ export const InterviewerSignup = () => {
               </label>
             </div>
 
-            <div className="flex items-center space-x-2 my-5">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={hasAcceptedTerms}
-                onChange={(e) => setHasAcceptedTerms(e.target.checked)}
-                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
-                required
-              />
-              <label htmlFor="terms" className="text-sm text-gray-700">
-                I agree to the{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsTermsModalOpen(true)}
-                  className="text-[#0A66C2] underline hover:text-[#005885]"
-                >
-                  Terms and Conditions
-                </button>
-              </label>
+            <div className="space-y-4 my-5">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={hasAcceptedTerms}
+                  onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                  className="h-4 w-4 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700">
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Terms and Conditions
+                  </button>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="privacy"
+                  checked={hasAcceptedPrivacyPolicy}
+                  onChange={(e) =>
+                    setHasAcceptedPrivacyPolicy(e.target.checked)
+                  }
+                  className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="privacy" className="text-sm text-gray-700">
+                  I accept the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsPrivacyModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Privacy Policy
+                  </button>{" "}
+                  and agree to GDPR data protection terms
+                </label>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -364,6 +399,10 @@ export const InterviewerSignup = () => {
             <TermsAndConditionsModal
               onClose={() => setIsTermsModalOpen(false)}
             />
+          )}
+
+          {isPrivacyModalOpen && (
+            <PrivacyPolicyModal onClose={() => setIsPrivacyModalOpen(false)} />
           )}
         </div>
       </div>

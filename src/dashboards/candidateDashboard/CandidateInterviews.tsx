@@ -215,7 +215,7 @@ const CandidateInterviews = () => {
               Connect with Interview Experts
             </motion.h1>
             <p className="text-gray-600">
-              {filteredInterviewers.length}+ professionals available
+              {filteredInterviewers.length} professionals available
             </p>
           </header>
 

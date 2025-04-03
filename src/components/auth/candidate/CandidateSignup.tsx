@@ -6,6 +6,7 @@ import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import candidateSignup from "../../../images/candidateSignup.svg";
 import { countryData } from "../../common/countryData";
 import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
+import PrivacyPolicyModal from "../../common/PrivacyPolicyModal";
 
 export const CandidateSignup = () => {
   const navigate = useNavigate();
@@ -23,7 +24,10 @@ export const CandidateSignup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
   const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [hasAcceptedPrivacyPolicy, setHasAcceptedPrivacyPolicy] =
+    useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -93,6 +97,11 @@ export const CandidateSignup = () => {
       return false;
     }
 
+    if (!hasAcceptedPrivacyPolicy) {
+      toast.error("You must accept the privacy policy to proceed.");
+      return false;
+    }
+
     return true;
   };
 
@@ -106,13 +115,14 @@ export const CandidateSignup = () => {
       ...formData,
       countryCode: selectedCountry.code, // Include the full phone number with country code
       hasAcceptedTerms,
+      hasAcceptedPrivacyPolicy, // Include privacy policy acceptance
+      gdprConsent: true, // Explicit GDPR consent
     };
     sessionStorage.setItem("userData", JSON.stringify(payload));
 
     setIsLoading(true);
     try {
       const response = await axiosInstance.post("/candidate/register", payload);
-      console.log(response.data);
 
       if (response.data.success) {
         toast.success("Registration successful");
@@ -170,7 +180,6 @@ export const CandidateSignup = () => {
                   onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                   placeholder="John"
-                  required
                 />
               </div>
               <div>
@@ -188,7 +197,6 @@ export const CandidateSignup = () => {
                   onChange={handleChange}
                   className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                   placeholder="Doe"
-                  required
                 />
               </div>
             </div>
@@ -209,7 +217,6 @@ export const CandidateSignup = () => {
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                 placeholder="john.doe@example.com"
-                required
               />
             </div>
 
@@ -229,7 +236,6 @@ export const CandidateSignup = () => {
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                 placeholder="Enter your password"
-                required
               />
               <div
                 onClick={() => setShowPassword(!showPassword)}
@@ -262,7 +268,6 @@ export const CandidateSignup = () => {
                     value={selectedCountry.isoCode}
                     onChange={handleCountryChange}
                     className="w-full pl-6 pr-6 py-1 border-none bg-transparent outline-none focus:none focus:ring-none appearance-none"
-                    required
                   >
                     {countryData.map((country) => (
                       <option key={country.isoCode} value={country.isoCode}>
@@ -291,29 +296,52 @@ export const CandidateSignup = () => {
                 onChange={handlePhoneChange}
                 className="w-full p-3 border border-gray-300 rounded-lg mt-1 focus:outline-none focus:ring-2 focus:ring-[#0A66C2]"
                 placeholder={`Enter your phone number (${selectedCountry.maxLength} digits)`}
-                required
               />
             </div>
 
-            <div className="flex items-center space-x-2 my-5">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={hasAcceptedTerms}
-                onChange={(e) => setHasAcceptedTerms(e.target.checked)}
-                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
-                required
-              />
-              <label htmlFor="terms" className="text-sm text-gray-700">
-                I agree to the{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsTermsModalOpen(true)}
-                  className="text-[#0A66C2] underline hover:text-[#005885]"
-                >
-                  Terms and Conditions
-                </button>
-              </label>
+            <div className="space-y-4 my-5">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={hasAcceptedTerms}
+                  onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                  className="h-4 w-4 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700">
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Terms and Conditions
+                  </button>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="privacy"
+                  checked={hasAcceptedPrivacyPolicy}
+                  onChange={(e) =>
+                    setHasAcceptedPrivacyPolicy(e.target.checked)
+                  }
+                  className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="privacy" className="text-sm text-gray-700">
+                  I accept the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsPrivacyModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Privacy Policy
+                  </button>{" "}
+                  and agree to GDPR data protection terms
+                </label>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -342,6 +370,10 @@ export const CandidateSignup = () => {
             <TermsAndConditionsModal
               onClose={() => setIsTermsModalOpen(false)}
             />
+          )}
+
+          {isPrivacyModalOpen && (
+            <PrivacyPolicyModal onClose={() => setIsPrivacyModalOpen(false)} />
           )}
         </div>
       </div>

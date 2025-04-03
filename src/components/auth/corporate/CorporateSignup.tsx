@@ -4,8 +4,9 @@ import axiosInstance from "../../common/axiosConfig";
 import toast from "react-hot-toast";
 import corporateSignup from "../../../images/corporateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Eye, EyeOff } from "lucide-react";
 import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
+import PrivacyPolicyModal from "../../common/PrivacyPolicyModal";
 
 export const CorporateSignup: React.FC = () => {
   const navigate = useNavigate();
@@ -22,8 +23,12 @@ export const CorporateSignup: React.FC = () => {
   const [selectedCountry, setSelectedCountry] = useState(
     countryData.find((c) => c.isoCode === "IE") || countryData[0] // Default to India or first country
   );
-   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
-    const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState(false);
+  const [hasAcceptedPrivacyPolicy, setHasAcceptedPrivacyPolicy] =
+    useState(false);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -75,6 +80,10 @@ export const CorporateSignup: React.FC = () => {
       return false;
     }
 
+    if (!hasAcceptedPrivacyPolicy) {
+      toast.error("You must accept the privacy policy to proceed.");
+      return false;
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
   };
@@ -88,6 +97,8 @@ export const CorporateSignup: React.FC = () => {
       ...formData,
       countryCode: selectedCountry.code,
       hasAcceptedTerms,
+      hasAcceptedPrivacyPolicy,
+      gdprConsent: true,
     };
     sessionStorage.setItem("userData", JSON.stringify(payload));
 
@@ -97,7 +108,6 @@ export const CorporateSignup: React.FC = () => {
       const { message, success } = response.data;
       if (success) {
         toast.success("Registration successful");
-        sessionStorage.setItem("userData", JSON.stringify(formData));
         navigate("/verify-otp?userType=corporate");
       } else {
         toast.error(message || "Signup failed. Please try again.");
@@ -191,12 +201,12 @@ export const CorporateSignup: React.FC = () => {
             </div>
 
             {/* Password */}
-            <div className="mb-4">
+            <div className="mb-4 mb-4 relative">
               <label className="block text-sm font-medium text-gray-700">
                 Password
               </label>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
@@ -206,6 +216,12 @@ export const CorporateSignup: React.FC = () => {
               {errors.password && (
                 <p className="text-red-500 text-sm">{errors.password}</p>
               )}
+              <div
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-10 transform cursor-pointer text-gray-600"
+              >
+                {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
+              </div>
             </div>
 
             {/* Country Selection */}
@@ -264,25 +280,49 @@ export const CorporateSignup: React.FC = () => {
               />
             </div>
 
-            <div className="flex items-center space-x-2 my-5">
-              <input
-                type="checkbox"
-                id="terms"
-                checked={hasAcceptedTerms}
-                onChange={(e) => setHasAcceptedTerms(e.target.checked)}
-                className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
-                required
-              />
-              <label htmlFor="terms" className="text-sm text-gray-700">
-                I agree to the{" "}
-                <button
-                  type="button"
-                  onClick={() => setIsTermsModalOpen(true)}
-                  className="text-[#0A66C2] underline hover:text-[#005885]"
-                >
-                  Terms and Conditions
-                </button>
-              </label>
+            <div className="space-y-4 my-5">
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={hasAcceptedTerms}
+                  onChange={(e) => setHasAcceptedTerms(e.target.checked)}
+                  className="h-4 w-4 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="terms" className="text-sm text-gray-700">
+                  I agree to the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsTermsModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Terms and Conditions
+                  </button>
+                </label>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="privacy"
+                  checked={hasAcceptedPrivacyPolicy}
+                  onChange={(e) =>
+                    setHasAcceptedPrivacyPolicy(e.target.checked)
+                  }
+                  className="h-5 w-5 text-[#0A66C2] border-gray-300 rounded focus:ring-[#0A66C2]"
+                />
+                <label htmlFor="privacy" className="text-sm text-gray-700">
+                  I accept the{" "}
+                  <button
+                    type="button"
+                    onClick={() => setIsPrivacyModalOpen(true)}
+                    className="text-[#0A66C2] underline hover:text-[#005885]"
+                  >
+                    Privacy Policy
+                  </button>{" "}
+                  and agree to GDPR data protection terms
+                </label>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -313,6 +353,10 @@ export const CorporateSignup: React.FC = () => {
             <TermsAndConditionsModal
               onClose={() => setIsTermsModalOpen(false)}
             />
+          )}
+
+          {isPrivacyModalOpen && (
+            <PrivacyPolicyModal onClose={() => setIsPrivacyModalOpen(false)} />
           )}
         </div>
       </div>

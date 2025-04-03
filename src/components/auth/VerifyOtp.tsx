@@ -63,6 +63,8 @@ export const VerifyOtp = () => {
     try {
       const storedData = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
+      console.log(storedData, "kjsbcjhdbcuweb")
+
       let apiEndpoint = "";
       switch (userType) {
         case "corporate":
