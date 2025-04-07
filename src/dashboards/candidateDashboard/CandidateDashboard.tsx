@@ -37,7 +37,7 @@ const CandidateDashboard: React.FC = () => {
       }
     };
     fetchData();
-  }, []);
+  }, [fetchProfile]);
 
   const getCompanyLogoUrl = (companyName: string) => {
     const formattedName = companyName

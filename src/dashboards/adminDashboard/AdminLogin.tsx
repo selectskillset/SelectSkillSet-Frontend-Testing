@@ -48,7 +48,7 @@ const AdminLogin: React.FC = () => {
             <h2 className="text-3xl font-bold mb-6 text-center text-[#0073b1]">
               Admin Login
             </h2>
-            <form onSubmit={handleLogin} className="space-y-6">
+            <form onSubmit={handleLogin} className="space-y-3">
               <div>
                 <label
                   htmlFor="email"
@@ -106,6 +106,17 @@ const AdminLogin: React.FC = () => {
                     )}
                   </button>
                 </div>
+              </div>
+
+              {/* Forgot Password Link */}
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => navigate("/forgot-password")}
+                  className="text-sm text-[#0077B5] hover:underline"
+                >
+                  Forgot Password?
+                </button>
               </div>
 
               <motion.button

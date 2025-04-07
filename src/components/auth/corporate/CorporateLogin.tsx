@@ -52,7 +52,7 @@ export const CorporateLogin = () => {
           Corporate Login
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Email Field */}
           <div>
             <label
@@ -98,6 +98,17 @@ export const CorporateLogin = () => {
               {showPassword ? <EyeOff size={22} /> : <Eye size={22} />}
             </button>
           </div>
+          {/* Forgot Password Link */}
+          <div className="text-right">
+            <button
+              type="button"
+              onClick={() => navigate("/forgot-password")}
+              className="text-sm text-[#0077B5] hover:underline"
+            >
+              Forgot Password?
+            </button>
+          </div>
+
 
           {/* Login Button */}
           <button

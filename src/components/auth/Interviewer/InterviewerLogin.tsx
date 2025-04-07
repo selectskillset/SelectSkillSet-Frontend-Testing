@@ -65,7 +65,7 @@ export const InterviewerLogin = () => {
         </h2>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Email Field */}
           <div>
             <label
@@ -113,8 +113,8 @@ export const InterviewerLogin = () => {
             </button>
           </div>
 
-          {/* Forgot Password Link */}
-          {/* <div className="text-right">
+         {/* Forgot Password Link */}
+         <div className="text-right">
             <button
               type="button"
               onClick={() => navigate("/forgot-password")}
@@ -122,7 +122,8 @@ export const InterviewerLogin = () => {
             >
               Forgot Password?
             </button>
-          </div> */}
+          </div>
+
 
           {/* Login Button */}
           <button

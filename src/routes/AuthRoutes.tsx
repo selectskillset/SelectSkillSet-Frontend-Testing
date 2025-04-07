@@ -7,6 +7,8 @@ import CorporateLogin from "../components/auth/corporate/CorporateLogin";
 import { CorporateSignup } from "../components/auth/corporate/CorporateSignup";
 import InterviewerLogin from "../components/auth/Interviewer/InterviewerLogin";
 import { InterviewerSignup } from "../components/auth/Interviewer/InterviewerSignup";
+import { ForgotPassword } from "../components/auth/ForgotPassword";
+import { ResetPassword } from "../components/auth/ResetPassword";
 
 // AuthRoutes component that defines routes for all authentication-related pages
 const AuthRoutes = () => {
@@ -14,6 +16,9 @@ const AuthRoutes = () => {
     <Routes>
       {/* Route for login page */}
       <Route path="/login" element={<LoginPage />} />
+
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Route for OTP verification page */}
       <Route path="/verify-otp" element={<VerifyOtp />} />
