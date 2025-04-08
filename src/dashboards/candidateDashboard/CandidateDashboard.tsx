@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 const CandidateDashboard: React.FC = () => {
-  const { profile, isLoading, fetchProfile, error } = useCandidate();
+  const { profile, loading, fetchProfile, error } = useCandidate();
   const [completion, setCompletion] = useState<{
     totalPercentage: number;
     isComplete: boolean;
@@ -26,8 +26,8 @@ const CandidateDashboard: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      fetchProfile();
       try {
+        await fetchProfile(); // Ensure profile is fetched first
         const response = await axiosInstance.get(
           "/candidate/profile-completion"
         );
@@ -36,8 +36,9 @@ const CandidateDashboard: React.FC = () => {
         console.error("Error fetching completion data:", error);
       }
     };
+
     fetchData();
-  }, [fetchProfile]);
+  }, [fetchProfile, navigate]);
 
   const getCompanyLogoUrl = (companyName: string) => {
     const formattedName = companyName
@@ -218,15 +219,17 @@ const CandidateDashboard: React.FC = () => {
         </div>
       ))}
       {completion?.missingSections.length > 3 && (
-        <button className="w-full mt-4 text-blue-600 text-sm hover:bg-gray-50 py-2 rounded-lg">
+        <button
+          className="w-full mt-4 text-blue-600 text-sm hover:bg-gray-50 py-2 rounded-lg"
+          onClick={() => navigate("/edit-candidate-profile")}
+        >
           View all {completion.missingSections.length} remaining sections
         </button>
       )}
     </motion.div>
   );
 
-  if (isLoading) return <LoadingState />;
-  if (error) return <ErrorState error={error} />;
+  if (loading.profile) return <LoadingState />;
 
   return (
     <motion.div
@@ -336,13 +339,6 @@ const LoadingState = () => (
       <div className="h-32 bg-gray-200 rounded-xl" />
       <div className="h-64 bg-gray-200 rounded-xl" />
     </div>
-  </div>
-);
-
-const ErrorState = ({ error }: { error: string }) => (
-  <div className="h-screen flex items-center justify-center text-red-600">
-    <AlertCircle size={24} className="mr-2" />
-    {error}
   </div>
 );
 

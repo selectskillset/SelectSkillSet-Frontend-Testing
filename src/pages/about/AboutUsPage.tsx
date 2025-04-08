@@ -74,12 +74,7 @@ const AboutUsPage = () => {
     {
       icon: <GraduationCap className="w-8 h-8 text-[#0077B5]" />,
       title: "Skill Development",
-      description: "AI-powered learning paths tailored to your career goals",
-    },
-    {
-      icon: <Globe2 className="w-8 h-8 text-[#0077B5]" />,
-      title: "Global Network",
-      description: "Connect with 500,000+ professionals worldwide",
+      description: "Expert-curated learning paths tailored to your career goals",
     },
     {
       icon: <Rocket className="w-8 h-8 text-[#0077B5]" />,
@@ -96,7 +91,7 @@ const AboutUsPage = () => {
         "Technical interview simulations",
         "Personalized skill assessments",
         "Career path recommendations",
-        "AI-powered resume reviews",
+        "Professional resume optimization",
       ],
     },
     {
@@ -141,11 +136,11 @@ const AboutUsPage = () => {
             className="max-w-3xl text-white"
           >
             <h1 className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg">
-              Empowering Tech Careers Through Diversity
+              Empowering Tech Careers Through Expert Guidance
             </h1>
             <p className="text-lg md:text-xl mb-8 drop-shadow">
-              Join 500,000+ professionals mastering in-demand skills with expert
-              guidance
+              Join professionals mastering in-demand skills with industry-proven
+              methodologies
             </p>
             <div className="flex space-x-4">
               <a
@@ -233,7 +228,7 @@ const AboutUsPage = () => {
                     <CheckCircle2 className="text-[#0077B5] w-6 h-6" />
                     <span className="text-base md:text-lg">
                       {index % 2 === 0
-                        ? "AI-driven skill assessments"
+                        ? "Industry-validated skill assessments"
                         : "Real-world project simulations"}
                     </span>
                   </motion.li>
