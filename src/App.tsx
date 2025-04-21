@@ -1,4 +1,4 @@
-import { BrowserRouter as Router } from "react-router-dom";
+import { Route, BrowserRouter as Router, Routes } from "react-router-dom";
 
 // Navbar Component
 import { Navbar } from "./components/common/Navbar";
@@ -18,6 +18,7 @@ import CandidateRoutes from "./routes/CandidateRoutes";
 import CorporateRoutes from "./routes/CorporateRoutes";
 import InterviewerRoutes from "./routes/InterviewerRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
+import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
   return (
@@ -54,6 +55,10 @@ function App() {
 
           {/*  Admin Routes (Admin Panel & Management) */}
           <AdminRoutes />
+
+          <Routes>
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
 
           {/* -------------------------------------------------
                Notification System (react-hot-toast)

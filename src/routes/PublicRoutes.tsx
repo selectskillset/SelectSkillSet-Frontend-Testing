@@ -43,6 +43,8 @@ const PublicRoutes = () => {
       />
       <Route path="/careers" element={<CareerPage />} />
       <Route path="/report-issue" element={<ReportIssue />} />
+
+    
     </Routes>
   );
 };
