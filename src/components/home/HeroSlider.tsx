@@ -156,7 +156,7 @@ const HeroSlider = () => {
               {slides[currentSlide].description}
             </motion.p>
 
-            <motion.button
+            {/* <motion.button
               className="self-start px-6 py-2 md:px-8 md:py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base"
               custom={2}
               variants={contentVariants}
@@ -169,7 +169,7 @@ const HeroSlider = () => {
               whileTap={{ scale: 0.98 }}
             >
               {slides[currentSlide].cta}
-            </motion.button>
+            </motion.button> */}
           </div>
 
           {/* Image (Right 40%) */}
@@ -177,7 +177,7 @@ const HeroSlider = () => {
             <motion.img
               src={slides[currentSlide].image}
               alt={slides[currentSlide].title}
-              className="w-full h-full object-contain object-center"
+              className="w-full h-full object-fill"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
