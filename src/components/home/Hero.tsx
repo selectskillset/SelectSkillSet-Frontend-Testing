@@ -30,7 +30,7 @@ export const Hero = () => {
 
           {/* Action Button */}
           <Link
-            to="/signup"
+            to="/login"
             className="inline-flex items-center gap-2 px-8 py-4 sm:px-10 sm:py-5 w-max bg-white/80 backdrop-blur-lg border-2 border-primary rounded-lg shadow-md hover:bg-primary-light hover:border-primary-dark hover:text-white transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
             Get Started <LogIn className="w-5 h-5" />

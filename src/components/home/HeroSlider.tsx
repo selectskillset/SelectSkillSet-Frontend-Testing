@@ -132,7 +132,7 @@ const HeroSlider = () => {
           initial="enter"
           animate="center"
           exit="exit"
-          className="absolute inset-0 flex flex-col lg:flex-row"
+          className="absolute inset-0 flex flex-col lg:flex-row px-5"
         >
           {/* Content (Left 60%) */}
           <div className="w-full lg:w-[60%] h-[60%] lg:h-full flex flex-col justify-center p-6 md:p-8 lg:p-12 ">

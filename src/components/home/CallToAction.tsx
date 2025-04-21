@@ -1,20 +1,20 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import heroBg from "../../images/calltoaction.jpg";
+// import heroBg from "../../images/tech.jpg";
 
 const CallToAction: React.FC = () => {
   return (
     <section
       className="relative py-20 overflow-hidden text-white"
-      style={{
-        backgroundImage: `url(${heroBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
+      // style={{
+      //   backgroundImage: `url(${heroBg})`,
+      //   backgroundSize: "cover",
+      //   backgroundPosition: "center",
+      // }}
     >
       {/* Dimming overlay */}
-      <div className="absolute inset-0 bg-black/30" />
+      <div className="absolute inset-0 bg-white/30" />
 
       {/* Gradient overlay for depth */}
       <div
@@ -58,7 +58,7 @@ const CallToAction: React.FC = () => {
             <Link
               to="/about"
               className="relative px-8 py-5 rounded-lg font-semibold 
-                        border-2 border-white bg-white/20 backdrop-blur-lg 
+                        border-2 border-white bg-primary-dark backdrop-blur-lg 
                         text-white shadow-lg hover:bg-white hover:text-primary 
                         transition-all duration-300 focus:outline-none 
                         focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"

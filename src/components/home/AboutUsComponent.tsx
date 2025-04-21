@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import { motion } from "framer-motion";
 import image from "../../images/Interviewers.jpeg";
 import { Award, Briefcase, ChevronRight, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface AboutUsProps {
   src?: string;
@@ -14,6 +15,7 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
   alt = "About Selectskillset",
   className,
 }) => {
+  const navigate = useNavigate();
   // Distinct border-radius keyframes for each layer
   const borderRadiusKeyframesOuter = useMemo(
     () => [
@@ -159,7 +161,10 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             </p>
 
             {/* Call-to-Action Button */}
-            <button className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg hover:scale-105 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark">
+            <button
+              onClick={() => navigate("/about")}
+              className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg hover:scale-105 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
+            >
               Learn More <ChevronRight className="w-5 h-5 ml-2" />
             </button>
           </motion.div>
