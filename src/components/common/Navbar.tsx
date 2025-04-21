@@ -191,13 +191,13 @@ export const Navbar = React.memo(() => {
             }
           }}
           className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300
-          ${isMobile ? "text-xl" : "text-base"}
-          ${
-            isActive
-              ? "text-blue-600 bg-blue-100 font-bold underline text-md"
-              : "hover:bg-blue-50 font-bold hover:text-blue-600 text-md"
-          }`
+            `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+              isMobile ? "text-xl" : "text-base"
+            } ${
+              isActive
+                ? "text-primary bg-primary/10 font-bold underline"
+                : "hover:bg-primary/10 font-medium hover:text-primary"
+            }`
           }
         >
           {isMobile && React.cloneElement(link.icon, { size: 24 })}
@@ -234,7 +234,7 @@ export const Navbar = React.memo(() => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-800 hover:text-blue-600 transition-colors"
+              className="p-2 text-gray-800 hover:text-primary transition-colors"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -256,11 +256,11 @@ export const Navbar = React.memo(() => {
             <div className="p-6 h-auto bg-white flex flex-col">
               <div className="flex justify-end items-center mb-6">
                 <button onClick={() => setIsMenuOpen(false)}>
-                  <X size={24} className="text-gray-800 hover:text-blue-600" />
+                  <X size={24} className="text-gray-800 hover:text-primary" />
                 </button>
               </div>
 
-              <div className="flex-1 space-y-4 ">{renderLinks(true)}</div>
+              <div className="flex-1 space-y-4">{renderLinks(true)}</div>
 
               {!userLoggedIn && (
                 <div className="pt-6 border-t border-gray-100">
@@ -278,8 +278,8 @@ export const Navbar = React.memo(() => {
 const RequestDemoButton = React.memo(({ mobile }: { mobile?: boolean }) => (
   <Link
     to="/request-demo"
-    className={`bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium
-      hover:from-blue-700 hover:to-blue-600 transition-all duration-300 shadow-md
+    className={`bg-gradient-to-r from-primary to-secondary text-white font-medium
+      hover:from-secondary hover:to-primary transition-all duration-300 shadow-md
        ${mobile ? "w-full text-center" : ""} px-6 py-3 rounded-lg`}
   >
     Request Demo

@@ -8,37 +8,42 @@ const features = [
     icon: Users,
     title: "Real-World Experience",
     description:
-      "Practice interviews with industry experts from your target sector.",
+      "Engage in practice interviews with industry experts tailored to your field.",
     stats: "150+ industries covered",
   },
   {
     icon: Award,
     title: "Personalized Feedback",
-    description: "AI-powered evaluations with actionable improvement plans.",
+    description:
+      "Receive detailed feedback to help you grow and improve effectively.",
     stats: "98% user satisfaction",
   },
   {
     icon: Building2,
     title: "Enhanced Hiring Process",
-    description: "Access pre-vetted candidates with skill assessments.",
+    description:
+      "Streamline hiring with access to pre-vetted candidates and skill assessments.",
     stats: "40% faster hiring",
   },
   {
     icon: Briefcase,
     title: "Skill Development",
-    description: "Comprehensive growth paths for technical & soft skills.",
+    description:
+      "Explore structured learning paths for both technical and soft skills.",
     stats: "300+ skill modules",
   },
   {
     icon: Globe,
     title: "Global Network",
-    description: "Connect with professionals in 150+ countries, 24/7.",
+    description:
+      "Connect with professionals worldwide to expand your opportunities.",
     stats: "500k+ global users",
   },
   {
     icon: Star,
     title: "Trusted Platform",
-    description: "Secure & transparent solutions for enterprise needs.",
+    description:
+      "Secure and reliable solutions designed for enterprise needs.",
     stats: "99.9% uptime guarantee",
   },
 ];
@@ -48,13 +53,13 @@ const FeatureCard = React.memo(
     icon: Icon,
     title,
     description,
-    // stats,
+    stats,
     index,
   }: {
     icon: React.ElementType;
     title: string;
     description: string;
-    // stats: string;
+    stats: string;
     index: number;
   }) => {
     const [ref, inView] = useInView({
@@ -72,26 +77,26 @@ const FeatureCard = React.memo(
           delay: index * 0.15,
           ease: "easeOut",
         }}
-        className="bg-white p-6 rounded-lg shadow-md
+        className="bg-white/80 backdrop-blur-lg p-6 rounded-lg shadow-md border border-gray-200
                    transition-all duration-300 hover:scale-[1.02]
-                   hover:shadow-lg hover:border-transparent"
+                   hover:shadow-lg hover:border-primary"
       >
         <div className="flex items-center space-x-6">
           <div className="flex-shrink-0">
             <Icon
               size={40}
-              className="text-[#0077B5] drop-shadow-sm"
+              className="text-primary drop-shadow-sm"
               strokeWidth={1.5}
             />
           </div>
           <div>
-            <h3 className="text-xl font-semibold text-[#004182] mb-3">
+            <h3 className="text-xl font-semibold text-secondary mb-3">
               {title}
             </h3>
             <p className="text-gray-600 mb-4">{description}</p>
             {/* <div className="flex items-center text-sm font-medium">
-              <Star size={16} className="text-[#FFD700] mr-2" />
-              <span className="text-[#0077B5]">{stats}</span>
+              <Star size={16} className="text-yellow-500 mr-2" />
+              <span className="text-primary">{stats}</span>
             </div> */}
           </div>
         </div>
@@ -115,13 +120,13 @@ const Features: React.FC = () => {
           <h2
             className="text-4xl md:text-5xl font-extrabold 
                         bg-clip-text text-transparent
-                        bg-gradient-to-r from-[#0077B5] to-[#004182] mb-6"
+                        bg-gradient-to-r from-primary to-secondary mb-6"
           >
             Why Choose Us?
           </h2>
           <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
             Empowering professionals, interviewers, and enterprises with
-            cutting-edge solutions for talent development and acquisition
+            cutting-edge solutions for talent development and acquisition.
           </p>
         </motion.div>
 

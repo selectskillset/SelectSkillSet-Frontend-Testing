@@ -1,105 +1,110 @@
-import { useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import heroBg from "../../images/newBG.jpg";
-
-const preloadImage = (src) => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = src;
-    img.onload = resolve;
-    img.onerror = reject;
-  });
-};
+import { LogIn, ArrowRightCircle, Award, Users } from "lucide-react";
+import heroImage from "../../images/img2.jpg";
 
 export const Hero = () => {
-  useEffect(() => {
-    preloadImage(heroBg).catch((error) => {
-      console.error("Failed to load background image:", error);
-    });
-  }, []);
-
-  const backgroundImage = useMemo(() => {
-    return `linear-gradient(to bottom, rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.85)), url(${heroBg})`;
-  }, [heroBg]);
-
   return (
-    <div
-      className="relative min-h-screen flex items-center justify-center bg-cover bg-center overflow-hidden"
-      style={{
-        backgroundImage,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundColor: "#0A66C2",
-      }}
-    >
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-black/50 to-black/80"></div>
-
-      <div className="container relative z-10 px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20">
+    <div className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-white">
+      {/* Split Layout */}
+      <div className="container mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Left Section - Content */}
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
-          className="max-w-5xl mx-auto text-center"
+          initial={{ opacity: 0, x: -40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+          className="flex flex-col justify-center space-y-6"
         >
-          {/* Main Heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.3, ease: "easeOut" }}
-            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.1] mb-6"
-            style={{
-              textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
-            }}
-          >
-            Find Your Next Opportunity with{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#0077B5] to-[#00A8E8]">
-              Tailored Solutions
+          {/* Header Tagline */}
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+              Find Your Next Opportunity with Tailored Solutions
             </span>
-          </motion.h1>
+          </h1>
 
           {/* Subheading */}
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.5, ease: "easeOut" }}
-            className="text-lg sm:text-xl md:text-2xl text-gray-200 font-medium mb-10 px-4 sm:px-0"
-            style={{
-              textShadow: "0 1px 2px rgba(0, 0, 0, 0.2)",
-            }}
-          >
+          <p className="text-lg sm:text-xl md:text-2xl text-gray-600 font-medium">
             Empowering job seekers, interviewers, and corporates to connect
             seamlessly with cutting-edge tools and personalized experiences.
-          </motion.p>
+          </p>
 
-          {/* Action Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.7, ease: "easeOut" }}
-            className="flex flex-col sm:flex-row justify-center gap-4 sm:gap-6"
+          {/* Action Button */}
+          <Link
+            to="/signup"
+            className="inline-flex items-center gap-2 px-8 py-4 sm:px-10 sm:py-5 w-max bg-white/80 backdrop-blur-lg border-2 border-primary rounded-lg shadow-md hover:bg-primary-light hover:border-primary-dark hover:text-white transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
-            <Link
-              to="/login"
-              className="px-8 py-4 sm:px-10 sm:py-5 bg-gradient-to-r from-blue-600 to-blue-500 text-white
-               rounded-lg  font-semibold text-lg sm:text-lg shadow-lg 
-              hover:shadow-xl transition-all duration-300 transform 
-               focus:outline-none focus:ring-2 focus:ring-[#005885]"
-            >
-              Get Started
-            </Link>
+            Get Started <LogIn className="w-5 h-5" />
+          </Link>
 
-            {/* <Link
-              to="/about"
-              className="px-8 py-4 sm:px-10 sm:py-5 bg-white/10 backdrop-blur-lg 
-              text-white rounded-lg  font-semibold text-lg sm:text-lg shadow-md 
-              hover:bg-white/20 transition-all duration-300 transform 
-              focus:outline-none focus:ring-2 focus:ring-[#005885]"
+          {/* Decorative Icons */}
+          <div className="flex items-center gap-6 mt-6">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+              className="flex items-center gap-2 text-primary"
             >
-              Learn More
-            </Link> */}
-          </motion.div>
+              <Award className="w-6 h-6" />
+              <span className="text-sm sm:text-base font-medium">Trusted</span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
+              className="flex items-center gap-2 text-primary"
+            >
+              <Users className="w-6 h-6" />
+              <span className="text-sm sm:text-base font-medium">
+                Community
+              </span>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+              className="flex items-center gap-2 text-primary"
+            >
+              <ArrowRightCircle className="w-6 h-6" />
+              <span className="text-sm sm:text-base font-medium">
+                Progressive
+              </span>
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Right Section - Visual */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+          className="relative rounded-2xl overflow-hidden shadow-2xl group"
+        >
+          {/* Image */}
+          <img
+            src={heroImage}
+            alt="Business Image"
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+
+          {/* Decorative Elements */}
+          <div className="absolute bottom-6 right-6 p-4 bg-white/20 backdrop-blur-lg rounded-full shadow-lg">
+            <svg
+              className="w-8 h-8 text-primary animate-pulse"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+              ></path>
+            </svg>
+          </div>
         </motion.div>
       </div>
     </div>

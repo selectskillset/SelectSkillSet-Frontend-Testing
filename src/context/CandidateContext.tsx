@@ -241,7 +241,7 @@ export const CandidateProvider = ({
         },
       }));
     }, "profile");
-  }, [handleApiRequest, state.profile]);
+  }, [handleApiRequest]);
 
   const updateProfile = useCallback(
     async (updatedData: Partial<CandidateProfile>) => {

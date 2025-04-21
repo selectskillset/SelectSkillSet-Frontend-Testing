@@ -14,14 +14,14 @@ const CallToAction: React.FC = () => {
       }}
     >
       {/* Dimming overlay */}
-      <div className="absolute inset-0 bg-black/40" />
+      <div className="absolute inset-0 bg-black/30" />
 
       {/* Gradient overlay for depth */}
       <div
         className="absolute inset-0 opacity-30"
         style={{
           background:
-            "linear-gradient(45deg, rgba(0, 119, 181, 0.3), rgba(0, 75, 130, 0.3))",
+            "linear-gradient(45deg, rgba(67, 56, 202, 0.3), rgba(124, 58, 235, 0.3))",
         }}
       />
 
@@ -33,30 +33,35 @@ const CallToAction: React.FC = () => {
           viewport={{ once: true }}
           className="max-w-3xl mx-auto text-center"
         >
-          <h2 className="text-4xl md:text-5xl font-extrabold mb-8 drop-shadow-lg">
+          <h2
+            className="text-4xl md:text-5xl font-extrabold mb-8 drop-shadow-lg 
+                       bg-clip-text text-transparent bg-gradient-to-r 
+                       from-primary to-secondary"
+          >
             Ready to elevate your professional journey?
           </h2>
 
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             {/* Primary CTA Button */}
-            <Link
+            {/* <Link
               to="/signup"
               className="relative px-8 py-5 rounded-lg font-semibold 
-                        bg-white text-[#0077B5] shadow-lg 
-                        transition-all duration-300 
-                       "
+                        bg-gradient-to-r from-primary to-secondary 
+                        text-white shadow-lg hover:scale-[1.03] 
+                        transition-all duration-300 focus:outline-none 
+                        focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Sign Up Now
-            </Link>
+            </Link> */}
 
             {/* Secondary CTA Button */}
             <Link
               to="/about"
               className="relative px-8 py-5 rounded-lg font-semibold 
-                        border-2 border-white shadow-lg 
-                        transition-all duration-300 
-                        hover:bg-white hover:text-[#0077B5]
-                        active:bg-opacity-90"
+                        border-2 border-white bg-white/20 backdrop-blur-lg 
+                        text-white shadow-lg hover:bg-white hover:text-primary 
+                        transition-all duration-300 focus:outline-none 
+                        focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Learn More
             </Link>

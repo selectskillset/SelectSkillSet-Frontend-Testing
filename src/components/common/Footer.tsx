@@ -38,37 +38,38 @@ const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-white text-[#0077B5] border-t border-gray-100">
+    <footer className="bg-white text-primary border-t border-gray-100">
       <div className="container mx-auto px-6 md:px-12 lg:px-24 py-12">
         {/* Top Section */}
         <div className="flex flex-col md:flex-row justify-around items-center mb-12">
+          {/* Logo */}
           <div
             onClick={handleClick}
-            className="cursor-pointer mb-8 md:mb-0 relative group"
+            className="cursor-pointer relative group transition-all duration-300"
           >
             <img
               src={logo}
               alt="SelectSkillset Logo"
               className="w-auto h-24 transition-transform duration-300 
-                group-hover:scale-105 group-active:scale-95"
+                         group-hover:scale-105 group-active:scale-95"
             />
             <div
-              className={`absolute inset-0 bg-white/30 rounded-full 
-                transition-all duration-300 ${
-                  clickCount > 0 ? "scale-150 opacity-100" : "scale-0 opacity-0"
-                }`}
+              className={`absolute inset-0 bg-primary/20 rounded-full 
+                          transition-all duration-300 ${
+                            clickCount > 0 ? "scale-150 opacity-100" : "scale-0 opacity-0"
+                          }`}
             />
           </div>
 
           {/* Quick Links */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-16 mt-8 md:mt-0">
             <div>
-              <h3 className="font-medium text-lg mb-4">About Us</h3>
+              <h3 className="font-medium text-lg mb-4 text-secondary">About Us</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/careers"
-                    className="hover:text-[#004182] transition-colors"
+                    className="hover:text-secondary transition-colors"
                   >
                     Careers
                   </Link>
@@ -77,12 +78,12 @@ const Footer: React.FC = () => {
             </div>
 
             <div>
-              <h3 className="font-medium text-lg mb-4">Support</h3>
+              <h3 className="font-medium text-lg mb-4 text-secondary">Support</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/report-issue"
-                    className="hover:text-[#004182] transition-colors"
+                    className="hover:text-secondary transition-colors"
                   >
                     Report Issue
                   </Link>
@@ -91,12 +92,12 @@ const Footer: React.FC = () => {
             </div>
 
             <div>
-              <h3 className="font-medium text-lg mb-4">Legal</h3>
+              <h3 className="font-medium text-lg mb-4 text-secondary">Legal</h3>
               <ul className="space-y-2">
                 <li>
                   <Link
                     to="/terms-and-conditions"
-                    className="hover:text-[#004182] transition-colors"
+                    className="hover:text-secondary transition-colors"
                   >
                     Terms & Conditions
                   </Link>
@@ -104,7 +105,7 @@ const Footer: React.FC = () => {
                 <li>
                   <Link
                     to="/admin/login"
-                    className="hover:text-[#004182] transition-colors"
+                    className="hover:text-secondary transition-colors"
                   >
                     Admin Login
                   </Link>
@@ -112,31 +113,33 @@ const Footer: React.FC = () => {
               </ul>
             </div>
 
-            <div>
-              <h3 className="font-medium text-lg mb-4">Connect</h3>
+            {/* <div>
+              <h3 className="font-medium text-lg mb-4 text-secondary">Connect</h3>
               <div className="flex space-x-4">
                 <Link
                   to="https://www.linkedin.com/company/selectskillset"
                   target="_blank"
-                  className="hover:text-[#004182] transition-colors"
+                  rel="noopener noreferrer"
+                  className="hover:text-secondary transition-colors"
                 >
                   <Linkedin size={24} />
                 </Link>
                 <Link
                   to="https://twitter.com/selectskillset"
                   target="_blank"
-                  className="hover:text-[#004182] transition-colors"
+                  rel="noopener noreferrer"
+                  className="hover:text-secondary transition-colors"
                 >
                   <Twitter size={24} />
                 </Link>
                 <Link
                   to="mailto:support@selectskillset.com"
-                  className="hover:text-[#004182] transition-colors"
+                  className="hover:text-secondary transition-colors"
                 >
                   <Mail size={24} />
                 </Link>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

@@ -4,8 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Search,
-  CheckCircle,
-  AlertCircle,
+
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAdminContext } from "../../context/AdminContext";

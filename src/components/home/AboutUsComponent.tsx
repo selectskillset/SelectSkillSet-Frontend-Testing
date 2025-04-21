@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { motion } from "framer-motion";
-import image from "../../images/img2.jpg";
+import image from "../../images/Interviewers.jpeg";
 import { Award, Briefcase, ChevronRight, Users } from "lucide-react";
 
 interface AboutUsProps {
@@ -8,12 +8,6 @@ interface AboutUsProps {
   alt?: string;
   className?: string;
 }
-
-const LINKEDIN_COLORS = {
-  primary: "#0077B5",
-  dark: "#004182",
-  light: "#00A0DC",
-};
 
 const AboutUsComponent: React.FC<AboutUsProps> = ({
   src = image,
@@ -57,35 +51,20 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
     []
   );
 
-  // Define separate animation transition settings for each layer
-  const outerTransition = useMemo(
-    () => ({
-      duration: 8,
-      repeat: Infinity,
-      ease: "linear",
-    }),
-    []
-  );
-
-  const middleTransition = useMemo(
-    () => ({
-      duration: 10,
-      repeat: Infinity,
-      ease: "linear",
-      delay: 1,
-    }),
-    []
-  );
-
-  const overlayTransition = useMemo(
-    () => ({
-      duration: 12,
-      repeat: Infinity,
-      ease: "linear",
-      delay: 2,
-    }),
-    []
-  );
+  // Animation transition settings
+  const outerTransition = { duration: 8, repeat: Infinity, ease: "linear" };
+  const middleTransition = {
+    duration: 10,
+    repeat: Infinity,
+    ease: "linear",
+    delay: 1,
+  };
+  const overlayTransition = {
+    duration: 12,
+    repeat: Infinity,
+    ease: "linear",
+    delay: 2,
+  };
 
   return (
     <section className="py-20 bg-gray-50">
@@ -99,7 +78,7 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             className="flex justify-center lg:justify-start"
           >
             <div className="relative w-full h-[70vmin] rounded-3xl overflow-hidden">
-              {/* Outer Animated Gradient Border Layer (Highest opacity) */}
+              {/* Outer Animated Gradient Border Layer */}
               <motion.div
                 initial={{ borderRadius: borderRadiusKeyframesOuter[0] }}
                 animate={{
@@ -107,24 +86,15 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
                   backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
                 }}
                 transition={outerTransition}
-                className="absolute inset-0 bg-[length:200%_200%]"
-                style={{
-                  background:
-                    "linear-gradient(45deg, #0077B5 0%, #004182 100%)", // LinkedIn colors
-                  boxShadow: "-5vmin 5vmin 0 rgba(255, 255, 255, 0.1)",
-                  opacity: 1, // Highest opacity for outer layer
-                }}
+                className="absolute inset-0 bg-gradient-to-br from-primary to-secondary bg-[length:200%_200%] shadow-lg"
               />
 
-              {/* Middle Image Container with Synchronized Animated Clipping (Medium opacity) */}
+              {/* Middle Image Container */}
               <motion.div
                 initial={{ borderRadius: borderRadiusKeyframesMiddle[0] }}
                 animate={{ borderRadius: borderRadiusKeyframesMiddle }}
                 transition={middleTransition}
-                className="relative w-full h-full overflow-hidden rounded-3xl"
-                style={{
-                  opacity: 0.85, // Slightly lower opacity
-                }}
+                className="relative w-full h-full overflow-hidden rounded-3xl opacity-85"
               >
                 <img
                   src={src}
@@ -133,27 +103,24 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
                 />
               </motion.div>
 
-              {/* Top Overlay Layer (Lowest opacity) */}
+              {/* Top Overlay Layer */}
               <motion.div
                 initial={{ borderRadius: borderRadiusKeyframesOverlay[0] }}
                 animate={{ borderRadius: borderRadiusKeyframesOverlay }}
                 transition={overlayTransition}
-                className="absolute inset-0 pointer-events-none rounded-3xl"
-                style={{
-                  background: "rgba(255,255,255,0.12)", // Lighter overlay color
-                  opacity: 0.65, // Lowest opacity for overlay
-                }}
+                className="absolute inset-0 pointer-events-none rounded-3xl bg-white/10 opacity-65"
               />
             </div>
           </motion.div>
 
+          {/* Right Column - Content */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-center lg:text-left"
+            className="text-left"
           >
-            <h2 className="text-4xl font-extrabold text-[#0077B5] mb-6">
+            <h2 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-6">
               About SELECTSKILLSET
             </h2>
             <p className="text-lg text-gray-600 mb-8">
@@ -163,22 +130,22 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             </p>
 
             {/* Features List */}
-            <ul className="space-y-4 text-lg text-start text-gray-600 mb-8">
+            <ul className="space-y-4 text-lg text-gray-600 mb-8">
               <li className="flex items-center space-x-3">
-                <Briefcase className="w-5 h-5 text-[#0077B5]" />
+                <Briefcase className="w-5 h-5 text-primary" />
                 <span>
                   Real-world mock interviews and personalized feedback for
                   candidates.
                 </span>
               </li>
               <li className="flex items-center space-x-3">
-                <Users className="w-5 h-5 text-[#0077B5]" />
+                <Users className="w-5 h-5 text-primary" />
                 <span>
                   Opportunities for freelancers to mentor future IT leaders.
                 </span>
               </li>
               <li className="flex items-center space-x-3">
-                <Award className="w-5 h-5 text-[#0077B5]" />
+                <Award className="w-5 h-5 text-primary" />
                 <span>
                   Access to pre-assessed, high-quality candidates for HR teams.
                 </span>
@@ -192,11 +159,7 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             </p>
 
             {/* Call-to-Action Button */}
-            <button
-              className="inline-flex items-center bg-[#0077B5] text-white py-3 px-6 rounded-lg 
-                         hover:bg-[#004182] transition duration-300 focus:outline-none focus:ring-2 
-                         focus:ring-offset-2 focus:ring-[#0077B5]"
-            >
+            <button className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg hover:scale-105 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark">
               Learn More <ChevronRight className="w-5 h-5 ml-2" />
             </button>
           </motion.div>

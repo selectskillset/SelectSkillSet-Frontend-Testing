@@ -1,14 +1,12 @@
+import React from "react";
 import { motion, Variants } from "framer-motion";
 import {
   CheckCircle2,
   GraduationCap,
-  Globe2,
   Rocket,
+  Users,
   Briefcase,
   Target,
-  Users,
-  Linkedin,
-  Mail,
 } from "lucide-react";
 import img1 from "../../images/calltoaction.jpg";
 import img2 from "../../images/img2.jpg";
@@ -41,9 +39,7 @@ const FeatureCard = ({ feature }: { feature: any }) => (
     className="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all"
   >
     <div className="mb-4">{feature.icon}</div>
-    <h3 className="text-xl font-semibold text-[#0077B5] mb-3">
-      {feature.title}
-    </h3>
+    <h3 className="text-xl font-semibold text-primary mb-3">{feature.title}</h3>
     <p className="text-gray-600">{feature.description}</p>
   </motion.div>
 );
@@ -55,13 +51,13 @@ const SolutionCard = ({ solution }: { solution: any }) => (
     className="bg-[#F8FAFC] p-6 rounded-lg transition-all hover:bg-[#EBF4FF]"
   >
     <div className="mb-4">{solution.icon}</div>
-    <h3 className="text-2xl font-semibold text-[#004182] mb-6">
+    <h3 className="text-2xl font-semibold text-secondary mb-6">
       {solution.title}
     </h3>
     <ul className="space-y-4">
       {solution.features.map((feature: string, index: number) => (
         <li key={index} className="flex items-center space-x-3">
-          <CheckCircle2 className="text-[#0077B5] w-5 h-5" />
+          <CheckCircle2 className="text-primary w-5 h-5" />
           <span className="text-gray-700 text-base">{feature}</span>
         </li>
       ))}
@@ -72,17 +68,13 @@ const SolutionCard = ({ solution }: { solution: any }) => (
 const AboutUsPage = () => {
   const features = [
     {
-      icon: <GraduationCap className="w-8 h-8 text-[#0077B5]" />,
+      icon: <GraduationCap className="w-8 h-8 text-primary" />,
       title: "Skill Development",
-      description: "AI-powered learning paths tailored to your career goals",
+      description:
+        "Expert-curated learning paths tailored to your career goals",
     },
     {
-      icon: <Globe2 className="w-8 h-8 text-[#0077B5]" />,
-      title: "Global Network",
-      description: "Connect with 500,000+ professionals worldwide",
-    },
-    {
-      icon: <Rocket className="w-8 h-8 text-[#0077B5]" />,
+      icon: <Rocket className="w-8 h-8 text-primary" />,
       title: "Career Growth",
       description: "Personalized roadmap to your dream tech role",
     },
@@ -90,17 +82,17 @@ const AboutUsPage = () => {
 
   const solutions = [
     {
-      icon: <Users className="w-10 h-10 text-[#0077B5]" />,
+      icon: <Users className="w-10 h-10 text-primary" />,
       title: "For Candidates",
       features: [
         "Technical interview simulations",
         "Personalized skill assessments",
         "Career path recommendations",
-        "AI-powered resume reviews",
+        "Professional resume optimization",
       ],
     },
     {
-      icon: <Briefcase className="w-10 h-10 text-[#0077B5]" />,
+      icon: <Briefcase className="w-10 h-10 text-primary" />,
       title: "For Freelancers",
       features: [
         "Project-based learning",
@@ -110,7 +102,7 @@ const AboutUsPage = () => {
       ],
     },
     {
-      icon: <Target className="w-10 h-10 text-[#0077B5]" />,
+      icon: <Target className="w-10 h-10 text-primary" />,
       title: "For HR Teams",
       features: [
         "Pre-vetted candidate pool",
@@ -125,7 +117,7 @@ const AboutUsPage = () => {
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <section
-        className="py-20 bg-gradient-to-br from-[#0077B5] to-[#004182]"
+        className="py-20 bg-gradient-to-br from-primary to-secondary"
         style={{
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
@@ -140,18 +132,24 @@ const AboutUsPage = () => {
             viewport={{ once: true }}
             className="max-w-3xl text-white"
           >
-            <h1 className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg">
-              Empowering Tech Careers Through Diversity
-            </h1>
-            <p className="text-lg md:text-xl mb-8 drop-shadow">
-              Join 500,000+ professionals mastering in-demand skills with expert
-              guidance
-            </p>
-            <div className="flex space-x-4">
+            <motion.h1
+              variants={itemVariants}
+              className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg"
+            >
+              Empowering Tech Careers Through Expert Guidance
+            </motion.h1>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg md:text-xl mb-8 drop-shadow"
+            >
+              Join professionals mastering in-demand skills with industry-proven
+              methodologies
+            </motion.p>
+            {/* <div className="flex space-x-4">
               <a
                 href="#"
-                className="px-6 py-3 bg-white text-[#0077B5] rounded-lg
-                          hover:bg-[#004182] hover:text-white transition-all
+                className="px-6 py-3 bg-white text-primary rounded-lg
+                          hover:bg-secondary hover:text-white transition-all
                           flex items-center space-x-2"
               >
                 <Linkedin className="w-5 h-5" />
@@ -166,7 +164,7 @@ const AboutUsPage = () => {
                 <Mail className="w-5 h-5" />
                 <span>Contact Us</span>
               </a>
-            </div>
+            </div> */}
           </motion.div>
         </div>
       </section>
@@ -181,16 +179,22 @@ const AboutUsPage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0077B5] mb-4">
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
+            >
               Transform Your Career Journey
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-600 max-w-3xl mx-auto"
+            >
               Comprehensive tools for every stage of your professional
               development
-            </p>
+            </motion.p>
           </motion.div>
           <motion.div
-            className="grid md:grid-cols-3 gap-8"
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
             variants={containerVariants}
           >
             {features.map((feature, index) => (
@@ -210,36 +214,49 @@ const AboutUsPage = () => {
             viewport={{ once: true }}
             className="grid lg:grid-cols-2 gap-12 items-center"
           >
-            <img
+            <motion.img
               src={img2}
               alt="Professional development"
               className="rounded-lg shadow-xl w-full h-auto object-cover"
               loading="lazy"
+              variants={itemVariants}
             />
-            <div className="space-y-8">
-              <h2 className="text-3xl md:text-4xl font-extrabold text-[#0077B5]">
+            <motion.div variants={itemVariants} className="space-y-8">
+              <motion.h2
+                variants={itemVariants}
+                className="text-3xl md:text-4xl font-extrabold text-primary"
+              >
                 About SELECTSKILLSET
-              </h2>
-              <p className="text-gray-700 text-lg">
+              </motion.h2>
+              <motion.p
+                variants={itemVariants}
+                className="text-gray-700 text-lg"
+              >
                 Revolutionizing tech career preparation with:
-              </p>
-              <ul className="space-y-4">
+              </motion.p>
+              <motion.ul
+                variants={containerVariants}
+                className="space-y-4"
+                initial="hidden"
+                whileInView="visible"
+              >
                 {[...Array(4)].map((_, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center space-x-3"
                     whileHover={{ scale: 1.02 }}
+                    variants={itemVariants}
                   >
-                    <CheckCircle2 className="text-[#0077B5] w-6 h-6" />
+                    <CheckCircle2 className="text-primary w-6 h-6" />
                     <span className="text-base md:text-lg">
                       {index % 2 === 0
-                        ? "AI-driven skill assessments"
+                        ? "Industry-validated skill assessments"
                         : "Real-world project simulations"}
                     </span>
                   </motion.li>
                 ))}
-              </ul>
-            </div>
+              </motion.ul>
+            </motion.div>
           </motion.div>
         </div>
       </section>
@@ -254,12 +271,18 @@ const AboutUsPage = () => {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-3xl md:text-4xl font-extrabold text-[#0077B5] mb-4">
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
+            >
               Tailored Solutions for Tech Ecosystem
-            </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-600 max-w-3xl mx-auto"
+            >
               Connecting talent with opportunity through specialized platforms
-            </p>
+            </motion.p>
           </motion.div>
           <motion.div
             className="grid md:grid-cols-3 gap-8"
