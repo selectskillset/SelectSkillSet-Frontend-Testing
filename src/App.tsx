@@ -56,9 +56,9 @@ function App() {
           {/*  Admin Routes (Admin Panel & Management) */}
           <AdminRoutes />
 
-          <Routes>
+          {/* <Routes>
             <Route path="*" element={<NotFoundPage />} />
-          </Routes>
+          </Routes> */}
 
           {/* -------------------------------------------------
                Notification System (react-hot-toast)
