@@ -4,7 +4,7 @@ import Features from "./Features";
 import CallToAction from "./CallToAction";
 // import SliderCards from "./SliderCards";
 import AboutUsComponent from "./AboutUsComponent";
-import CareerCloud from "./CareerCloud";
+// import CareerCloud from "./CareerCloud";
 
 export const HomePage = () => {
   return (
@@ -12,7 +12,7 @@ export const HomePage = () => {
       <Hero />
       {/*<LandingFeature />*/}
       <AboutUsComponent />
-      <CareerCloud/>
+      {/* <CareerCloud/> */}
       {/* <SliderCards /> */}
       <Features />
       {/* <Statistics /> */}
