@@ -71,7 +71,7 @@ const HeroSlider = () => {
     setCurrentSlide(index);
   };
 
-  // Smoother animation variants
+  // Enhanced animation variants
   const slideVariants = {
     enter: (direction: number) => ({
       x: direction > 0 ? "100%" : "-100%",
@@ -83,44 +83,44 @@ const HeroSlider = () => {
       transition: {
         x: {
           type: "spring",
-          stiffness: 250,
-          damping: 25,
-          mass: 0.5,
+          stiffness: 300,
+          damping: 30,
+          mass: 0.7,
         },
-        opacity: { duration: 0.4 },
+        opacity: { duration: 0.5 },
       },
     },
     exit: (direction: number) => ({
-      x: direction > 0 ? "-50%" : "50%",
+      x: direction > 0 ? "-40%" : "40%",
       opacity: 0,
       transition: {
         x: {
           type: "spring",
-          stiffness: 250,
-          damping: 25,
-          mass: 0.5,
+          stiffness: 300,
+          damping: 30,
+          mass: 0.7,
         },
-        opacity: { duration: 0.3 },
+        opacity: { duration: 0.4 },
       },
     }),
   };
 
   const contentVariants = {
-    hidden: { y: 20, opacity: 0 },
+    hidden: { y: 30, opacity: 0 },
     visible: (i: number) => ({
       y: 0,
       opacity: 1,
       transition: {
-        delay: i * 0.15,
-        duration: 0.6,
-        ease: [0.25, 0.1, 0.25, 1],
+        delay: i * 0.15 + 0.2,
+        duration: 0.7,
+        ease: [0.16, 1, 0.3, 1],
       },
     }),
   };
 
   return (
     <div
-      className="relative w-full h-[50vh] min-h-[300px] overflow-hidden "
+      className="relative w-full h-[60vh] min-h-[400px] max-h-[700px] overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -132,22 +132,24 @@ const HeroSlider = () => {
           initial="enter"
           animate="center"
           exit="exit"
-          className="absolute inset-0 flex flex-col lg:flex-row px-5"
+          className="absolute inset-0 flex flex-col lg:flex-row px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16"
         >
           {/* Content (Left 60%) */}
-          <div className="w-full lg:w-[60%] h-[60%] lg:h-full flex flex-col justify-center p-6 md:p-8 lg:p-12 ">
+          <div className="w-full lg:w-[55%] h-[55%] lg:h-full flex flex-col justify-center p-4 sm:p-6 md:p-8 lg:p-10 xl:p-12 space-y-4 md:space-y-6">
             <motion.h1
-              className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 md:mb-4"
+              className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight"
               custom={0}
               variants={contentVariants}
               initial="hidden"
               animate="visible"
             >
-              {slides[currentSlide].title}
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                {slides[currentSlide].title}
+              </span>
             </motion.h1>
 
             <motion.p
-              className="text-base sm:text-lg md:text-xl text-gray-600 mb-6 md:mb-8"
+              className="text-lg sm:text-xl md:text-2xl text-gray-600 max-w-2xl"
               custom={1}
               variants={contentVariants}
               initial="hidden"
@@ -156,33 +158,44 @@ const HeroSlider = () => {
               {slides[currentSlide].description}
             </motion.p>
 
-            {/* <motion.button
-              className="self-start px-6 py-2 md:px-8 md:py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 text-sm md:text-base"
+            {/* <motion.div
               custom={2}
               variants={contentVariants}
               initial="hidden"
               animate="visible"
-              whileHover={{
-                scale: 1.05,
-                boxShadow: "0 10px 20px rgba(99, 102, 241, 0.3)",
-              }}
-              whileTap={{ scale: 0.98 }}
+              className="pt-2"
             >
-              {slides[currentSlide].cta}
-            </motion.button> */}
+              <button
+                className="px-8 py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-medium group"
+              >
+                <span className="flex items-center gap-2">
+                  {slides[currentSlide].cta}
+                  <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                </span>
+              </button>
+            </motion.div> */}
           </div>
 
-          {/* Image (Right 40%) */}
-          <div className="w-full lg:w-[40%] h-[40%] lg:h-full relative">
-            <motion.img
-              src={slides[currentSlide].image}
-              alt={slides[currentSlide].title}
-              className="w-full h-full object-fill"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.8, ease: [0.33, 1, 0.68, 1] }}
-            />
-            {/* <div className="absolute inset-0 bg-gradient-to-l from-black/10 to-black/30" /> */}
+          {/* Image (Right 45%) - Adjusted for better proportions */}
+          <div className="w-full lg:w-[45%] h-[45%] lg:h-full relative flex items-center justify-center">
+            <motion.div
+              className="relative w-full h-full max-w-xl mx-auto"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{
+                duration: 0.8,
+                ease: [0.33, 1, 0.68, 1],
+                delay: 0.3,
+              }}
+            >
+              <img
+                src={slides[currentSlide].image}
+                alt={slides[currentSlide].title}
+                className="w-full h-full object-contain object-center"
+                loading="lazy"
+              />
+              {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent to-gray-50/50 mix-blend-lighten" /> */}
+            </motion.div>
           </div>
         </motion.div>
       </AnimatePresence>
@@ -190,32 +203,33 @@ const HeroSlider = () => {
       {/* Navigation Arrows */}
       <button
         onClick={goToPrev}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-1 sm:p-2 rounded-full shadow-md hover:shadow-lg z-10 transition-all duration-200"
+        className="absolute left-4 sm:left-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg hover:shadow-xl z-10 transition-all duration-200 backdrop-blur-sm"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+        <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7" />
       </button>
       <button
         onClick={goToNext}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-1 sm:p-2 rounded-full shadow-md hover:shadow-lg z-10 transition-all duration-200"
+        className="absolute right-4 sm:right-6 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-gray-800 p-2 rounded-full shadow-lg hover:shadow-xl z-10 transition-all duration-200 backdrop-blur-sm"
         aria-label="Next slide"
       >
-        <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+        <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7" />
       </button>
 
-      {/* Dots Indicator */}
-      <div className="absolute bottom-3 sm:bottom-4 left-1/2 -translate-x-1/2 flex space-x-1.5 sm:space-x-2 z-10">
+      {/* Enhanced Dots Indicator */}
+      <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 flex space-x-2 sm:space-x-3 z-10">
         {slides.map((slide, index) => (
           <motion.button
             key={slide.id}
             onClick={() => goToSlide(index)}
             className={`h-2 rounded-full transition-all duration-300 ${
               currentSlide === index
-                ? "bg-primary w-6 sm:w-8"
-                : "bg-gray-300 w-2 sm:w-3"
+                ? "bg-primary w-8 sm:w-10"
+                : "bg-gray-300 w-3 sm:w-4 hover:bg-gray-400"
             }`}
             aria-label={`Go to slide ${index + 1}`}
-            whileHover={{ scale: 1.2 }}
+            whileHover={{ scaleY: 1.5 }}
+            whileTap={{ scale: 0.9 }}
           />
         ))}
       </div>
