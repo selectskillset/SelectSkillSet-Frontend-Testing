@@ -19,7 +19,7 @@ import {
   Settings,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../../images/selectskillset_logo_test5-removebg-preview.png";
+import logo from "../../images/selectskillset_logo__2_-removebg-preview.png";
 
 const MOBILE_MENU_VARIANTS = {
   hidden: { x: "100%", transition: { duration: 0.3 } },

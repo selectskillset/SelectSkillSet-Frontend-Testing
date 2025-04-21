@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Linkedin, Twitter, Mail } from "lucide-react";
-import logo from "../../images/selectskillset_logo_test5-removebg-preview.png";
+import logo from "../../images/selectskillset_logo__2_-removebg-preview.png";
 
 const Footer: React.FC = () => {
   const [clickCount, setClickCount] = useState(0);
