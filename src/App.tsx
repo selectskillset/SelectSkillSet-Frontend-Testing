@@ -83,7 +83,7 @@ function App() {
           {/* -------------------------------------------------
                Chatbot & Footer (Visible on All Pages)
           -------------------------------------------------- */}
-          <Chatbot />
+          {/* <Chatbot /> */}
           <Footer />
         </div>
       </Router>
