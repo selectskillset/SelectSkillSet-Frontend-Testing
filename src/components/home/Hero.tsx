@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogIn, ArrowRightCircle, Award, Users } from "lucide-react";
+import { LogIn, ArrowRightCircle, Award, Users, MoveRightIcon, ArrowRightIcon } from "lucide-react";
 import heroImage from "../../images/img2.jpg";
 
 export const Hero = () => {
@@ -31,9 +31,9 @@ export const Hero = () => {
           {/* Action Button */}
           <Link
             to="/login"
-            className="inline-flex items-center gap-2 px-8 py-4 sm:px-10 sm:py-5 w-max bg-white/80 backdrop-blur-lg border-2 border-primary rounded-lg shadow-md hover:bg-primary-light hover:border-primary-dark hover:text-white transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-primary-dark"
+            className="inline-flex items-center text-primary gap-2 px-6 py-4  w-max bg-white/80 backdrop-blur-lg border-2 border-primary rounded-lg shadow-md hover:bg-primary-light hover:border-primary-dark hover:text-white transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-primary-dark"
           >
-            Get Started <LogIn className="w-5 h-5" />
+            Get Started <ArrowRightIcon className="w-6 h-6" />
           </Link>
 
           {/* Decorative Icons */}

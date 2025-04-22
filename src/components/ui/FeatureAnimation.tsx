@@ -30,7 +30,7 @@ const FeatureAnimation = () => {
               </div>
             ))}
           </div>
-          <button
+          {/* <button
             className="px-6 py-3 bg-gradient-to-r from-primary to-secondary 
                        text-white rounded-lg hover:scale-105 transition-transform 
                        shadow-lg flex items-center space-x-2 focus:outline-none 
@@ -38,7 +38,7 @@ const FeatureAnimation = () => {
           >
             <MessageCircle className="w-5 h-5" />
             <span>Share your ideas</span>
-          </button>
+          </button> */}
         </div>
 
         {/* Right Section: Animation */}

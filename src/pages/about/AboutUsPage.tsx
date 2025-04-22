@@ -1,4 +1,3 @@
-import React from "react";
 import { motion, Variants } from "framer-motion";
 import {
   CheckCircle2,
@@ -8,7 +7,7 @@ import {
   Briefcase,
   Target,
 } from "lucide-react";
-import img1 from "../../images/calltoaction.jpg";
+import img1 from "../../images/aboutImage.jpg";
 import img2 from "../../images/img2.jpg";
 
 const containerVariants: Variants = {
@@ -121,7 +120,7 @@ const AboutUsPage = () => {
         style={{
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "bottom",
         }}
       >
         <div className="container mx-auto px-6 lg:px-24">

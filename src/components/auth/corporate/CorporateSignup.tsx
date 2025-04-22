@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../common/axiosConfig";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 import corporateSignup from "../../../images/corporateSignup.svg"; // Import your image
 import { countryData } from "../../common/countryData";
 import { ChevronDown, Eye, EyeOff } from "lucide-react";

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import axiosInstance from "../../common/axiosConfig";
 import { Eye, EyeOff } from "lucide-react";
 

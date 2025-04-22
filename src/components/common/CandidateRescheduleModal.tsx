@@ -12,7 +12,7 @@ import {
   isEqual,
   differenceInMinutes,
 } from "date-fns";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import "react-datepicker/dist/react-datepicker.css";
 
 interface RescheduleRequest {

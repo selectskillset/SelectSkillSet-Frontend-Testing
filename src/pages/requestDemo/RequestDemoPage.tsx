@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
+import { toast } from "sonner";
 import { User, Mail, Building, Send, Phone } from "lucide-react";
 import { motion } from "framer-motion";
 import requestDemo from "../../images/RequestDemo.svg";

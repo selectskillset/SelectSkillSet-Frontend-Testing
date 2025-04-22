@@ -57,7 +57,7 @@ const CallToAction: React.FC = () => {
             {/* Secondary CTA Button */}
             <Link
               to="/about"
-              className="relative px-8 py-5 rounded-lg font-semibold 
+              className="relative px-8 py-4 rounded-lg font-semibold 
                         border-2 border-white bg-primary-dark backdrop-blur-lg 
                         text-white shadow-lg hover:bg-white hover:text-primary 
                         transition-all duration-300 focus:outline-none 

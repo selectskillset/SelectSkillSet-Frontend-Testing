@@ -18,7 +18,7 @@ import profilePlaceholder from "../../images/interviewerProfile.png";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCandidate } from "../../context/CandidateContext";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import FindUserLoader from "../../components/ui/FindUserLoader";
 
 const CandidateInterviews = () => {
