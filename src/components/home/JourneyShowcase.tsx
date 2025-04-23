@@ -2,13 +2,20 @@ import { motion, useScroll } from "framer-motion";
 import { useRef } from "react";
 import {
   Code,
-  Monitor,
-  Users,
+  MonitorSmartphone,
   ClipboardList,
   FileText,
-  BarChart2,
-  FileCheck,
-  ArrowRight,
+  Handshake,
+  Landmark,
+  UserCog,
+  Briefcase,
+  Target,
+  Award,
+  ShieldCheck,
+  PieChart,
+  GitPullRequest,
+  MessageSquareText,
+  CalendarCheck,
 } from "lucide-react";
 
 const CareerJourney = () => {
@@ -21,7 +28,7 @@ const CareerJourney = () => {
   const milestones = [
     {
       stage: "For Candidates",
-      icon: <Code className="w-5 h-5" />,
+      icon: <UserCog className="w-5 h-5" />,
       description: [
         "Technical interview simulations",
         "Personalized skill assessments",
@@ -30,22 +37,34 @@ const CareerJourney = () => {
       ],
       highlight: "Candidate Tools",
       color: "primary",
+      icons: [
+        <Code key="code" className="w-4 h-4 text-primary" />,
+        <ClipboardList key="clipboard" className="w-4 h-4 text-primary" />,
+        <Target key="target" className="w-4 h-4 text-primary" />,
+        <FileText key="file" className="w-4 h-4 text-primary" />,
+      ],
     },
     {
-      stage: "For Freelancers",
-      icon: <Monitor className="w-5 h-5" />,
+      stage: "For Interviewers",
+      icon: <MonitorSmartphone className="w-5 h-5" />,
       description: [
-        "Project-based learning",
-        "Client communication tools",
-        "Portfolio builder",
-        "Freelance marketplace",
+        "Mentorship opportunities",
+        "Per-interview earnings",
+        "Community building & recognition",
+        "Flexible scheduling",
       ],
-      highlight: "Freelance Support",
+      highlight: "Interviewer Support",
       color: "secondary",
+      icons: [
+        <Handshake key="handshake" className="w-4 h-4 text-secondary" />,
+        <Landmark key="landmark" className="w-4 h-4 text-secondary" />,
+        <Award key="award" className="w-4 h-4 text-secondary" />,
+        <CalendarCheck key="calendar" className="w-4 h-4 text-secondary" />,
+      ],
     },
     {
       stage: "For HR Teams",
-      icon: <Users className="w-5 h-5" />,
+      icon: <Briefcase className="w-5 h-5" />,
       description: [
         "Pre-vetted candidate pool",
         "Skill-based matching",
@@ -53,24 +72,19 @@ const CareerJourney = () => {
         "Interview templates",
       ],
       highlight: "Recruitment Solutions",
-      color: "tertiary",
+      color: "primary",
+      icons: [
+        <ShieldCheck key="shield" className="w-4 h-4 text-primary" />,
+        <PieChart key="pie" className="w-4 h-4 text-primary" />,
+        <GitPullRequest key="git" className="w-4 h-4 text-primary" />,
+        <MessageSquareText key="message" className="w-4 h-4 text-primary" />,
+      ],
     },
   ];
-
-  const getIconComponent = (index) => {
-    const icons = [
-      <ClipboardList key={0} className="w-4 h-4 text-primary" />,
-      <FileText key={1} className="w-4 h-4 text-secondary" />,
-      <BarChart2 key={2} className="w-4 h-4 text-tertiary" />,
-      <FileCheck key={3} className="w-4 h-4 text-primary" />,
-    ];
-    return icons[index % icons.length];
-  };
 
   return (
     <section className="py-16 lg:py-24 bg-gray-50" ref={containerRef}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Section Header */}
         <div className="max-w-4xl mx-auto text-center mb-12 lg:mb-16">
           <motion.span
             className="inline-block px-3 py-1 text-xs font-medium tracking-wider rounded-full bg-primary/10 text-primary mb-4 uppercase"
@@ -82,7 +96,7 @@ const CareerJourney = () => {
             Our Comprehensive Solutions
           </motion.span>
           <motion.h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4"
+            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
@@ -102,18 +116,14 @@ const CareerJourney = () => {
           </motion.p>
         </div>
 
-        {/* Timeline Container */}
         <div className="relative mx-auto max-w-6xl">
-          {/* Vertical Line */}
-          <div className="absolute left-1/2 w-0.5 h-full bg-gray-200 transform -translate-x-1/2" />
-
-          {/* Animated Progress Line */}
+          {/* Timeline line */}
+          <div className="absolute left-1/2 w-0.5 h-full bg-gray-200 transform -translate-x-1/2 hidden lg:block" />
           <motion.div
-            className="absolute left-1/2 w-0.5 h-full bg-gradient-to-b from-primary to-secondary transform -translate-x-1/2 origin-top"
+            className="absolute left-1/2 w-0.5 h-full bg-gradient-to-b from-primary to-secondary transform -translate-x-1/2 origin-top hidden lg:block"
             style={{ scaleY: scrollYProgress }}
           />
 
-          {/* Milestones */}
           <div className="space-y-8 lg:space-y-12">
             {milestones.map((milestone, index) => {
               const isEven = index % 2 === 0;
@@ -124,18 +134,14 @@ const CareerJourney = () => {
                   text: "text-primary",
                   border: "border-primary/30",
                   hover: "hover:border-primary/50",
+                  iconBg: "bg-primary/10",
                 },
                 secondary: {
                   bg: "bg-secondary/5",
                   text: "text-secondary",
                   border: "border-secondary/30",
                   hover: "hover:border-secondary/50",
-                },
-                tertiary: {
-                  bg: "bg-primary/5",
-                  text: "text-primary",
-                  border: "border-primary/30",
-                  hover: "hover:border-primary/50",
+                  iconBg: "bg-secondary/10",
                 },
               };
               const colors = colorClasses[milestone.color];
@@ -143,46 +149,68 @@ const CareerJourney = () => {
               return (
                 <motion.div
                   key={milestone.stage}
-                  className={`relative flex ${
-                    isEven ? "justify-start" : "justify-end"
-                  }`}
-                  initial={{ opacity: 0, x: isEven ? -40 : 40 }}
-                  whileInView={{ opacity: 1, x: 0 }}
+                  className="relative flex"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px 0px" }}
-                  transition={{ duration: 0.5, delay }}
+                  transition={{ 
+                    duration: 0.5, 
+                    delay,
+                    ease: [0.16, 1, 0.3, 1] // Smooth easing curve
+                  }}
                 >
+                  {/* Mobile indicator - only shows on small screens */}
+                  <div className="lg:hidden absolute left-0 top-6 w-3 h-3 rounded-full bg-primary border-4 border-white z-10"></div>
+
                   <div
-                    className={`w-full lg:w-[46%] p-6 lg:p-8 rounded-xl border ${colors.border} ${colors.hover} ${colors.bg} transition-all duration-300 shadow-sm hover:shadow-md`}
+                    className={`w-full lg:w-[46%] p-6 lg:p-8 rounded-xl border ${colors.border} ${colors.hover} ${colors.bg} transition-all duration-300 shadow-sm hover:shadow-md ${
+                      isEven ? "lg:mr-auto" : "lg:ml-auto"
+                    }`}
                   >
                     <div className="flex items-start">
-                      {/* Icon */}
                       <div
-                        className={`flex-shrink-0 w-10 h-10 rounded-lg ${colors.bg} flex items-center justify-center mr-4 mt-0.5`}
+                        className={`flex-shrink-0 w-10 h-10 rounded-lg ${colors.iconBg} flex items-center justify-center mr-4 mt-0.5`}
                       >
                         <div className={colors.text}>{milestone.icon}</div>
                       </div>
 
-                      {/* Content */}
                       <div className="flex-1">
-                        <span
+                        <motion.span
                           className={`inline-block px-2.5 py-1 text-xs font-medium tracking-wider rounded-full ${colors.bg} ${colors.text} mb-3`}
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.3, delay: delay + 0.1 }}
                         >
                           {milestone.highlight}
-                        </span>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-3">
+                        </motion.span>
+                        <motion.h3
+                          className="text-xl font-semibold text-gray-900 mb-3"
+                          initial={{ opacity: 0, y: 10 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ duration: 0.3, delay: delay + 0.2 }}
+                        >
                           {milestone.stage}
-                        </h3>
-                        <ul className="space-y-2.5">
+                        </motion.h3>
+                        <ul className="space-y-3">
                           {milestone.description.map((item, i) => (
-                            <li
+                            <motion.li
                               key={i}
                               className="flex items-start text-gray-600 text-sm lg:text-base"
+                              initial={{ opacity: 0, x: -10 }}
+                              whileInView={{ opacity: 1, x: 0 }}
+                              viewport={{ once: true }}
+                              transition={{ 
+                                duration: 0.3, 
+                                delay: delay + 0.3 + (i * 0.05) 
+                              }}
                             >
                               <span className="mr-2.5 mt-0.5 flex-shrink-0">
-                                {getIconComponent(i)}
+                                {milestone.icons[i]}
                               </span>
                               <span>{item}</span>
-                            </li>
+                            </motion.li>
                           ))}
                         </ul>
                       </div>

@@ -1,113 +1,106 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { LogIn, ArrowRightCircle, Award, Users, MoveRightIcon, ArrowRightIcon } from "lucide-react";
-import heroImage from "../../images/img2.jpg";
+import { ArrowRightCircle, Award, Users, ArrowRight } from "lucide-react";
+import heroImage from "../../images/hero.svg";
 
 export const Hero = () => {
   return (
-    <div className="relative h-[90vh] flex items-center justify-center overflow-hidden bg-white">
-      {/* Split Layout */}
-      <div className="container mx-auto px-6 sm:px-8 md:px-12 lg:px-16 xl:px-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Left Section - Content */}
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
-          className="flex flex-col justify-center space-y-6"
-        >
-          {/* Header Tagline */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-tight">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
-              Find Your Next Opportunity with Tailored Solutions
-            </span>
-          </h1>
-
-          {/* Subheading */}
-          <p className="text-lg sm:text-xl md:text-2xl text-gray-600 font-medium">
-            Empowering job seekers, interviewers, and corporates to connect
-            seamlessly with cutting-edge tools and personalized experiences.
-          </p>
-
-          {/* Action Button */}
-          <Link
-            to="/login"
-            className="inline-flex items-center text-primary gap-2 px-6 py-4  w-max bg-white/80 backdrop-blur-lg border-2 border-primary rounded-lg shadow-md hover:bg-primary-light hover:border-primary-dark hover:text-white transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-primary-dark"
+    <section className="relative flex items-center justify-center min-h-[100%] py-12 px-4 lg:px-10 overflow-hidden bg-white">
+      {/* Container with max-width and responsive padding */}
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Grid layout - switches from column to row on large screens */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-center">
+          {/* Left Column - Content */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+            className="order-2 lg:order-1 flex flex-col justify-center space-y-4 sm:space-y-6"
           >
-            Get Started <ArrowRightIcon className="w-6 h-6" />
-          </Link>
-
-          {/* Decorative Icons */}
-          <div className="flex items-center gap-6 mt-6">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
-              className="flex items-center gap-2 text-primary"
-            >
-              <Award className="w-6 h-6" />
-              <span className="text-sm sm:text-base font-medium">Trusted</span>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
-              className="flex items-center gap-2 text-primary"
-            >
-              <Users className="w-6 h-6" />
-              <span className="text-sm sm:text-base font-medium">
-                Community
+            {/* Headline with responsive font sizing */}
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-5xl xl:text-6xl font-bold leading-tight tracking-tight">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary">
+                Discover Your Dream Role with Precision
               </span>
-            </motion.div>
+            </h1>
 
-            <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
-              className="flex items-center gap-2 text-primary"
-            >
-              <ArrowRightCircle className="w-6 h-6" />
-              <span className="text-sm sm:text-base font-medium">
-                Progressive
-              </span>
-            </motion.div>
-          </div>
-        </motion.div>
+            {/* Subheading with responsive sizing and improved line-height */}
+            <p className="text-base sm:text-lg md:text-xl text-gray-600 font-medium leading-relaxed max-w-2xl">
+              SELECTSKILLSET bridges candidates, interviewers, and employers
+              through smart tools, personalized journeys, and seamless hiring
+              experiences.
+            </p>
 
-        {/* Right Section - Visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
-          className="relative rounded-2xl overflow-hidden shadow-2xl group"
-        >
-          {/* Image */}
-          <img
-            src={heroImage}
-            alt="Business Image"
-            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-          />
+            {/* CTA Button with hover effects */}
+            <div className="pt-2 sm:pt-4">
+              <Link
+                to="/login"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 sm:px-8 sm:py-4 w-max bg-white border-2 border-primary rounded-lg shadow-sm hover:bg-primary hover:text-white transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
+              >
+                <span className="text-sm sm:text-base font-semibold">
+                  Get Started
+                </span>
+                <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Link>
+            </div>
 
-          {/* Decorative Elements */}
-          <div className="absolute bottom-6 right-6 p-4 bg-white/20 backdrop-blur-lg rounded-full shadow-lg">
-            <svg
-              className="w-8 h-8 text-primary animate-pulse"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-              ></path>
-            </svg>
-          </div>
-        </motion.div>
+            {/* Features with responsive spacing */}
+            <div className="flex flex-wrap items-center gap-4 sm:gap-6 pt-4 sm:pt-6">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+                className="flex items-center gap-2 text-primary"
+              >
+                <Award className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="text-xs sm:text-sm font-medium">Trusted</span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.7, ease: "easeOut" }}
+                className="flex items-center gap-2 text-primary"
+              >
+                <Users className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="text-xs sm:text-sm font-medium">
+                  Community
+                </span>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.8, ease: "easeOut" }}
+                className="flex items-center gap-2 text-primary"
+              >
+                <ArrowRightCircle className="w-5 h-5 sm:w-6 sm:h-6" />
+                <span className="text-xs sm:text-sm font-medium">
+                  Progressive
+                </span>
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Right Column - Image */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: "easeOut" }}
+            className="order-1 lg:order-2 relative w-full h-full flex items-center justify-center"
+          >
+            <div className="relative w-full max-w-xl mx-auto lg:mx-0 overflow-hidden ">
+              <img
+                src={heroImage}
+                alt="Modern hiring process illustration"
+                className="w-full h-auto object-cover transition-transform duration-500 hover:scale-105"
+                loading="eager"
+              />
+            </div>
+          </motion.div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
