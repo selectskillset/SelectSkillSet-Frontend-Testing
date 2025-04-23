@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import img1 from "../../images/aboutImage.jpg";
 import img2 from "../../images/img2.jpg";
+import AboutUsComponent from "../../components/home/AboutUsComponent";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -167,6 +168,8 @@ const AboutUsPage = () => {
           </motion.div>
         </div>
       </section>
+
+      <AboutUsComponent />
 
       {/* Features Section */}
       <section className="py-20 bg-white">

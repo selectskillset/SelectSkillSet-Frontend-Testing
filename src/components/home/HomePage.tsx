@@ -3,7 +3,6 @@ import Features from "./Features";
 
 import CallToAction from "./CallToAction";
 // import SliderCards from "./SliderCards";
-import AboutUsComponent from "./AboutUsComponent";
 import HeroSlider from "./HeroSlider";
 import CommunitySpotlight from "./CommunitySpotlight";
 import JourneyShowcase from "./JourneyShowcase";
@@ -14,7 +13,6 @@ export const HomePage = () => {
     <div className="">
       <Hero />
       {/*<LandingFeature />*/}
-      <AboutUsComponent />
       <HeroSlider />
       {/* <CareerCloud/> */}
       {/* <SliderCards /> */}

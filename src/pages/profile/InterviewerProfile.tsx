@@ -12,7 +12,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
- 
+
 interface Availability {
   date: string;
   from: string;

@@ -1,9 +1,18 @@
 import { motion } from "framer-motion";
-import { Users, MessageSquare, Globe, Award, ArrowRight } from "lucide-react";
+import {
+  Users,
+  MessageSquare,
+  Star,
+  Award,
+  ArrowRight,
+  Briefcase,
+  ClipboardCheck,
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const CommunitySpotlight = () => {
   const navigate = useNavigate();
+
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -29,30 +38,29 @@ const CommunitySpotlight = () => {
     },
   };
 
-  const communityFeatures = [
+  const features = [
     {
-      icon: <Users className="w-6 h-6" />,
-      title: "Industry Circles",
-      description: "Join focused groups in your professional field",
-      stat: "200+ active groups",
+      icon: <ClipboardCheck className="w-6 h-6" />,
+      title: "Book a Mock Interview",
+      description:
+        "Choose a job role and get interviewed by an experienced professional",
     },
     {
       icon: <MessageSquare className="w-6 h-6" />,
-      title: "Peer Mentoring",
-      description: "Give and receive guidance from fellow professionals",
-      stat: "5,000+ monthly exchanges",
+      title: "Receive Detailed Feedback",
+      description:
+        "Get ratings across communication, problem-solving, and technical skills",
     },
     {
-      icon: <Globe className="w-6 h-6" />,
-      title: "Global Network",
-      description: "Connect with professionals across countries",
-      stat: "80% career growth reported",
+      icon: <Star className="w-6 h-6" />,
+      title: "Get Discovered by Recruiters",
+      description: "Your profile is listed in our top-rated talent pool",
     },
     {
-      icon: <Award className="w-6 h-6" />,
-      title: "Recognition",
-      description: "Earn badges for contributions and achievements",
-      stat: "10,000+ badges awarded",
+      icon: <Briefcase className="w-6 h-6" />,
+      title: "Access Top Candidates",
+      description:
+        "Recruiters can browse pre-vetted, performance-rated professionals",
     },
   ];
 
@@ -69,24 +77,25 @@ const CommunitySpotlight = () => {
           {/* Section Header */}
           <motion.div variants={itemVariants} className="text-center mb-16">
             <span className="inline-block px-4 py-1.5 text-sm font-medium rounded-full bg-primary/10 text-primary mb-4">
-              Professional Network
+              How It Works
             </span>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary mb-4">
-              Your Career Community Awaits
+              Rated by Experts. Hired by Recruiters.
             </h2>
             <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">
-              Connect, collaborate and grow with like-minded professionals
+              SelectSkillSet connects job-ready candidates with recruiters
+              through mock interviews and performance ratings.
             </p>
           </motion.div>
 
           {/* Feature Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {communityFeatures.map((feature) => (
+            {features.map((feature) => (
               <motion.div
                 key={feature.title}
                 variants={itemVariants}
                 whileHover={{ y: -5 }}
-                className="bg-gray-50 rounded-xl p-8 border border-gray-200 hover:border-primary/30 transition-all duration-300"
+                className="bg-primary/10 rounded-xl p-6 border border-gray-200 hover:border-secondary/30 transition-all duration-300"
               >
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-6 text-primary">
                   {feature.icon}
@@ -95,22 +104,48 @@ const CommunitySpotlight = () => {
                   {feature.title}
                 </h3>
                 <p className="text-gray-600 mb-4">{feature.description}</p>
-                {/* <p className="text-sm font-medium text-primary">
-                  {feature.stat}
-                </p> */}
               </motion.div>
             ))}
           </div>
 
-          {/* CTA */}
-          <motion.div variants={itemVariants} className="text-center mt-16">
-            <button
-              onClick={() => navigate("/login")}
-              className="inline-flex items-center px-8 py-3.5 bg-gradient-to-r from-primary to-secondary text-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 text-lg font-medium group"
-            >
-              Join the Community
-              <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
+          {/* Dual CTA */}
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col md:flex-row justify-center gap-6 mt-16"
+          >
+            <div className="text-center bg-primary/10 p-8 rounded-xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                For Candidates
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Tired of sending resumes into the void? Let your performance
+                speak for itself.
+              </p>
+              <button
+                onClick={() => navigate("/candidate-signup")}
+                className="inline-flex items-center px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium"
+              >
+                Start Your Journey
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="text-center bg-primary/10 p-8 rounded-xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                For Recruiters
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Skip the clutter and access a ranked pool of pre-vetted
+                candidates ready to interview.
+              </p>
+              <button
+                onClick={() => navigate("/corporate-signup")}
+                className="inline-flex items-center px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-all duration-300 font-medium"
+              >
+                Browse Candidate Pool
+                <ArrowRight className="ml-2 w-4 h-4" />
+              </button>
+            </div>
           </motion.div>
         </motion.div>
       </div>

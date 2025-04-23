@@ -209,7 +209,7 @@ export const Navbar = React.memo(() => {
 
   return (
     <nav
-      className={`bg-white shadow-lg sticky top-0 z-50 transition-transform duration-300 ${
+      className={`bg-white shadow-xl sticky top-0 z-50 transition-transform duration-300  ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
