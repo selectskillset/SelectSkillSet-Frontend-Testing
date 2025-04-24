@@ -204,45 +204,8 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-      <AboutUsComponent />
-
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 lg:px-24">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <motion.h2
-              variants={itemVariants}
-              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
-            >
-              Transform Your Career Journey
-            </motion.h2>
-            <motion.p
-              variants={itemVariants}
-              className="text-lg text-gray-600 max-w-3xl mx-auto"
-            >
-              Comprehensive tools and resources for every stage of your
-              professional development, from beginner to senior level
-            </motion.p>
-          </motion.div>
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-          >
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} />
-            ))}
-          </motion.div>
-        </div>
-      </section>
-
-      {/* About Section */}
-      <section className="py-20 bg-[#F8FAFC]">
+   {/* About Section */}
+   <section className="py-20 bg-[#F8FAFC]">
         <div className="container mx-auto px-6 lg:px-24">
           <motion.div
             variants={containerVariants}
@@ -330,6 +293,43 @@ const AboutUsPage = () => {
         </div>
       </section>
 
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6 lg:px-24">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
+            >
+              Transform Your Career Journey
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-600 max-w-3xl mx-auto"
+            >
+              Comprehensive tools and resources for every stage of your
+              professional development, from beginner to senior level
+            </motion.p>
+          </motion.div>
+          <motion.div
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+          >
+            {features.map((feature, index) => (
+              <FeatureCard key={index} feature={feature} />
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+   
       {/* Solutions Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
