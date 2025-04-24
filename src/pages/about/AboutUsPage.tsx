@@ -6,11 +6,19 @@ import {
   Users,
   Briefcase,
   Target,
+  Code,
+  Globe,
+  Shield,
+  BarChart2,
+  Clock,
+  Award,
+  HeartHandshake,
 } from "lucide-react";
 import img1 from "../../images/aboutImage.jpg";
-import img2 from "../../images/img2.jpg";
+import img2 from "../../images/about.svg";
 import AboutUsComponent from "../../components/home/AboutUsComponent";
 
+// Constants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -32,6 +40,7 @@ const itemVariants: Variants = {
   },
 };
 
+// Components
 const FeatureCard = ({ feature }: { feature: any }) => (
   <motion.div
     variants={itemVariants}
@@ -66,17 +75,43 @@ const SolutionCard = ({ solution }: { solution: any }) => (
 );
 
 const AboutUsPage = () => {
+  // Data
   const features = [
     {
       icon: <GraduationCap className="w-8 h-8 text-primary" />,
       title: "Skill Development",
       description:
-        "Expert-curated learning paths tailored to your career goals",
+        "Expert-curated learning paths with 500+ courses across 20+ tech domains, updated monthly to reflect industry trends",
     },
     {
       icon: <Rocket className="w-8 h-8 text-primary" />,
       title: "Career Growth",
-      description: "Personalized roadmap to your dream tech role",
+      description:
+        "Personalized roadmap with AI-driven recommendations to accelerate your path to dream tech roles",
+    },
+    {
+      icon: <Code className="w-8 h-8 text-primary" />,
+      title: "Real-world Projects",
+      description:
+        "Hands-on experience with 100+ industry-relevant projects and code review from senior engineers",
+    },
+    {
+      icon: <Globe className="w-8 h-8 text-primary" />,
+      title: "Global Community",
+      description:
+        "Connect with 50,000+ tech professionals worldwide for networking and mentorship",
+    },
+    {
+      icon: <Shield className="w-8 h-8 text-primary" />,
+      title: "Interview Prep",
+      description:
+        "Comprehensive preparation with 1000+ interview questions and mock interviews with industry experts",
+    },
+    {
+      icon: <BarChart2 className="w-8 h-8 text-primary" />,
+      title: "Progress Tracking",
+      description:
+        "Detailed analytics dashboard to monitor your skill growth and career readiness",
     },
   ];
 
@@ -113,6 +148,25 @@ const AboutUsPage = () => {
     },
   ];
 
+
+  const missionValues = [
+    {
+      icon: <Clock className="w-6 h-6 text-primary" />,
+      title: "Efficiency",
+      description: "Streamlining the learning-to-hiring process",
+    },
+    {
+      icon: <Award className="w-6 h-6 text-primary" />,
+      title: "Excellence",
+      description: "Maintaining the highest standards in tech education",
+    },
+    {
+      icon: <HeartHandshake className="w-6 h-6 text-primary" />,
+      title: "Community",
+      description: "Fostering collaboration and support networks",
+    },
+  ];
+
   return (
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
@@ -122,6 +176,7 @@ const AboutUsPage = () => {
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
           backgroundPosition: "bottom",
+          backgroundBlendMode: "overlay",
         }}
       >
         <div className="container mx-auto px-6 lg:px-24">
@@ -142,29 +197,9 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-lg md:text-xl mb-8 drop-shadow"
             >
-              Join professionals mastering in-demand skills with industry-proven
-              methodologies
+              Join professionals mastering in-demand skills with our
+              industry-proven methodologies and personalized career coaching
             </motion.p>
-            {/* <div className="flex space-x-4">
-              <a
-                href="#"
-                className="px-6 py-3 bg-white text-primary rounded-lg
-                          hover:bg-secondary hover:text-white transition-all
-                          flex items-center space-x-2"
-              >
-                <Linkedin className="w-5 h-5" />
-                <span>Join LinkedIn Community</span>
-              </a>
-              <a
-                href="#"
-                className="px-6 py-3 bg-white/20 text-white rounded-lg
-                          hover:bg-white/30 transition-all
-                          flex items-center space-x-2"
-              >
-                <Mail className="w-5 h-5" />
-                <span>Contact Us</span>
-              </a>
-            </div> */}
           </motion.div>
         </div>
       </section>
@@ -191,8 +226,8 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Comprehensive tools for every stage of your professional
-              development
+              Comprehensive tools and resources for every stage of your
+              professional development, from beginner to senior level
             </motion.p>
           </motion.div>
           <motion.div
@@ -219,7 +254,7 @@ const AboutUsPage = () => {
             <motion.img
               src={img2}
               alt="Professional development"
-              className="rounded-lg shadow-xl w-full h-auto object-cover"
+              className="w-full h-full object-cover"
               loading="lazy"
               variants={itemVariants}
             />
@@ -234,7 +269,8 @@ const AboutUsPage = () => {
                 variants={itemVariants}
                 className="text-gray-700 text-lg"
               >
-                Revolutionizing tech career preparation with:
+                Founded in 2024, we've revolutionized tech career preparation by
+                bridging the gap between learning and employment through:
               </motion.p>
               <motion.ul
                 variants={containerVariants}
@@ -242,7 +278,12 @@ const AboutUsPage = () => {
                 initial="hidden"
                 whileInView="visible"
               >
-                {[...Array(4)].map((_, index) => (
+                {[
+                  "Industry-validated skill assessments designed by FAANG engineers",
+                  "Real-world project simulations mirroring actual work environments",
+                  "Personalized mentorship from senior tech professionals",
+                  "Continuous curriculum updates based on market demands",
+                ].map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center space-x-3"
@@ -250,14 +291,40 @@ const AboutUsPage = () => {
                     variants={itemVariants}
                   >
                     <CheckCircle2 className="text-primary w-6 h-6" />
-                    <span className="text-base md:text-lg">
-                      {index % 2 === 0
-                        ? "Industry-validated skill assessments"
-                        : "Real-world project simulations"}
-                    </span>
+                    <span className="text-base md:text-lg">{item}</span>
                   </motion.li>
                 ))}
               </motion.ul>
+
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                className="pt-8"
+              >
+                <h3 className="text-2xl font-semibold text-primary mb-6">
+                  Our Mission & Values
+                </h3>
+                <div className="grid md:grid-cols-3 gap-6">
+                  {missionValues.map((value, index) => (
+                    <motion.div
+                      key={index}
+                      variants={itemVariants}
+                      className="bg-white p-4 rounded-lg shadow-sm"
+                    >
+                      <div className="flex items-center space-x-3 mb-3">
+                        {value.icon}
+                        <h4 className="font-semibold text-secondary">
+                          {value.title}
+                        </h4>
+                      </div>
+                      <p className="text-gray-600 text-sm">
+                        {value.description}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             </motion.div>
           </motion.div>
         </div>
@@ -283,7 +350,8 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Connecting talent with opportunity through specialized platforms
+              Comprehensive platforms connecting talent with opportunity through
+              specialized solutions
             </motion.p>
           </motion.div>
           <motion.div
