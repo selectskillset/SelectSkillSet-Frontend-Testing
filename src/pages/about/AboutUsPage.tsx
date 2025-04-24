@@ -75,43 +75,43 @@ const SolutionCard = ({ solution }: { solution: any }) => (
 );
 
 const AboutUsPage = () => {
-  // Data
+  // Updated data with aligned messaging
   const features = [
     {
       icon: <GraduationCap className="w-8 h-8 text-primary" />,
       title: "Skill Development",
       description:
-        "Expert-curated learning paths with 500+ courses across 20+ tech domains, updated monthly to reflect industry trends",
+        "Master in-demand skills through structured learning paths and curated technical content built for modern tech careers.",
     },
     {
       icon: <Rocket className="w-8 h-8 text-primary" />,
-      title: "Career Growth",
+      title: "Mock Interviews & Feedback",
       description:
-        "Personalized roadmap with AI-driven recommendations to accelerate your path to dream tech roles",
+        "Book realistic mock interviews with professionals and receive detailed feedback on technical, communication, and problem-solving skills.",
     },
     {
-      icon: <Code className="w-8 h-8 text-primary" />,
-      title: "Real-world Projects",
+      icon: <CheckCircle2 className="w-8 h-8 text-primary" />,
+      title: "Performance-Based Discovery",
       description:
-        "Hands-on experience with 100+ industry-relevant projects and code review from senior engineers",
+        "Get noticed by recruiters based on your actual performance, not just your resume. Join our ranked talent pool.",
     },
     {
-      icon: <Globe className="w-8 h-8 text-primary" />,
-      title: "Global Community",
+      icon: <Users className="w-8 h-8 text-primary" />,
+      title: "Community-Driven Learning",
       description:
-        "Connect with 50,000+ tech professionals worldwide for networking and mentorship",
-    },
-    {
-      icon: <Shield className="w-8 h-8 text-primary" />,
-      title: "Interview Prep",
-      description:
-        "Comprehensive preparation with 1000+ interview questions and mock interviews with industry experts",
+        "Grow with a supportive network of peers, mentors, and hiring professionals dedicated to mutual career growth.",
     },
     {
       icon: <BarChart2 className="w-8 h-8 text-primary" />,
-      title: "Progress Tracking",
+      title: "Smart Career Tools",
       description:
-        "Detailed analytics dashboard to monitor your skill growth and career readiness",
+        "Access resume builders, personalized assessments, and intelligent career path guidance to make smarter moves.",
+    },
+    {
+      icon: <Globe className="w-8 h-8 text-primary" />,
+      title: "Global Opportunities",
+      description:
+        "Expand your professional reach by connecting with recruiters and mentors across the globe.",
     },
   ];
 
@@ -121,49 +121,57 @@ const AboutUsPage = () => {
       title: "For Candidates",
       features: [
         "Technical interview simulations",
-        "Personalized skill assessments",
-        "Career path recommendations",
-        "Professional resume optimization",
+        "Career path discovery",
+        "Skill-based resume optimization",
+        "Get ranked and discovered by recruiters",
       ],
     },
     {
       icon: <Briefcase className="w-10 h-10 text-primary" />,
-      title: "For Freelancers",
+      title: "For Interviewers",
       features: [
-        "Project-based learning",
-        "Client communication tools",
-        "Portfolio builder",
-        "Freelance marketplace",
+        "Earn through mock interviews",
+        "Build professional recognition",
+        "Flexible scheduling",
+        "Support the next generation of tech talent",
       ],
     },
     {
       icon: <Target className="w-10 h-10 text-primary" />,
       title: "For HR Teams",
       features: [
-        "Pre-vetted candidate pool",
-        "Skill-based matching",
-        "Diversity analytics",
-        "Interview templates",
+        "Access pre-vetted candidate pools",
+        "Skill-based candidate ranking",
+        "Efficient and diverse hiring pipelines",
+        "Ready-to-use interview frameworks",
       ],
     },
   ];
-
 
   const missionValues = [
     {
       icon: <Clock className="w-6 h-6 text-primary" />,
       title: "Efficiency",
-      description: "Streamlining the learning-to-hiring process",
+      description:
+        "We streamline the learning-to-hiring journey through automation and expert support.",
     },
     {
       icon: <Award className="w-6 h-6 text-primary" />,
-      title: "Excellence",
-      description: "Maintaining the highest standards in tech education",
+      title: "Meritocracy",
+      description:
+        "Talent and effort come first — we prioritize performance, not paper.",
     },
     {
       icon: <HeartHandshake className="w-6 h-6 text-primary" />,
       title: "Community",
-      description: "Fostering collaboration and support networks",
+      description:
+        "We foster mentorship and meaningful professional relationships.",
+    },
+    {
+      icon: <Shield className="w-6 h-6 text-primary" />,
+      title: "Trust & Transparency",
+      description:
+        "Clear ratings, real feedback, and secure systems you can rely on.",
     },
   ];
 
@@ -191,21 +199,22 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg"
             >
-              Empowering Tech Careers Through Expert Guidance
+              About SELECTSKILLSET
             </motion.h1>
             <motion.p
               variants={itemVariants}
               className="text-lg md:text-xl mb-8 drop-shadow"
             >
-              Join professionals mastering in-demand skills with our
-              industry-proven methodologies and personalized career coaching
+              We’re revolutionizing tech career development by connecting
+              candidates, interviewers, and employers through smart tools, real
+              feedback, and performance-driven hiring.
             </motion.p>
           </motion.div>
         </div>
       </section>
 
-   {/* About Section */}
-   <section className="py-20 bg-[#F8FAFC]">
+      {/* About Section */}
+      <section className="py-20 bg-[#F8FAFC]">
         <div className="container mx-auto px-6 lg:px-24">
           <motion.div
             variants={containerVariants}
@@ -226,14 +235,16 @@ const AboutUsPage = () => {
                 variants={itemVariants}
                 className="text-3xl md:text-4xl font-extrabold text-primary"
               >
-                About SELECTSKILLSET
+                Who We Are
               </motion.h2>
               <motion.p
                 variants={itemVariants}
                 className="text-gray-700 text-lg"
               >
-                Founded in 2024, we've revolutionized tech career preparation by
-                bridging the gap between learning and employment through:
+                SELECTSKILLSET was founded in 2024 with one bold mission: to
+                remove guesswork from hiring and career growth. We empower
+                individuals to learn, perform, and shine — while enabling
+                companies to hire with confidence and clarity.
               </motion.p>
               <motion.ul
                 variants={containerVariants}
@@ -242,10 +253,10 @@ const AboutUsPage = () => {
                 whileInView="visible"
               >
                 {[
-                  "Industry-validated skill assessments designed by FAANG engineers",
-                  "Real-world project simulations mirroring actual work environments",
-                  "Personalized mentorship from senior tech professionals",
-                  "Continuous curriculum updates based on market demands",
+                  "Structured career paths tailored to your skill level and goals",
+                  "Real mock interviews conducted by experienced industry professionals",
+                  "Honest, constructive feedback to help you grow and stand out",
+                  "Direct access to hiring networks through verified performance and profiles",
                 ].map((item, index) => (
                   <motion.li
                     key={index}
@@ -268,7 +279,7 @@ const AboutUsPage = () => {
                 <h3 className="text-2xl font-semibold text-primary mb-6">
                   Our Mission & Values
                 </h3>
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {missionValues.map((value, index) => (
                     <motion.div
                       key={index}
@@ -293,7 +304,6 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
@@ -308,14 +318,14 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
             >
-              Transform Your Career Journey
+              Why Professionals Choose Us
             </motion.h2>
             <motion.p
               variants={itemVariants}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Comprehensive tools and resources for every stage of your
-              professional development, from beginner to senior level
+              From first-time coders to seasoned engineers — SELECTSKILLSET is
+              where growth meets opportunity.
             </motion.p>
           </motion.div>
           <motion.div
@@ -329,7 +339,6 @@ const AboutUsPage = () => {
         </div>
       </section>
 
-   
       {/* Solutions Section */}
       <section className="py-20 bg-white">
         <div className="container mx-auto px-6 lg:px-24">
@@ -344,14 +353,14 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
             >
-              Tailored Solutions for Tech Ecosystem
+              Built for Every Stakeholder
             </motion.h2>
             <motion.p
               variants={itemVariants}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Comprehensive platforms connecting talent with opportunity through
-              specialized solutions
+              Our platform delivers tailored value for candidates, interviewers,
+              and hiring teams alike.
             </motion.p>
           </motion.div>
           <motion.div
