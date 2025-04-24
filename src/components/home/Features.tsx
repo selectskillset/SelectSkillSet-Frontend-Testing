@@ -107,7 +107,7 @@ const FeatureCard = React.memo(
 
 const Features: React.FC = () => {
   return (
-    <section id="features" className="py-20 bg-gray-50">
+    <section id="features" className="py-20 bg-white">
       <div className="container mx-auto px-6 lg:px-24">
         {/* Section Header */}
         <motion.div
@@ -144,4 +144,4 @@ const Features: React.FC = () => {
   );
 };
 
-export default React.memo(Features);
+export default Features;

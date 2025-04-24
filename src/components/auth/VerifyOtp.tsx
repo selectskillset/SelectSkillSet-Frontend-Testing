@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate, useLocation } from "react-router-dom";
 import axiosInstance from "../common/axiosConfig";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import verifyOtp from "../../images/Enter OTP-amico.svg";
 
 export const VerifyOtp = () => {

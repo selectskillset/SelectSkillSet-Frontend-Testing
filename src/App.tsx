@@ -1,16 +1,14 @@
 import { BrowserRouter as Router } from "react-router-dom";
+import { Toaster } from "sonner"; // Changed from sonner to sonner
 
 // Navbar Component
 import { Navbar } from "./components/common/Navbar";
-
-// Notification System
-import { Toaster } from "react-hot-toast";
 
 // Common Components
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Footer from "./components/common/Footer";
 
-// Route Components (Separated for Different User Roles)
+// Route Components
 import PublicRoutes from "./routes/PublicRoutes";
 import AuthRoutes from "./routes/AuthRoutes";
 import CandidateRoutes from "./routes/CandidateRoutes";
@@ -55,34 +53,27 @@ function App() {
           <AdminRoutes />
 
           {/* -------------------------------------------------
-               Notification System (react-hot-toast)
+               Sonner Toast Notification System
           -------------------------------------------------- */}
           <Toaster
+            position="top-center"
+            theme="light"
+            richColors
             toastOptions={{
-              duration: 2000,
-              style: {
-                fontSize: "18px",
-                padding: "16px",
-                borderRadius: "8px",
-                background: "#333",
-                color: "#fff",
-                boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+              classNames: {
+                toast: "!font-sans !text-base !rounded-lg !border !shadow-lg",
+                title: "!font-medium",
+                description: "!text-sm",
               },
-              success: {
-                style: { background: "#0077B5", color: "white" },
-              },
-              error: {
-                style: {
-                  background: "#dc3545",
-                },
-              },
+              unstyled: false,
             }}
+            visibleToasts={4}
+            duration={3000}
           />
 
           {/* -------------------------------------------------
-               Chatbot & Footer (Visible on All Pages)
+               Footer (Visible on All Pages)
           -------------------------------------------------- */}
-          {/* <Chatbot /> */}
           <Footer />
         </div>
       </Router>

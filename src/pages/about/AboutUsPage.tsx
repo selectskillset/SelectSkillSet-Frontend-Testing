@@ -1,4 +1,3 @@
-import React from "react";
 import { motion, Variants } from "framer-motion";
 import {
   CheckCircle2,
@@ -8,8 +7,9 @@ import {
   Briefcase,
   Target,
 } from "lucide-react";
-import img1 from "../../images/calltoaction.jpg";
+import img1 from "../../images/aboutImage.jpg";
 import img2 from "../../images/img2.jpg";
+import AboutUsComponent from "../../components/home/AboutUsComponent";
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -121,7 +121,7 @@ const AboutUsPage = () => {
         style={{
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
-          backgroundPosition: "center",
+          backgroundPosition: "bottom",
         }}
       >
         <div className="container mx-auto px-6 lg:px-24">
@@ -168,6 +168,8 @@ const AboutUsPage = () => {
           </motion.div>
         </div>
       </section>
+
+      <AboutUsComponent />
 
       {/* Features Section */}
       <section className="py-20 bg-white">

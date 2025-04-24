@@ -3,14 +3,12 @@
 @tailwind components;
 @tailwind utilities;
 
-
-
 /* @import './styles/animations.css'; */
 
 /* Global Scrollbar Styles */
 * {
   --sb-track-color: transparent;
-  --sb-thumb-color: #0077b5;
+  --sb-thumb-color: #7c3aed;
   --sb-size: 10px;
 }
 
@@ -57,7 +55,7 @@
 
 body {
   --sb-track-color: transparent;
-  --sb-thumb-color: #0077b5;
+  --sb-thumb-color: #7c3aed;
   --sb-size: 6px;
 }
 
@@ -301,8 +299,6 @@ input[type="number"] {
   }
 }
 
-
-
 .bell {
   display: block;
   -webkit-animation: ring 4s 0.7s ease-in-out infinite;
@@ -481,8 +477,6 @@ input[type="number"] {
   animation-delay: 1.3s;
   -website-animation-delay: 1.3s;
 }
-
-
 
 :root {
   --magnifying-glass: rgb(111, 197, 211);
@@ -799,5 +793,3 @@ input[type="number"] {
     top: 0;
   }
 }
-
-
