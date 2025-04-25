@@ -7,6 +7,7 @@ import signupImg from "../../../images/Interview-bro.svg";
 import { countryData } from "../../common/countryData";
 import TermsAndConditionsModal from "../../common/TermsAndConditionsModal";
 import PrivacyPolicyModal from "../../common/PrivacyPolicyModal";
+import { motion } from "framer-motion";
 
 export const InterviewerSignup = () => {
   const navigate = useNavigate();
@@ -143,18 +144,35 @@ export const InterviewerSignup = () => {
   return (
     <div className="min-h-screen flex">
       {/* Left Section */}
-      <div className="hidden lg:flex flex-col justify-center items-center w-1/2 p-8 ">
+      <motion.div
+        initial={{ opacity: 0, x: -40 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ duration: 0.8, delay: 0.3, ease: "easeOut" }}
+        className="hidden lg:flex flex-col justify-center items-center w-1/2 p-8"
+      >
         <h1 className="text-3xl font-bold mb-4 text-center text-primary-dark">
           Join as an Interviewer
         </h1>
         <p className="text-base mb-6 text-center max-w-md text-secondary-dark">
           Connect with top talent and help shape their careers.
         </p>
-        <img src={signupImg} alt="Sign Up" className="w-3/4 max-w-md" />
-      </div>
-
+        <motion.img
+          src={signupImg}
+          alt="Sign Up"
+          className="w-3/5 max-w-md"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+        />
+      </motion.div>
       {/* Right Section */}
-      <div className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+      <motion.div
+        initial={{ opacity: 0, scale: 0.8 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.6, delay: 0.6, ease: "easeOut" }}
+        className="flex-1 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      >
         <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg border border-primary-light/20">
           <h2 className="text-2xl font-semibold text-center mb-6 text-primary-dark">
             Interviewer Signup
@@ -392,7 +410,7 @@ export const InterviewerSignup = () => {
             <PrivacyPolicyModal onClose={() => setIsPrivacyModalOpen(false)} />
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
