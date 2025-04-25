@@ -14,9 +14,8 @@ import {
   Award,
   HeartHandshake,
 } from "lucide-react";
-import img1 from "../../images/aboutImage.jpg";
+import img1 from "../../images/about.png";
 import img2 from "../../images/about.svg";
-import AboutUsComponent from "../../components/home/AboutUsComponent";
 
 // Constants
 const containerVariants: Variants = {
@@ -179,11 +178,11 @@ const AboutUsPage = () => {
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <section
-        className="py-20 bg-gradient-to-br from-primary to-secondary"
+        className="py-24 bg-gradient-to-br from-primary to-secondary"
         style={{
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
-          backgroundPosition: "bottom",
+          backgroundPosition: "center",
           backgroundBlendMode: "overlay",
         }}
       >
@@ -226,7 +225,7 @@ const AboutUsPage = () => {
             <motion.img
               src={img2}
               alt="Professional development"
-              className="w-full h-full object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
               variants={itemVariants}
             />
@@ -253,10 +252,10 @@ const AboutUsPage = () => {
                 whileInView="visible"
               >
                 {[
-                  "Structured career paths tailored to your skill level and goals",
-                  "Real mock interviews conducted by experienced industry professionals",
-                  "Honest, constructive feedback to help you grow and stand out",
-                  "Direct access to hiring networks through verified performance and profiles",
+                  "Structured career path development",
+                  "Industry-expert mock interviews",
+                  "Performance-based recruitment",
+                  "Continuous skill validation",
                 ].map((item, index) => (
                   <motion.li
                     key={index}
@@ -279,16 +278,18 @@ const AboutUsPage = () => {
                 <h3 className="text-2xl font-semibold text-primary mb-6">
                   Our Mission & Values
                 </h3>
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid md:grid-cols-2 gap-4">
                   {missionValues.map((value, index) => (
                     <motion.div
                       key={index}
                       variants={itemVariants}
-                      className="bg-white p-4 rounded-lg shadow-sm"
+                      className="p-4 rounded-lg bg-gray-50 border border-gray-200"
                     >
-                      <div className="flex items-center space-x-3 mb-3">
-                        {value.icon}
-                        <h4 className="font-semibold text-secondary">
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          {value.icon}
+                        </div>
+                        <h4 className="font-semibold text-gray-900">
                           {value.title}
                         </h4>
                       </div>
@@ -353,7 +354,7 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
             >
-              Built for Every Stakeholder
+              Build for Everyone
             </motion.h2>
             <motion.p
               variants={itemVariants}
