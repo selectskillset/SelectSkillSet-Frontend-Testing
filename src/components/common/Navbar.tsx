@@ -32,11 +32,11 @@ const THROTTLE_DELAY = 100;
 const NAV_LINKS = {
   common: [
     { path: "/", label: "Home", icon: <Home size={20} /> },
-    { path: "/products", label: "Products", icon: <Package size={20} /> },
+    // { path: "/products", label: "Products", icon: <Package size={20} /> },
     { path: "/about", label: "About Us", icon: <Info size={20} /> },
     {
       path: "/interviewer-signup",
-      label: "Become Interviewer",
+      label: "Become An Interviewer",
       icon: <UserPlus size={20} />,
     },
     { path: "/login", label: "Login", icon: <UserPlus size={20} /> },
