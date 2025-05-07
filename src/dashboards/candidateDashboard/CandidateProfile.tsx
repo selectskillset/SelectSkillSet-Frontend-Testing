@@ -57,35 +57,36 @@ const ProfilePhotoModal = memo(
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [isUploading, setIsUploading] = useState(false);
     const modalRef = useRef<HTMLDivElement>(null);
-    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useOutsideClick(modalRef, onClose);
     useEscapeKey(onClose);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
+    const handleFileChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
 
-      const validTypes = ["image/jpeg", "image/png", "image/webp"];
-      if (!validTypes.includes(file.type)) {
-        toast.error("Only JPEG, PNG, or WebP images are allowed");
-        return;
-      }
-      setSelectedFile(file);
-    };
+        const validTypes = ["image/jpeg", "image/png", "image/webp"];
+        if (!validTypes.includes(file.type)) {
+          toast.error("Only JPEG, PNG, or WebP images are allowed");
+          return;
+        }
+        setSelectedFile(file);
+      },
+      []
+    );
 
-    const handleUpload = async () => {
+    const handleUpload = useCallback(async () => {
       if (!selectedFile) return;
       setIsUploading(true);
       try {
         await onUpload(selectedFile);
-        onClose();
       } catch (error) {
         toast.error("Failed to upload photo");
       } finally {
         setIsUploading(false);
       }
-    };
+    }, [selectedFile, onUpload]);
 
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -137,7 +138,14 @@ const ProfilePhotoModal = memo(
 
           <div className="flex justify-between gap-3 pt-4">
             <button
-              onClick={onRemove}
+              onClick={async () => {
+                try {
+                  await onRemove();
+                  onClose();
+                } catch (error) {
+                  toast.error("Failed to remove photo");
+                }
+              }}
               disabled={!photoUrl || isUploading}
               className={`flex-1 flex items-center justify-center px-4 py-2 rounded-lg transition-colors ${
                 photoUrl
@@ -191,7 +199,16 @@ const EditPersonalInfoModal = memo(
     useOutsideClick(modalRef, onClose);
     useEscapeKey(onClose);
 
-    const validate = () => {
+    const handleChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev) => ({ ...prev, [name]: value }));
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      },
+      []
+    );
+
+    const validate = useCallback(() => {
       const newErrors = {} as typeof errors;
       if (!formData.email.trim()) newErrors.email = "Email is required";
       else if (!/^\S+@\S+\.\S+$/.test(formData.email))
@@ -201,21 +218,20 @@ const EditPersonalInfoModal = memo(
 
       setErrors(newErrors);
       return Object.keys(newErrors).length === 0;
-    };
+    }, [formData, errors]);
 
-    const handleSubmit = async () => {
+    const handleSubmit = useCallback(async () => {
       if (!validate()) return;
       setIsSubmitting(true);
       try {
         await onSave(formData);
-        toast.success("Personal information updated");
         onClose();
       } catch (error) {
         toast.error("Failed to update personal information");
       } finally {
         setIsSubmitting(false);
       }
-    };
+    }, [formData, validate, onSave, onClose]);
 
     return (
       <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -247,8 +263,9 @@ const EditPersonalInfoModal = memo(
               </label>
               <input
                 type="email"
-                value={formData.email || ""}
-                onChange={(e) => handleChange("email", e.target.value)}
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
                 className={`w-full px-3 py-2 rounded-lg border ${
                   errors.email ? "border-red-500" : "border-gray-300"
                 } focus:ring-2 focus:ring-primary focus:border-transparent`}
@@ -265,8 +282,9 @@ const EditPersonalInfoModal = memo(
               </label>
               <input
                 type="tel"
-                value={formData.phoneNumber || ""}
-                onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                name="phoneNumber"
+                value={formData.phoneNumber}
+                onChange={handleChange}
                 className={`w-full px-3 py-2 rounded-lg border ${
                   errors.phoneNumber ? "border-red-500" : "border-gray-300"
                 } focus:ring-2 focus:ring-primary focus:border-transparent`}
@@ -285,8 +303,9 @@ const EditPersonalInfoModal = memo(
               </label>
               <input
                 type="text"
-                value={formData.location || ""}
-                onChange={(e) => handleChange("location", e.target.value)}
+                name="location"
+                value={formData.location}
+                onChange={handleChange}
                 className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent"
                 placeholder="Enter your location"
               />
@@ -315,151 +334,129 @@ const EditPersonalInfoModal = memo(
   }
 );
 
-const EditProfessionalLinksModal = ({
-  data,
-  onClose,
-  onSave,
-}: {
-  data: any;
-  onClose: () => void;
-  onSave: (updatedData: any) => Promise<void>;
-}) => {
-  const [formData, setFormData] = useState(data);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const modalRef = useRef<HTMLDivElement>(null);
+const EditProfessionalLinksModal = memo(
+  ({
+    data,
+    onClose,
+    onSave,
+  }: {
+    data: { linkedIn: string; resume: string };
+    onClose: () => void;
+    onSave: (updatedData: {
+      linkedIn: string;
+      resume?: File | null;
+    }) => Promise<void>;
+  }) => {
+    const [linkedIn, setLinkedIn] = useState(data.linkedIn);
+    const [resumeFile, setResumeFile] = useState<File | null>(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const modalRef = useRef<HTMLDivElement>(null);
 
-  useOutsideClick(modalRef, onClose);
-  useEscapeKey(onClose);
+    useOutsideClick(modalRef, onClose);
+    useEscapeKey(onClose);
 
-  const handleChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
-  };
-
-  const handleResumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setResumeFile(e.target.files[0]);
-    }
-  };
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      const formData = new FormData();
-
-      // Add non-file fields
-      if (formData.linkedIn) {
-        formData.append("linkedIn", formData.linkedIn);
+    const handleSubmit = useCallback(async () => {
+      setIsSubmitting(true);
+      try {
+        await onSave({ linkedIn, resume: resumeFile });
+        onClose();
+      } catch (error) {
+        toast.error("Failed to update professional links");
+      } finally {
+        setIsSubmitting(false);
       }
+    }, [linkedIn, resumeFile, onSave, onClose]);
 
-      // Add resume file if selected
-      if (resumeFile) {
-        formData.append("resume", resumeFile);
-      }
-
-      // If removing resume
-      if (!resumeFile && !data.resume) {
-        formData.append("removeResume", "true");
-      }
-
-      await onSave(formData);
-      toast.success("Professional links updated");
-      onClose();
-    } catch (error) {
-      toast.error("Failed to update professional links");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-      <motion.div
-        ref={modalRef}
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        transition={{ type: "spring", damping: 20, stiffness: 300 }}
-        className="bg-white rounded-xl max-w-md w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto shadow-xl"
-      >
-        <div className="flex justify-between items-center">
-          <h3 className="text-lg font-bold text-gray-900">
-            Professional Links
-          </h3>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 transition-colors"
-            aria-label="Close modal"
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              LinkedIn URL
-            </label>
-            <input
-              type="url"
-              value={formData.linkedIn || ""}
-              onChange={(e) => handleChange("linkedIn", e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent"
-              placeholder="https://linkedin.com/in/yourprofile"
-            />
+    return (
+      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+        <motion.div
+          ref={modalRef}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ type: "spring", damping: 20, stiffness: 300 }}
+          className="bg-white rounded-xl max-w-md w-full p-6 space-y-6 max-h-[90vh] overflow-y-auto shadow-xl"
+        >
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-bold text-gray-900">
+              Professional Links
+            </h3>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+              aria-label="Close modal"
+            >
+              <X size={20} />
+            </button>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Resume
-            </label>
-            <div className="flex items-center gap-3">
-              {formData.resume || resumeFile ? (
-                <>
-                  <FileText size={16} className="text-primary" />
-                  <span className="text-sm text-gray-700">
-                    {resumeFile ? resumeFile.name : "Resume uploaded"}
-                  </span>
-                </>
-              ) : (
-                <span className="text-sm text-gray-500">
-                  No resume uploaded
-                </span>
-              )}
-              <label className="ml-auto cursor-pointer">
-                <div className="text-sm px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors">
-                  {formData.resume || resumeFile ? "Change" : "Upload"}
-                </div>
-                <input
-                  type="file"
-                  accept=".pdf,.doc,.docx"
-                  className="hidden"
-                  onChange={handleResumeChange}
-                />
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                LinkedIn URL
               </label>
+              <input
+                type="url"
+                value={linkedIn}
+                onChange={(e) => setLinkedIn(e.target.value)}
+                className="w-full px-3 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary focus:border-transparent"
+                placeholder="https://linkedin.com/in/yourprofile"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Resume
+              </label>
+              <div className="flex items-center gap-3">
+                {data.resume || resumeFile ? (
+                  <>
+                    <FileText size={16} className="text-primary" />
+                    <span className="text-sm text-gray-700">
+                      {resumeFile ? resumeFile.name : "Resume uploaded"}
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-sm text-gray-500">
+                    No resume uploaded
+                  </span>
+                )}
+                <label className="ml-auto cursor-pointer">
+                  <div className="text-sm px-3 py-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors">
+                    {data.resume || resumeFile ? "Change" : "Upload"}
+                  </div>
+                  <input
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+                  />
+                </label>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="flex justify-end gap-3 pt-4">
-          <button
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={isSubmitting}
-            className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-70"
-          >
-            {isSubmitting ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-      </motion.div>
-    </div>
-  );
-};
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              onClick={onClose}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              disabled={isSubmitting}
+              className="px-4 py-2 text-white bg-primary rounded-lg hover:bg-primary-dark transition-colors disabled:opacity-70"
+            >
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
+);
 
 const SkillsDisplay = memo(({ skills }: { skills: string[] }) => {
   const [showAll, setShowAll] = useState(false);
@@ -490,9 +487,8 @@ const SkillsDisplay = memo(({ skills }: { skills: string[] }) => {
   );
 });
 
-// Main Profile Component
 const CandidateProfile: React.FC = () => {
-  const { profile, updateProfile } = useCandidate();
+  const { profile, updateProfile, fetchProfile } = useCandidate();
   const navigate = useNavigate();
   const [modals, setModals] = useState({
     photo: false,
@@ -506,45 +502,69 @@ const CandidateProfile: React.FC = () => {
 
   const handlePhotoUpload = useCallback(
     async (file: File) => {
-      const formData = new FormData();
-      formData.append("profilePhoto", file);
-      await updateProfile(formData);
-      toast.success("Profile photo updated");
+      try {
+        const formData = new FormData();
+        formData.append("profilePhoto", file);
+        await updateProfile(formData);
+        toast.success("Profile photo updated");
+      } catch (error) {
+        toast.error("Failed to upload photo");
+      }
     },
     [updateProfile]
   );
 
   const handlePhotoRemove = useCallback(async () => {
-    const formData = new FormData();
-    formData.append("removeProfilePhoto", "true");
-    await updateProfile(formData);
-    toast.success("Profile photo removed");
+    try {
+      const formData = new FormData();
+      formData.append("removeProfilePhoto", "true");
+      await updateProfile(formData);
+      toast.success("Profile photo removed");
+    } catch (error) {
+      toast.error("Failed to remove photo");
+    }
   }, [updateProfile]);
 
   const handleSavePersonalInfo = useCallback(
     async (data: { email: string; phoneNumber: string; location: string }) => {
-      await updateProfile(data);
-      toast.success("Personal info updated");
+      try {
+        await updateProfile(data);
+        toast.success("Personal info updated");
+      } catch (error) {
+        toast.error("Failed to update personal info");
+      }
     },
     [updateProfile]
   );
 
   const handleSaveProfessionalLinks = useCallback(
-    async (data: { linkedIn?: string; resume?: File | string }) => {
-      const formData = new FormData();
-      if (data.linkedIn) formData.append("linkedIn", data.linkedIn);
-      if (data.resume instanceof File) {
-        formData.append("resume", data.resume);
-      } else if (data.resume === "remove") {
-        formData.append("removeResume", "true");
+    async (data: { linkedIn: string; resume?: File | null }) => {
+      try {
+        const formData = new FormData();
+        formData.append("linkedIn", data.linkedIn);
+
+        if (data.resume) {
+          formData.append("resume", data.resume);
+        } else if (!data.resume && !profile?.resume) {
+          formData.append("removeResume", "true");
+        }
+
+        await updateProfile(formData);
+        toast.success("Professional links updated");
+      } catch (error) {
+        toast.error("Failed to update professional links");
       }
-      await updateProfile(formData);
-      toast.success("Professional links updated");
     },
-    [updateProfile]
+    [updateProfile, profile?.resume]
   );
 
-  if (!profile) return <div className="flex justify-center align-middle">Loading profile...</div>;
+  if (!profile) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -586,7 +606,6 @@ const CandidateProfile: React.FC = () => {
         transition={{ duration: 0.3 }}
         className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
       >
-        {/* Profile header with photo */}
         <div className="p-6 border-b border-gray-100">
           <div className="flex flex-col sm:flex-row gap-6 items-center">
             <div
@@ -604,7 +623,7 @@ const CandidateProfile: React.FC = () => {
             </div>
             <div className="flex-1 text-center sm:text-left">
               <h1 className="text-2xl font-bold text-gray-900">
-                {profile.firstName} {profile.lastName}
+                {profile.name}
               </h1>
               <p className="text-gray-600 mb-4">{profile.jobTitle}</p>
               <SkillsDisplay skills={profile.skills} />
@@ -620,9 +639,7 @@ const CandidateProfile: React.FC = () => {
           </div>
         </div>
 
-        {/* Profile sections */}
         <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
-          {/* Personal Info Section */}
           <div className="p-6 relative">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
@@ -655,7 +672,6 @@ const CandidateProfile: React.FC = () => {
             </div>
           </div>
 
-          {/* Professional Links Section */}
           <div className="p-6 relative">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">

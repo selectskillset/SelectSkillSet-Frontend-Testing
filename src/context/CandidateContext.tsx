@@ -1,3 +1,4 @@
+// CandidateContext.tsx
 import {
   createContext,
   useContext,
@@ -5,11 +6,28 @@ import {
   useCallback,
   useMemo,
   useEffect,
+  useRef,
 } from "react";
 import axiosInstance from "../components/common/axiosConfig";
 import { useNavigate } from "react-router-dom";
 
-// Type Definitions
+type ApiError = {
+  response?: {
+    status: number;
+    data?: {
+      message: string;
+    };
+  };
+  message?: string;
+};
+
+type RescheduleData = {
+  newDate: string;
+  isoDate: string;
+  from: string;
+  to: string;
+};
+
 interface Experience {
   company: string;
   position: string;
@@ -55,9 +73,7 @@ interface Interview {
 }
 
 interface CandidateProfile {
-  _id?: string;
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   skills: string[];
   location: string;
@@ -68,7 +84,6 @@ interface CandidateProfile {
   linkedIn: string;
   resume: string;
   feedback: Feedback[];
-  lastUpdated?: number;
 }
 
 interface CandidateState {
@@ -92,26 +107,29 @@ interface CandidateState {
 }
 
 interface CandidateContextType extends CandidateState {
-  fetchProfile: () => Promise<void>;
+  fetchProfile: (force?: boolean) => Promise<void>;
   fetchInterviews: () => Promise<void>;
   fetchStatistics: () => Promise<void>;
   fetchInterviewers: () => Promise<void>;
   updateProfile: (
-    updatedData: FormData | Partial<CandidateProfile>
-  ) => Promise<CandidateProfile>;
+    updatedData: Partial<CandidateProfile | FormData>
+  ) => Promise<void>;
   rescheduleInterview: (
     id: string,
     updateData: RescheduleData
   ) => Promise<void>;
 }
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 5 * 60 * 1000;
 const CandidateContext = createContext<CandidateContextType | null>(null);
 
-export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
+export const CandidateProvider = ({
   children,
+}: {
+  children: React.ReactNode;
 }) => {
   const navigate = useNavigate();
+  const lastFetchedRef = useRef<number>(0);
   const [state, setState] = useState<CandidateState>({
     profile: null,
     interviews: [],
@@ -126,11 +144,10 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
     error: null,
   });
 
-  // Response interceptor for handling 401 errors
   useEffect(() => {
     const interceptor = axiosInstance.interceptors.response.use(
       (response) => response,
-      async (error) => {
+      (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("candidateToken");
           navigate("/candidate-login");
@@ -150,7 +167,7 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
       const token = sessionStorage.getItem("candidateToken");
       if (!token) {
         navigate("/candidate-login");
-        throw new Error("No authentication token found");
+        return;
       }
 
       setState((prev) => ({
@@ -160,18 +177,12 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
       }));
 
       try {
-        return await apiCall();
-      } catch (error: any) {
-        console.error(`API Error (${loadingKey}):`, error);
-
+        await apiCall();
+      } catch (err) {
+        const error = err as ApiError;
         const errorMessage =
           error.response?.data?.message || error.message || "An error occurred";
         setState((prev) => ({ ...prev, error: errorMessage }));
-
-        if (error.response?.status === 401) {
-          sessionStorage.removeItem("candidateToken");
-          navigate("/candidate-login");
-        }
         throw error;
       } finally {
         setState((prev) => ({
@@ -183,103 +194,81 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
     [navigate]
   );
 
-  const fetchProfile = useCallback(async () => {
-    return handleApiRequest(async () => {
-      const now = Date.now();
-      if (
-        state.profile?.lastUpdated &&
-        now - state.profile.lastUpdated < CACHE_DURATION
-      ) {
-        return;
-      }
+  const fetchProfile = useCallback(
+    async (force = false) => {
+      await handleApiRequest(async () => {
+        if (!force && Date.now() - lastFetchedRef.current < CACHE_DURATION)
+          return;
 
-      const { data } = await axiosInstance.get("/candidate/getProfile");
-      const profileData = data?.profile || {};
+        const { data } = await axiosInstance.get("/candidate/getProfile");
+        lastFetchedRef.current = Date.now();
 
-      const updatedProfile = {
-        firstName: profileData.firstName || "",
-        lastName: profileData.lastName || "",
-        email: profileData.email || "",
-        skills: profileData.skills || [],
-        location: profileData.location || "",
-        phoneNumber: profileData.phoneNumber || "",
-        jobTitle: profileData.jobTitle || "",
-        profilePhoto: profileData.profilePhoto || "",
-        experiences: profileData.experiences || [],
-        linkedIn: profileData.linkedIn || "",
-        resume: profileData.resume || "",
-        feedback: profileData.statistics?.feedbacks || [],
-        lastUpdated: now,
-      };
-
-      setState((prev) => ({ ...prev, profile: updatedProfile }));
-      return updatedProfile;
-    }, "profile");
-  }, [handleApiRequest, state.profile?.lastUpdated]);
-
-  const updateProfile = useCallback(
-    async (updatedData: FormData | Partial<CandidateProfile>) => {
-      return handleApiRequest(async () => {
-        const isFormData = updatedData instanceof FormData;
-        const config = isFormData
-          ? { headers: { "Content-Type": "multipart/form-data" } }
-          : {};
-
-        const { data } = await axiosInstance.put(
-          "/candidate/updateProfile",
-          updatedData,
-          config
-        );
-
-        if (data.success) {
-          const updatedProfile = { ...state.profile, ...data.profile };
-          setState((prev) => ({
-            ...prev,
-            profile: updatedProfile as CandidateProfile,
-          }));
-          return updatedProfile;
-        }
-        throw new Error(data.message || "Profile update failed");
+        setState((prev) => ({
+          ...prev,
+          profile: {
+            name: `${data.profile.firstName || ""} ${
+              data.profile.lastName || ""
+            }`.trim(),
+            email: data.profile.email,
+            skills: data.profile.skills || [],
+            location: data.profile.location,
+            phoneNumber: data.profile.phoneNumber,
+            jobTitle: data.profile.jobTitle,
+            profilePhoto: data.profile.profilePhoto,
+            experiences: data.profile.experiences || [],
+            linkedIn: data.profile.linkedIn,
+            resume: data.profile.resume,
+            feedback: data.statistics?.feedbacks || [],
+          },
+        }));
       }, "profile");
     },
-    [handleApiRequest, state.profile]
+    [handleApiRequest]
   );
+
+  const updateProfile = useCallback(
+    async (updatedData: Partial<CandidateProfile | FormData>) => {
+      await handleApiRequest(async () => {
+        const formData =
+          updatedData instanceof FormData ? updatedData : new FormData();
+
+        if (!(updatedData instanceof FormData)) {
+          Object.entries(updatedData).forEach(([key, value]) => {
+            if (value !== undefined) formData.append(key, value);
+          });
+        }
+
+        await axiosInstance.put("/candidate/updateProfile", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        lastFetchedRef.current = 0; // Invalidate cache
+        await fetchProfile(true); // Force fresh fetch
+      }, "profile");
+    },
+    [handleApiRequest, fetchProfile]
+  );
+
   const fetchInterviews = useCallback(async () => {
     await handleApiRequest(async () => {
-      const response = await axiosInstance.get("/candidate/myInterviews");
-      setState((prev) => ({
-        ...prev,
-        interviews: response.data.interviews || [],
-      }));
+      const { data } = await axiosInstance.get("/candidate/myInterviews");
+      setState((prev) => ({ ...prev, interviews: data.interviews }));
     }, "interviews");
   }, [handleApiRequest]);
 
   const rescheduleInterview = useCallback(
     async (id: string, updateData: RescheduleData) => {
       await handleApiRequest(async () => {
-        const { data } = await axiosInstance.put<{
-          success: boolean;
-          interview: Interview;
-        }>("/candidate/rescheduleInterviewRequest", {
-          interviewRequestId: id,
-          ...updateData,
-        });
-
-        if (data.success) {
-          setState((prev) => ({
-            ...prev,
-            interviews: prev.interviews.map((interview) =>
-              interview.id === id
-                ? {
-                    ...interview,
-                    date: updateData.newDate,
-                    time: `${updateData.from} - ${updateData.to}`,
-                    status: "RescheduleRequested",
-                  }
-                : interview
-            ),
-          }));
-        }
+        const { data } = await axiosInstance.put(
+          `/candidate/rescheduleInterviewRequest/${id}`,
+          updateData
+        );
+        setState((prev) => ({
+          ...prev,
+          interviews: prev.interviews.map((i) =>
+            i.id === id ? data.interview : i
+          ),
+        }));
       }, "interviews");
     },
     [handleApiRequest]
@@ -287,27 +276,25 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const fetchStatistics = useCallback(async () => {
     await handleApiRequest(async () => {
-      const response = await axiosInstance.get(
+      const { data } = await axiosInstance.get(
         "/candidate/get-candidate-statistics"
       );
-      setState((prev) => ({
-        ...prev,
-        statistics: response.data.statistics || null,
-      }));
+      setState((prev) => ({ ...prev, statistics: data.statistics }));
     }, "statistics");
   }, [handleApiRequest]);
 
   const fetchInterviewers = useCallback(async () => {
     await handleApiRequest(async () => {
       const { data } = await axiosInstance.get("/candidate/interviewers");
-      setState((prev) => ({
-        ...prev,
-        interviewers: data.interviewers || [],
-      }));
+      setState((prev) => ({ ...prev, interviewers: data.interviewers }));
     }, "interviewers");
   }, [handleApiRequest]);
 
-  const contextValue = useMemo(
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
+
+  const value = useMemo(
     () => ({
       ...state,
       fetchProfile,
@@ -329,7 +316,7 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   return (
-    <CandidateContext.Provider value={contextValue}>
+    <CandidateContext.Provider value={value}>
       {children}
     </CandidateContext.Provider>
   );
@@ -337,8 +324,7 @@ export const CandidateProvider: React.FC<{ children: React.ReactNode }> = ({
 
 export const useCandidate = () => {
   const context = useContext(CandidateContext);
-  if (!context) {
-    throw new Error("useCandidate must be used within a CandidateProvider");
-  }
+  if (!context)
+    throw new Error("useCandidate must be used within CandidateProvider");
   return context;
 };
