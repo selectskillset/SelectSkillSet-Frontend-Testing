@@ -67,9 +67,7 @@ const ProfileStrength: React.FC<{ completion: CompletionData | null }> = ({
     [navigate]
   );
 
-  const handleEditProfile = useCallback(() => {
-    navigate("/edit-candidate-profile");
-  }, [navigate]);
+
 
   if (!completion) return null;
 

@@ -42,34 +42,14 @@ const CandidateInterviews = () => {
     }
   }, [interviewers, isLoadingInterviewers, fetchInterviewers]);
 
-  const filteredInterviewers = useMemo(() => {
-    return interviewers.filter((interviewer) => {
-      const matchesSearch = `${interviewer.firstName} ${interviewer.lastName} ${
-        interviewer.jobTitle
-      } ${interviewer.skills.join(" ")}`
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-      const matchesExperience = interviewer.experience >= filters.experience;
-      const matchesRating = interviewer.averageRating >= filters.rating;
-      const matchesPrice =
-        interviewer.price >= filters.priceRange[0] &&
-        interviewer.price <= filters.priceRange[1];
-
-      return (
-        matchesSearch && matchesExperience && matchesRating && matchesPrice
-      );
-    });
-  }, [interviewers, searchQuery, filters]);
-
   const paginatedInterviewers = useMemo(() => {
-    return filteredInterviewers.slice(
+    return interviewers.slice(
       (currentPage - 1) * itemsPerPage,
       currentPage * itemsPerPage
     );
-  }, [filteredInterviewers, currentPage, itemsPerPage]);
+  }, [interviewers, currentPage, itemsPerPage]);
 
-  const totalPages = Math.ceil(filteredInterviewers.length / itemsPerPage);
+  const totalPages = Math.ceil(interviewers.length / itemsPerPage);
 
   const handleFindPerfectMatch = useCallback(async () => {
     setIsFindingMatch(true);
@@ -107,141 +87,25 @@ const CandidateInterviews = () => {
       </div>
 
       {/* Desktop Layout */}
-      <div className="grid lg:grid-cols-[300px_1fr] gap-8 max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Sidebar Filters */}
-        <motion.aside
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="bg-primary/5 rounded-xl p-6 shadow-sm sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto hidden lg:block"
-        >
-          <div className="space-y-6">
-            <div className="border-b border-gray-200 pb-6">
-              <h3 className="text-lg font-semibold text-primary mb-4">
-                Advanced Filters
-              </h3>
-              <div className="relative">
-                <Search
-                  className="absolute left-3 top-3.5 text-gray-400"
-                  size={18}
-                />
-                <input
-                  type="text"
-                  placeholder="Search experts..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-primary focus:outline-none"
-                />
-              </div>
-            </div>
-
-            <FilterSection title="Experience (years)">
-              <input
-                type="range"
-                min="1"
-                max="15"
-                value={filters.experience}
-                onChange={(e) =>
-                  setFilters({ ...filters, experience: +e.target.value })
-                }
-                className="w-full accent-primary"
-              />
-              <div className="flex justify-between text-sm text-gray-600 mt-1">
-                <span>1</span>
-                <span>15+</span>
-              </div>
-            </FilterSection>
-
-            <FilterSection title="Minimum Rating">
-              <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="1"
-                  max="5"
-                  step="0.5"
-                  value={filters.rating}
-                  onChange={(e) =>
-                    setFilters({ ...filters, rating: +e.target.value })
-                  }
-                  className="w-full accent-secondary"
-                />
-                <span className="text-sm font-medium text-secondary flex">
-                  {filters.rating}★
-                </span>
-              </div>
-            </FilterSection>
-
-            <FilterSection title="Hourly Rate ($)">
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="number"
-                  value={filters.priceRange[0]}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      priceRange: [+e.target.value, filters.priceRange[1]],
-                    })
-                  }
-                  className="w-1/2 p-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                />
-                <input
-                  type="number"
-                  value={filters.priceRange[1]}
-                  onChange={(e) =>
-                    setFilters({
-                      ...filters,
-                      priceRange: [filters.priceRange[0], +e.target.value],
-                    })
-                  }
-                  className="w-1/2 p-2 border rounded-lg focus:ring-2 focus:ring-primary"
-                />
-              </div>
-            </FilterSection>
-
-            <FilterSection title="Availability">
-              <select
-                value={filters.availability}
-                onChange={(e) =>
-                  setFilters({ ...filters, availability: e.target.value })
-                }
-                className="w-full p-2.5 border rounded-lg focus:ring-2 focus:ring-primary"
-              >
-                <option value="available">Available Now</option>
-                <option value="24h">Within 24 Hours</option>
-                <option value="week">Within 1 Week</option>
-              </select>
-            </FilterSection>
-
-            <button
-              onClick={handleFindPerfectMatch}
-              className="w-full bg-gradient-to-r from-primary to-primary-dark text-white py-2.5 rounded-lg
-                        flex items-center justify-center gap-2 hover:shadow-lg transition-all"
-              aria-label="Find perfect match"
-            >
-              <Sparkles size={18} />
-              Find Perfect Match
-            </button>
-          </div>
-        </motion.aside>
-
+      <div className="grid  gap-8 max-w-7xl mx-auto px-4 sm:px-6 py-8">
         {/* Main Content */}
         <main className="space-y-8">
           <motion.header
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="bg-primary/5 p-6 rounded-xl shadow-sm"
+            className=" p-6"
           >
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               Connect with Interview Experts
             </h1>
             <p className="text-gray-600">
-              {filteredInterviewers.length} professionals available
+              {interviewers.length} professionals available
             </p>
           </motion.header>
 
           <AnimatePresence mode="wait">
-            {filteredInterviewers.length > 0 ? (
+            {interviewers.length > 0 ? (
               <motion.div
                 key="results"
                 initial={{ opacity: 0 }}

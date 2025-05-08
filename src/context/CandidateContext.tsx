@@ -150,7 +150,7 @@ export const CandidateProvider = ({
       (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("candidateToken");
-          navigate("/candidate-login");
+          // navigate("/candidate-login");
         }
         return Promise.reject(error);
       }
@@ -165,10 +165,6 @@ export const CandidateProvider = ({
       loadingKey: keyof CandidateState["loading"]
     ) => {
       const token = sessionStorage.getItem("candidateToken");
-      if (!token) {
-        navigate("/candidate-login");
-        return;
-      }
 
       setState((prev) => ({
         ...prev,
@@ -286,7 +282,7 @@ export const CandidateProvider = ({
   const fetchInterviewers = useCallback(async () => {
     await handleApiRequest(async () => {
       const { data } = await axiosInstance.get("/candidate/interviewers");
-      setState((prev) => ({ ...prev, interviewers: data.interviewers }));
+      setState((prev) => ({ ...prev, interviewers: data.data }));
     }, "interviewers");
   }, [handleApiRequest]);
 
