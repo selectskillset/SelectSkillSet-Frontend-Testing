@@ -7,7 +7,7 @@ import React, {
   useRef,
   ReactNode,
 } from "react";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import axiosInstance from "../components/common/axiosConfig";
 
 // Interfaces

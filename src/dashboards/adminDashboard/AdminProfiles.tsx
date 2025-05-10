@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../../components/common/axiosConfig";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { Edit, Trash } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 

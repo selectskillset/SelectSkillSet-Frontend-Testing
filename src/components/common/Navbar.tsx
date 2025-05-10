@@ -17,9 +17,11 @@ import {
   Clock,
   User,
   Settings,
+  LogOut,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "../../images/selectskillset_logo_test5-removebg-preview.png";
+import { toast } from "sonner";
+import logo from "../../images/selectskillset_logo__2_-removebg-preview.png";
 
 const MOBILE_MENU_VARIANTS = {
   hidden: { x: "100%", transition: { duration: 0.3 } },
@@ -32,36 +34,35 @@ const THROTTLE_DELAY = 100;
 const NAV_LINKS = {
   common: [
     { path: "/", label: "Home", icon: <Home size={20} /> },
-    { path: "/products", label: "Products", icon: <Package size={20} /> },
     { path: "/about", label: "About Us", icon: <Info size={20} /> },
     {
       path: "/interviewer-signup",
-      label: "Become Interviewer",
+      label: "Become An Interviewer",
       icon: <UserPlus size={20} />,
     },
     { path: "/login", label: "Login", icon: <UserPlus size={20} /> },
   ],
   candidate: [
-    {
-      path: "/candidate-dashboard",
-      label: "Dashboard",
-      icon: <User size={20} />,
-    },
-    {
-      path: "/candidate-schedule-interviews",
-      label: "Schedule Interview",
-      icon: <Calendar size={20} />,
-    },
-    {
-      path: "/candidate-interviews",
-      label: "Upcoming Interviews",
-      icon: <Clock size={20} />,
-    },
-    {
-      path: "/candidate-settings",
-      label: "Settings",
-      icon: <Settings size={20} />,
-    },
+    // {
+    //   path: "/candidate-dashboard",
+    //   label: "Dashboard",
+    //   icon: <User size={20} />,
+    // },
+    // {
+    //   path: "/candidate-schedule-interviews",
+    //   label: "Schedule Interview",
+    //   icon: <Calendar size={20} />,
+    // },
+    // {
+    //   path: "/candidate-interviews",
+    //   label: "Upcoming Interviews",
+    //   icon: <Clock size={20} />,
+    // },
+    // {
+    //   path: "/candidate-settings",
+    //   label: "Settings",
+    //   icon: <Settings size={20} />,
+    // },
   ],
   interviewer: [
     {
@@ -127,7 +128,7 @@ export const Navbar = React.memo(() => {
       corporate: sessionStorage.getItem("corporateToken"),
       admin: sessionStorage.getItem("adminToken"),
     }),
-    [location] // Recalculate tokens when location changes
+    [location]
   );
 
   // Determine user type
@@ -168,48 +169,91 @@ export const Navbar = React.memo(() => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [handleClickOutside]);
 
+  // Handle logout with toast notification
+  const handleLogout = useCallback(() => {
+    toast.success("Logged out successfully");
+
+    // Clear all session tokens
+    sessionStorage.removeItem("candidateToken");
+    sessionStorage.removeItem("interviewerToken");
+    sessionStorage.removeItem("corporateToken");
+    sessionStorage.removeItem("adminToken");
+
+    navigate("/");
+    if (isMenuOpen) setIsMenuOpen(false);
+  }, [navigate, isMenuOpen]);
+
   // Navigation handlers
   const handleProfileNavigation = useCallback(() => {
     const dashboardPath = userType ? `/${userType}-dashboard` : "/";
     navigate(dashboardPath);
   }, [userType, navigate]);
 
-  // Memoized navigation links
+  // Memoized navigation links with logout option
   const currentLinks = useMemo(() => {
-    return userLoggedIn ? NAV_LINKS[userType] : NAV_LINKS.common;
+    const links = userLoggedIn
+      ? [...NAV_LINKS[userType]]
+      : [...NAV_LINKS.common];
+
+    if (userLoggedIn) {
+      links.push({
+        path: "#logout",
+        label: "Logout",
+        icon: <LogOut size={20} />,
+      });
+    }
+
+    return links;
   }, [userLoggedIn, userType]);
 
   const renderLinks = useCallback(
     (isMobile = false) =>
-      currentLinks.map((link) => (
-        <NavLink
-          key={link.path}
-          to={link.path}
-          onClick={() => {
-            if (isMobile) {
-              setIsMenuOpen(false);
+      currentLinks.map((link) => {
+        if (link.path === "#logout") {
+          return (
+            <button
+              key="logout"
+              onClick={handleLogout}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 w-full text-left ${
+                isMobile ? "text-xl" : "text-base"
+              } bg-red-500/15 hover:bg-red-500/20 font-medium text-red-500 hover:text-red-700`}
+            >
+              {isMobile && React.cloneElement(link.icon, { size: 24 })}
+              {link.label}
+            </button>
+          );
+        }
+
+        return (
+          <NavLink
+            key={link.path}
+            to={link.path}
+            onClick={() => {
+              if (isMobile) {
+                setIsMenuOpen(false);
+              }
+            }}
+            className={({ isActive }) =>
+              `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300 ${
+                isMobile ? "text-xl" : "text-base"
+              } ${
+                isActive
+                  ? "text-primary bg-primary/10 font-bold underline"
+                  : "hover:bg-primary/10 font-medium hover:text-primary"
+              }`
             }
-          }}
-          className={({ isActive }) =>
-            `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-300
-          ${isMobile ? "text-xl" : "text-base"}
-          ${
-            isActive
-              ? "text-blue-600 bg-blue-100 font-bold underline text-md"
-              : "hover:bg-blue-50 font-bold hover:text-blue-600 text-md"
-          }`
-          }
-        >
-          {isMobile && React.cloneElement(link.icon, { size: 24 })}
-          {link.label}
-        </NavLink>
-      )),
-    [currentLinks]
+          >
+            {isMobile && React.cloneElement(link.icon, { size: 24 })}
+            {link.label}
+          </NavLink>
+        );
+      }),
+    [currentLinks, handleLogout]
   );
 
   return (
     <nav
-      className={`bg-white shadow-lg sticky top-0 z-50 transition-transform duration-300 ${
+      className={`bg-white shadow-xl sticky top-0 z-50 transition-transform duration-300  ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       }`}
     >
@@ -234,7 +278,7 @@ export const Navbar = React.memo(() => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="p-2 text-gray-800 hover:text-blue-600 transition-colors"
+              className="p-2 text-gray-800 hover:text-primary transition-colors"
             >
               {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
             </button>
@@ -256,11 +300,11 @@ export const Navbar = React.memo(() => {
             <div className="p-6 h-auto bg-white flex flex-col">
               <div className="flex justify-end items-center mb-6">
                 <button onClick={() => setIsMenuOpen(false)}>
-                  <X size={24} className="text-gray-800 hover:text-blue-600" />
+                  <X size={24} className="text-gray-800 hover:text-primary" />
                 </button>
               </div>
 
-              <div className="flex-1 space-y-4 ">{renderLinks(true)}</div>
+              <div className="flex-1 space-y-4">{renderLinks(true)}</div>
 
               {!userLoggedIn && (
                 <div className="pt-6 border-t border-gray-100">
@@ -278,8 +322,8 @@ export const Navbar = React.memo(() => {
 const RequestDemoButton = React.memo(({ mobile }: { mobile?: boolean }) => (
   <Link
     to="/request-demo"
-    className={`bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium
-      hover:from-blue-700 hover:to-blue-600 transition-all duration-300 shadow-md
+    className={`bg-gradient-to-r from-primary to-secondary text-white font-medium
+      hover:from-secondary hover:to-primary transition-all duration-300 shadow-md
        ${mobile ? "w-full text-center" : ""} px-6 py-3 rounded-lg`}
   >
     Request Demo

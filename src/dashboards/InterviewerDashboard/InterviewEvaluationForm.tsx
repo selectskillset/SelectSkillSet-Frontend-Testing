@@ -1,6 +1,6 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { Check, Star, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";

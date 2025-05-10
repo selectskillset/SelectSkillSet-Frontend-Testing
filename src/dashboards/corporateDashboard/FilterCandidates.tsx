@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { Loader2Icon } from "lucide-react";
 import axiosInstance from "../../components/common/axiosConfig";
 import { skillsData } from "../../components/common/SkillsData";

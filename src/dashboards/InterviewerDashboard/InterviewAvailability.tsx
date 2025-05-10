@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronUp, Trash, Plus } from "lucide-react";
 import DatePicker from "react-datepicker";
 import { format, parse, isValid, isAfter, isToday, startOfDay } from "date-fns";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import { InterviewerContext } from "../../context/InterviewerContext";
 import "react-datepicker/dist/react-datepicker.css";
 

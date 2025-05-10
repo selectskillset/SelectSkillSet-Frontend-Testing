@@ -11,7 +11,7 @@ import {
   Briefcase,
   ChevronRight,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface Availability {
   date: string;

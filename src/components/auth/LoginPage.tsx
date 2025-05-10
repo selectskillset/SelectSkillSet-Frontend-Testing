@@ -1,12 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { motion, Variants } from "framer-motion";
-import { UserCircle, Award, Building2 } from "lucide-react";
-
-const LINKEDIN_COLORS = {
-  primary: "#0077B5",
-  dark: "#004182",
-  light: "#00A0DC",
-};
+import { UserCircle, Award, Building2, ChevronRight } from "lucide-react";
 
 const roles = [
   {
@@ -37,7 +31,25 @@ const roles = [
 
 const cardVariants: Variants = {
   initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    transition: { type: "spring", stiffness: 100 },
+  },
+  hover: {
+    y: -10,
+    boxShadow:
+      "0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)",
+    transition: { duration: 0.3 },
+  },
+};
+
+const iconVariants: Variants = {
+  hover: {
+    scale: 1.2,
+    rotate: 10,
+    transition: { type: "spring", stiffness: 300 },
+  },
 };
 
 const LoginPage = () => {
@@ -48,19 +60,32 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center">
+    <div className="min-h-screen  flex items-center py-12">
       <div className="container mx-auto px-6 lg:px-24">
         {/* Section Header */}
-        <motion.h1
+        <motion.div
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: "easeOut" }}
-          className="text-center text-4xl md:text-5xl font-extrabold 
-                      bg-clip-text text-transparent 
-                      bg-gradient-to-r from-[#0077B5] to-[#004182] mb-16"
+          className="text-center mb-16"
         >
-          Choose Your Path
-        </motion.h1>
+          <motion.h1
+            className="text-4xl md:text-5xl font-extrabold 
+                      bg-clip-text text-transparent 
+                      bg-gradient-to-r from-primary to-primary-dark mb-4"
+          >
+            Choose Your Path
+          </motion.h1>
+          <motion.p
+            className="text-lg text-gray-600 max-w-2xl mx-auto"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            Join our platform and take the next step in your professional
+            journey
+          </motion.p>
+        </motion.div>
 
         {/* Role Cards */}
         <motion.div
@@ -75,39 +100,59 @@ const LoginPage = () => {
           initial="initial"
           animate="animate"
         >
-          {roles.map((role, index) => (
+          {roles.map((role) => (
             <motion.div
               key={role.id}
               variants={cardVariants}
-              transition={{ duration: 0.5 }}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-lg p-8 shadow-md 
-                         hover:shadow-lg transition-all duration-300"
+              whileHover="hover"
+              className="bg-white rounded-xl p-8 shadow-lg 
+                         transition-all duration-300 border border-gray-100
+                         hover:border-primaryLight overflow-hidden relative"
             >
+              {/* Decorative element */}
+              <motion.div
+                className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary"
+                initial={{ scaleX: 0 }}
+                whileInView={{ scaleX: 1 }}
+                transition={{ duration: 0.5 }}
+                viewport={{ once: true }}
+              />
+
               <div className="flex flex-col h-full justify-between">
                 <div className="flex flex-col items-center space-y-6">
-                  <role.icon
-                    className="w-16 h-16 text-[#0077B5] mb-4"
-                    strokeWidth={1.5}
-                  />
-                  <h3 className="text-2xl font-semibold text-[#004182] text-center">
+                  <motion.div
+                    variants={iconVariants}
+                    whileHover="hover"
+                    className="p-4 rounded-full bg-primaryLight/10"
+                  >
+                    <role.icon
+                      className="w-12 h-12 text-primary"
+                      strokeWidth={1.5}
+                    />
+                  </motion.div>
+
+                  <h3 className="text-2xl font-bold text-gray-800 text-center">
                     {role.title}
                   </h3>
-                  <p className="text-gray-600 text-center text-sm px-4">
+                  <p className="text-gray-600 text-center px-4">
                     {role.description}
                   </p>
                 </div>
-                <button
+
+                <motion.button
                   onClick={() => handleRoleSelect(role.route)}
-                  className="mt-6 w-full px-6 py-3 bg-gradient-to-r 
-                             from-[#0077B5] to-[#004182] text-white 
-                             rounded-lg hover:bg-gradient-to-r 
-                             hover:from-[#005885] hover:to-[#003366]
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mt-8 w-full px-6 py-3 bg-gradient-to-r 
+                             from-primary to-secondary text-white 
+                             rounded-lg hover:from-primaryDark hover:to-secondaryDark
                              transition-all duration-300
-                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0077B5]"
+                             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primaryLight
+                             flex items-center justify-center gap-2"
                 >
                   {role.cta}
-                </button>
+                  <ChevronRight className="w-4 h-4" />
+                </motion.button>
               </div>
             </motion.div>
           ))}

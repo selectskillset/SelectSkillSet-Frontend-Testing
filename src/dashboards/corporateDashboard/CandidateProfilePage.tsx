@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

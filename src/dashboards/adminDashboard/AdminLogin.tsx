@@ -4,7 +4,7 @@ import Loader from "../../components/ui/Loader";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 
 const AdminLogin: React.FC = () => {
   const [email, setEmail] = useState("");

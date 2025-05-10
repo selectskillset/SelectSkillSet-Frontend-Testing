@@ -9,7 +9,7 @@ import {
   X,
 } from "lucide-react";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { skillsData } from "../../components/common/SkillsData";
 import { jobTitles } from "../../components/common/JobTitles";

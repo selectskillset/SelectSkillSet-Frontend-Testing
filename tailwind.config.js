@@ -4,12 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        blue: {
-          50: "#F0F7FF",
-          100: "#E0F2FE",
-          500: "#0077B5",
-          600: "#006699",
-          700: "#00557D",
+        // Professional Blue and Purple Colors
+        primary: {
+          DEFAULT: "#4338CA", // Primary Blue (Dark)
+          light: "#6366F1", // Lighter Blue
+          dark: "#3730A3", // Darker Blue
+        },
+        secondary: {
+          DEFAULT: "#7C3AED", // Primary Purple
+          light: "#A78BFA", // Lighter Purple
+          dark: "#5B21B6", // Darker Purple
+        },
+        gradient: {
+          blueToPurple: "linear-gradient(90deg, #4338CA, #7C3AED)",
+          purpleToBlue: "linear-gradient(90deg, #7C3AED, #4338CA)",
         },
       },
       animation: {
