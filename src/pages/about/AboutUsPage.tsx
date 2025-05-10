@@ -6,11 +6,18 @@ import {
   Users,
   Briefcase,
   Target,
+  Code,
+  Globe,
+  Shield,
+  BarChart2,
+  Clock,
+  Award,
+  HeartHandshake,
 } from "lucide-react";
-import img1 from "../../images/aboutImage.jpg";
-import img2 from "../../images/img2.jpg";
-import AboutUsComponent from "../../components/home/AboutUsComponent";
+import img1 from "../../images/about.png";
+import img2 from "../../images/about.svg";
 
+// Constants
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
@@ -32,6 +39,7 @@ const itemVariants: Variants = {
   },
 };
 
+// Components
 const FeatureCard = ({ feature }: { feature: any }) => (
   <motion.div
     variants={itemVariants}
@@ -66,17 +74,43 @@ const SolutionCard = ({ solution }: { solution: any }) => (
 );
 
 const AboutUsPage = () => {
+  // Updated data with aligned messaging
   const features = [
     {
       icon: <GraduationCap className="w-8 h-8 text-primary" />,
       title: "Skill Development",
       description:
-        "Expert-curated learning paths tailored to your career goals",
+        "Master in-demand skills through structured learning paths and curated technical content built for modern tech careers.",
     },
     {
       icon: <Rocket className="w-8 h-8 text-primary" />,
-      title: "Career Growth",
-      description: "Personalized roadmap to your dream tech role",
+      title: "Mock Interviews & Feedback",
+      description:
+        "Book realistic mock interviews with professionals and receive detailed feedback on technical, communication, and problem-solving skills.",
+    },
+    {
+      icon: <CheckCircle2 className="w-8 h-8 text-primary" />,
+      title: "Performance-Based Discovery",
+      description:
+        "Get noticed by recruiters based on your actual performance, not just your resume. Join our ranked talent pool.",
+    },
+    {
+      icon: <Users className="w-8 h-8 text-primary" />,
+      title: "Community-Driven Learning",
+      description:
+        "Grow with a supportive network of peers, mentors, and hiring professionals dedicated to mutual career growth.",
+    },
+    {
+      icon: <BarChart2 className="w-8 h-8 text-primary" />,
+      title: "Smart Career Tools",
+      description:
+        "Access resume builders, personalized assessments, and intelligent career path guidance to make smarter moves.",
+    },
+    {
+      icon: <Globe className="w-8 h-8 text-primary" />,
+      title: "Global Opportunities",
+      description:
+        "Expand your professional reach by connecting with recruiters and mentors across the globe.",
     },
   ];
 
@@ -86,30 +120,57 @@ const AboutUsPage = () => {
       title: "For Candidates",
       features: [
         "Technical interview simulations",
-        "Personalized skill assessments",
-        "Career path recommendations",
-        "Professional resume optimization",
+        "Career path discovery",
+        "Skill-based resume optimization",
+        "Get ranked and discovered by recruiters",
       ],
     },
     {
       icon: <Briefcase className="w-10 h-10 text-primary" />,
-      title: "For Freelancers",
+      title: "For Interviewers",
       features: [
-        "Project-based learning",
-        "Client communication tools",
-        "Portfolio builder",
-        "Freelance marketplace",
+        "Earn through mock interviews",
+        "Build professional recognition",
+        "Flexible scheduling",
+        "Support the next generation of tech talent",
       ],
     },
     {
       icon: <Target className="w-10 h-10 text-primary" />,
       title: "For HR Teams",
       features: [
-        "Pre-vetted candidate pool",
-        "Skill-based matching",
-        "Diversity analytics",
-        "Interview templates",
+        "Access pre-vetted candidate pools",
+        "Skill-based candidate ranking",
+        "Efficient and diverse hiring pipelines",
+        "Ready-to-use interview frameworks",
       ],
+    },
+  ];
+
+  const missionValues = [
+    {
+      icon: <Clock className="w-6 h-6 text-primary" />,
+      title: "Efficiency",
+      description:
+        "We streamline the learning-to-hiring journey through automation and expert support.",
+    },
+    {
+      icon: <Award className="w-6 h-6 text-primary" />,
+      title: "Meritocracy",
+      description:
+        "Talent and effort come first — we prioritize performance, not paper.",
+    },
+    {
+      icon: <HeartHandshake className="w-6 h-6 text-primary" />,
+      title: "Community",
+      description:
+        "We foster mentorship and meaningful professional relationships.",
+    },
+    {
+      icon: <Shield className="w-6 h-6 text-primary" />,
+      title: "Trust & Transparency",
+      description:
+        "Clear ratings, real feedback, and secure systems you can rely on.",
     },
   ];
 
@@ -117,11 +178,12 @@ const AboutUsPage = () => {
     <div className="bg-gray-50 min-h-screen">
       {/* Hero Section */}
       <section
-        className="py-20 bg-gradient-to-br from-primary to-secondary"
+        className="py-24 bg-gradient-to-br from-primary to-secondary"
         style={{
           backgroundImage: `url(${img1})`,
           backgroundSize: "cover",
-          backgroundPosition: "bottom",
+          backgroundPosition: "center",
+          backgroundBlendMode: "overlay",
         }}
       >
         <div className="container mx-auto px-6 lg:px-24">
@@ -136,72 +198,16 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-4xl md:text-5xl font-extrabold mb-6 drop-shadow-lg"
             >
-              Empowering Tech Careers Through Expert Guidance
+              About SELECTSKILLSET
             </motion.h1>
             <motion.p
               variants={itemVariants}
               className="text-lg md:text-xl mb-8 drop-shadow"
             >
-              Join professionals mastering in-demand skills with industry-proven
-              methodologies
+              We’re revolutionizing tech career development by connecting
+              candidates, interviewers, and employers through smart tools, real
+              feedback, and performance-driven hiring.
             </motion.p>
-            {/* <div className="flex space-x-4">
-              <a
-                href="#"
-                className="px-6 py-3 bg-white text-primary rounded-lg
-                          hover:bg-secondary hover:text-white transition-all
-                          flex items-center space-x-2"
-              >
-                <Linkedin className="w-5 h-5" />
-                <span>Join LinkedIn Community</span>
-              </a>
-              <a
-                href="#"
-                className="px-6 py-3 bg-white/20 text-white rounded-lg
-                          hover:bg-white/30 transition-all
-                          flex items-center space-x-2"
-              >
-                <Mail className="w-5 h-5" />
-                <span>Contact Us</span>
-              </a>
-            </div> */}
-          </motion.div>
-        </div>
-      </section>
-
-      <AboutUsComponent />
-
-      {/* Features Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6 lg:px-24">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            className="text-center mb-16"
-          >
-            <motion.h2
-              variants={itemVariants}
-              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
-            >
-              Transform Your Career Journey
-            </motion.h2>
-            <motion.p
-              variants={itemVariants}
-              className="text-lg text-gray-600 max-w-3xl mx-auto"
-            >
-              Comprehensive tools for every stage of your professional
-              development
-            </motion.p>
-          </motion.div>
-          <motion.div
-            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
-            variants={containerVariants}
-          >
-            {features.map((feature, index) => (
-              <FeatureCard key={index} feature={feature} />
-            ))}
           </motion.div>
         </div>
       </section>
@@ -219,7 +225,7 @@ const AboutUsPage = () => {
             <motion.img
               src={img2}
               alt="Professional development"
-              className="rounded-lg shadow-xl w-full h-auto object-cover"
+              className="w-full h-full object-contain"
               loading="lazy"
               variants={itemVariants}
             />
@@ -228,13 +234,16 @@ const AboutUsPage = () => {
                 variants={itemVariants}
                 className="text-3xl md:text-4xl font-extrabold text-primary"
               >
-                About SELECTSKILLSET
+                Who We Are
               </motion.h2>
               <motion.p
                 variants={itemVariants}
                 className="text-gray-700 text-lg"
               >
-                Revolutionizing tech career preparation with:
+                SELECTSKILLSET was founded in 2024 with one bold mission: to
+                remove guesswork from hiring and career growth. We empower
+                individuals to learn, perform, and shine — while enabling
+                companies to hire with confidence and clarity.
               </motion.p>
               <motion.ul
                 variants={containerVariants}
@@ -242,7 +251,12 @@ const AboutUsPage = () => {
                 initial="hidden"
                 whileInView="visible"
               >
-                {[...Array(4)].map((_, index) => (
+                {[
+                  "Structured career path development",
+                  "Industry-expert mock interviews",
+                  "Performance-based recruitment",
+                  "Continuous skill validation",
+                ].map((item, index) => (
                   <motion.li
                     key={index}
                     className="flex items-center space-x-3"
@@ -250,15 +264,78 @@ const AboutUsPage = () => {
                     variants={itemVariants}
                   >
                     <CheckCircle2 className="text-primary w-6 h-6" />
-                    <span className="text-base md:text-lg">
-                      {index % 2 === 0
-                        ? "Industry-validated skill assessments"
-                        : "Real-world project simulations"}
-                    </span>
+                    <span className="text-base md:text-lg">{item}</span>
                   </motion.li>
                 ))}
               </motion.ul>
+
+              <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                whileInView="visible"
+                className="pt-8"
+              >
+                <h3 className="text-2xl font-semibold text-primary mb-6">
+                  Our Mission & Values
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {missionValues.map((value, index) => (
+                    <motion.div
+                      key={index}
+                      variants={itemVariants}
+                      className="p-4 rounded-lg bg-gray-50 border border-gray-200"
+                    >
+                      <div className="flex items-center space-x-3 mb-2">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                          {value.icon}
+                        </div>
+                        <h4 className="font-semibold text-gray-900">
+                          {value.title}
+                        </h4>
+                      </div>
+                      <p className="text-gray-600 text-sm">
+                        {value.description}
+                      </p>
+                    </motion.div>
+                  ))}
+                </div>
+              </motion.div>
             </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto px-6 lg:px-24">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <motion.h2
+              variants={itemVariants}
+              className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
+            >
+              Why Professionals Choose Us
+            </motion.h2>
+            <motion.p
+              variants={itemVariants}
+              className="text-lg text-gray-600 max-w-3xl mx-auto"
+            >
+              From first-time coders to seasoned engineers — SELECTSKILLSET is
+              where growth meets opportunity.
+            </motion.p>
+          </motion.div>
+          <motion.div
+            className="grid md:grid-cols-2 lg:grid-cols-3 gap-8"
+            variants={containerVariants}
+          >
+            {features.map((feature, index) => (
+              <FeatureCard key={index} feature={feature} />
+            ))}
           </motion.div>
         </div>
       </section>
@@ -277,13 +354,14 @@ const AboutUsPage = () => {
               variants={itemVariants}
               className="text-3xl md:text-4xl font-extrabold text-primary mb-4"
             >
-              Tailored Solutions for Tech Ecosystem
+              Build for Everyone
             </motion.h2>
             <motion.p
               variants={itemVariants}
               className="text-lg text-gray-600 max-w-3xl mx-auto"
             >
-              Connecting talent with opportunity through specialized platforms
+              Our platform delivers tailored value for candidates, interviewers,
+              and hiring teams alike.
             </motion.p>
           </motion.div>
           <motion.div

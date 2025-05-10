@@ -311,7 +311,7 @@ const CandidateStatistics: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`pb-4 text-sm md:text-base font-medium transition-all duration-200 ${
                 activeTab === tab.id
-                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  ? "border-[#0A66C2] text-primary"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
@@ -334,18 +334,18 @@ const CandidateStatistics: React.FC = () => {
             <StatCard
               title="Completed Interviews"
               value={statistics?.completedInterviews}
-              icon={<Briefcase size={24} className="text-[#0A66C2]" />}
+              icon={<Briefcase size={24} className="text-primary" />}
             />
             <StatCard
               title="Average Rating"
               value={statistics?.averageRating.toFixed(1)}
-              icon={<Star size={24} className="text-[#0A66C2]" />}
+              icon={<Star size={24} className="text-primary" />}
               customContent={renderStars(statistics?.averageRating || 0)}
             />
             <StatCard
               title="Total Feedbacks"
               value={statistics?.totalFeedbackCount}
-              icon={<ClipboardList size={24} className="text-[#0A66C2]" />}
+              icon={<ClipboardList size={24} className="text-primary" />}
             />
           </motion.div>
         )}
@@ -435,7 +435,7 @@ const StatCard: React.FC<{
         <h3 className="text-sm md:text-base font-medium text-gray-500">
           {title}
         </h3>
-        <p className="text-2xl md:text-3xl font-bold text-[#0A66C2]">{value}</p>
+        <p className="text-2xl md:text-3xl font-bold text-primary">{value}</p>
         {customContent && <div className="mt-2">{customContent}</div>}
       </div>
     </div>

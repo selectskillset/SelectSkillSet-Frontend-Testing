@@ -1,12 +1,11 @@
 import { motion } from "framer-motion";
 import {
-  Users,
   MessageSquare,
   Star,
-  Award,
   ArrowRight,
   Briefcase,
   ClipboardCheck,
+  Users,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -108,11 +107,12 @@ const CommunitySpotlight = () => {
             ))}
           </div>
 
-          {/* Dual CTA */}
+          {/* Triple CTA */}
           <motion.div
             variants={itemVariants}
-            className="flex flex-col md:flex-row justify-center gap-6 mt-16"
+            className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-16"
           >
+            {/* Candidate Card */}
             <div className="text-center bg-primary/10 p-8 rounded-xl border border-gray-200">
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 For Candidates
@@ -130,6 +130,25 @@ const CommunitySpotlight = () => {
               </button>
             </div>
 
+            {/* Interviewer Card */}
+            <div className="text-center bg-secondary/10 p-8 rounded-xl border border-gray-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">
+                For Interviewers
+              </h3>
+              <p className="text-gray-600 mb-6">
+                Join our expert network and help shape the next generation of
+                tech talent.
+              </p>
+              <button
+                onClick={() => navigate("/interviewer-signup")}
+                className="inline-flex items-center px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-all duration-300 font-medium"
+              >
+                Become an Interviewer
+                <Users className="ml-2 w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Recruiter Card */}
             <div className="text-center bg-primary/10 p-8 rounded-xl border border-gray-200">
               <h3 className="text-xl font-bold text-gray-900 mb-3">
                 For Recruiters
@@ -140,10 +159,10 @@ const CommunitySpotlight = () => {
               </p>
               <button
                 onClick={() => navigate("/corporate-signup")}
-                className="inline-flex items-center px-6 py-2.5 bg-secondary text-white rounded-lg hover:bg-secondary-dark transition-all duration-300 font-medium"
+                className="inline-flex items-center px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary-dark transition-all duration-300 font-medium"
               >
                 Browse Candidate Pool
-                <ArrowRight className="ml-2 w-4 h-4" />
+                <Briefcase className="ml-2 w-4 h-4" />
               </button>
             </div>
           </motion.div>
