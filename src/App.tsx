@@ -15,7 +15,7 @@ import CandidateRoutes from "./routes/CandidateRoutes";
 import CorporateRoutes from "./routes/CorporateRoutes";
 import InterviewerRoutes from "./routes/InterviewerRoutes";
 import AdminRoutes from "./routes/AdminRoutes";
-
+import { Tooltip as ReactTooltip, Tooltip } from "react-tooltip";
 function App() {
   return (
     <div className="min-h-screen flex flex-col">
@@ -77,6 +77,10 @@ function App() {
           <Footer />
         </div>
       </Router>
+      <Tooltip
+        id="global-tooltip"
+        className="z-50 max-w-xs !bg-white !text-black !border !border-gray-300 !shadow-xl !rounded-lg"
+      />
     </div>
   );
 }

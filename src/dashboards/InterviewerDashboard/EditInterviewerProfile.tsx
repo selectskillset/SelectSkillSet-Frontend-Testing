@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { skillsData } from "../../components/common/SkillsData";
 import { countryData } from "../../components/common/countryData";
@@ -18,13 +18,14 @@ type Experience = {
   endDate: string | null;
   current: boolean;
 };
+
 type ProfileState = {
   firstName: string;
   lastName: string;
   jobTitle: string;
   location: string;
   phoneNumber: string;
-  experience: string;
+  summary: string;
   price: string;
   skills: string[];
   profilePhoto: File | null;
@@ -53,7 +54,6 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
 
   const formatDateForInput = (dateString: string) => {
     if (!dateString) return "";
-
     // Convert from dd/mm/yy to Date object
     const [day, month, year] = dateString.split("/");
     const fullYear = `20${year}`; // Assuming 21st century dates
@@ -62,11 +62,9 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
 
   const parseDateInput = (dateString: string) => {
     if (!dateString) return "";
-
     try {
       const date = new Date(dateString);
       if (isNaN(date.getTime())) return "";
-
       // Convert to dd/mm/yy format
       const day = String(date.getDate()).padStart(2, "0");
       const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -147,6 +145,7 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
           </p>
         )}
       </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Location
@@ -168,6 +167,7 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = ({
           </p>
         )}
       </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
           Employment Type
@@ -287,7 +287,7 @@ const EditInterviewerProfile = () => {
     jobTitle: "",
     location: "",
     phoneNumber: "",
-    experience: "",
+    summary: "",
     price: "",
     skills: [],
     profilePhoto: null,
@@ -312,7 +312,6 @@ const EditInterviewerProfile = () => {
         const country =
           countryData.find((c) => c.code === profileData.countryCode) ||
           countryData[0];
-
         setSelectedCountry(country);
         setProfile({
           ...profileData,
@@ -429,15 +428,14 @@ const EditInterviewerProfile = () => {
 
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
+
     if (!profile.firstName.trim()) newErrors.firstName = "First name required";
     if (!profile.lastName.trim()) newErrors.lastName = "Last name required";
     if (!profile.jobTitle.trim()) newErrors.jobTitle = "Job title required";
-    if (!profile.experience.trim())
-      newErrors.experience = "Experience required";
+    if (!profile.summary.trim()) newErrors.summary = "Summary is required";
     if (!profile.price.trim()) newErrors.price = "Price required";
     if (!profile.skills.length)
       newErrors.skills = "At least one skill required";
-
     if (!profile.phoneNumber) {
       newErrors.phoneNumber = "Phone number required";
     } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
@@ -454,7 +452,6 @@ const EditInterviewerProfile = () => {
       if (!exp.employmentType.trim())
         newErrors[`experience-${index}-employmentType`] =
           "Employment Type is required";
-
       if (!exp.startDate)
         newErrors[`experience-${index}-startDate`] = "Start date is required";
       if (!exp.current && !exp.endDate)
@@ -467,8 +464,8 @@ const EditInterviewerProfile = () => {
 
   const handleSave = useCallback(async () => {
     if (!validateForm()) return;
-
     const formData = new FormData();
+
     // Explicitly append only required fields
     formData.append("firstName", profile.firstName);
     formData.append("lastName", profile.lastName);
@@ -476,7 +473,7 @@ const EditInterviewerProfile = () => {
     formData.append("location", profile.location);
     formData.append("phoneNumber", profile.phoneNumber);
     formData.append("countryCode", selectedCountry.code);
-    formData.append("experience", profile.experience);
+    formData.append("summary", profile.summary);
     formData.append("price", profile.price);
     formData.append("skills", JSON.stringify(profile.skills));
     formData.append("experiences", JSON.stringify(profile.experiences));
@@ -690,25 +687,26 @@ const EditInterviewerProfile = () => {
             )}
           </div>
 
-          {/* Experience */}
-          <div>
+          {/* Summary Field */}
+          <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Experience (years)
+              Summary
             </label>
-            <input
-              type="number"
-              value={profile.experience}
-              onChange={(e) =>
-                handleProfileChange("experience", e.target.value)
-              }
+            <p className="text-xs text-gray-500 mb-2">
+              This summary will be visible to candidates. Please provide a brief
+              overview of your professional background and expertise.
+            </p>
+            <textarea
+              value={profile.summary}
+              onChange={(e) => handleProfileChange("summary", e.target.value)}
               className={`w-full px-4 py-2.5 rounded-lg border ${
-                errors.experience ? "border-red-500" : "border-gray-300"
+                errors.summary ? "border-red-500" : "border-gray-300"
               } focus:ring-2 focus:ring-blue-500 focus:border-transparent`}
-              placeholder="Enter years of experience"
-              min="0"
+              placeholder="Write a brief summary about yourself that candidates will see"
+              rows={4}
             />
-            {errors.experience && (
-              <p className="mt-1.5 text-sm text-red-600">{errors.experience}</p>
+            {errors.summary && (
+              <p className="mt-1.5 text-sm text-red-600">{errors.summary}</p>
             )}
           </div>
 
@@ -799,7 +797,6 @@ const EditInterviewerProfile = () => {
               Add Experience
             </button>
           </div>
-
           <div className="space-y-4">
             {profile.experiences.map((exp, index) => (
               <ExperienceEntry
