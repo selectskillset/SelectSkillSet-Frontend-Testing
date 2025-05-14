@@ -32,6 +32,12 @@
   }
 }
 
+.filter-chips{
+  scrollbar-width:thin;
+  scrollbar-color: var(--sb-thumb-color) var(--sb-track-color);
+  overflow-y: auto;
+}
+
 /* Custom Scrollbar Class for Components */
 .custom-scrollbar::-webkit-scrollbar {
   width: var(--sb-size);
