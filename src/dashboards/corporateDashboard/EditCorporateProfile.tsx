@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import toast from "react-hot-toast";
+import {toast} from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { countryData } from "../../components/common/countryData";
 import { Camera, Pencil, ChevronDown } from "lucide-react";

@@ -7,6 +7,8 @@ import TermsAndConditions from "../pages/termsAndConditionPage/TermsAndCondition
 import InterviewerProfile from "../pages/profile/InterviewerProfile";
 import CandidateApproveReschedule from "../pages/reschedule/CandidateApproveReschedule";
 import InterviewerApproveReschedule from "../pages/reschedule/InterviewerApproveReschedule";
+import CareerPage from "../pages/career/CareerPage";
+import ReportIssue from "../pages/report/ReportIssue";
 
 // PublicRoutes component that defines routes for public-facing pages of the website
 const PublicRoutes = () => {
@@ -30,13 +32,19 @@ const PublicRoutes = () => {
       {/* Dynamic route for viewing the profile of a specific interviewer based on their ID */}
       <Route path="/interviewer-profile/:id" element={<InterviewerProfile />} />
 
+      <Route
+        path="/candidate/approve-reschedule"
+        element={<CandidateApproveReschedule />}
+      />
 
-      <Route path="/candidate/approve-reschedule" element={<CandidateApproveReschedule />} />
-      <Route path="/interviewer/approve-reschedule" element={<InterviewerApproveReschedule />} />
+      <Route
+        path="/interviewer/approve-reschedule"
+        element={<InterviewerApproveReschedule />}
+      />
+      <Route path="/careers" element={<CareerPage />} />
+      <Route path="/report-issue" element={<ReportIssue />} />
 
-
-
-     
+    
     </Routes>
   );
 };

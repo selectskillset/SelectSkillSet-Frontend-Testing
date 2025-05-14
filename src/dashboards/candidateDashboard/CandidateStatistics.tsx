@@ -132,8 +132,7 @@ const barOptions = {
 };
 
 const CandidateStatistics: React.FC = () => {
-  const { statistics, isLoading, fetchStatistics, error } =
-    useCandidate();
+  const { statistics, isLoading, fetchStatistics, error } = useCandidate();
   const [selectedFeedback, setSelectedFeedback] = useState<Feedback | null>(
     null
   );
@@ -174,8 +173,41 @@ const CandidateStatistics: React.FC = () => {
   }, []);
 
   const chartData = useMemo(() => {
-    if (!statistics)
-      return { radarData: null, doughnutData: null, barData: null };
+    if (!statistics || !statistics.feedbacks || statistics.feedbacks.length === 0) {
+      return {
+        radarData: {
+          labels: [],
+          datasets: [{
+            label: "Skill Ratings",
+            data: [],
+            backgroundColor: "rgba(10, 102, 194, 0.2)",
+            borderColor: "#0A66C2",
+            pointBackgroundColor: "#0A66C2",
+            pointBorderColor: "#fff",
+            borderWidth: 2,
+          }]
+        },
+        doughnutData: {
+          labels: ["No Data"],
+          datasets: [{
+            data: [1],
+            backgroundColor: ["#E5E7EB"],
+            borderWidth: 1,
+            borderColor: "#fff",
+          }]
+        },
+        barData: {
+          labels: ["No Data"],
+          datasets: [{
+            label: "Ratings",
+            data: [0],
+            backgroundColor: "#E5E7EB",
+            borderRadius: 8,
+            barThickness: 20,
+          }]
+        }
+      };
+    }
 
     const radarLabels = Array.from(
       new Set(statistics.feedbacks.flatMap((f) => Object.keys(f.feedbackData)))
@@ -184,9 +216,7 @@ const CandidateStatistics: React.FC = () => {
       const values = statistics.feedbacks
         .map((f) => f.feedbackData[label]?.rating)
         .filter((v): v is number => v !== undefined);
-      return values.length
-        ? values.reduce((a, b) => a + b, 0) / values.length
-        : 0;
+      return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
     });
 
     const ratingCounts = [0, 0, 0, 0, 0];
@@ -196,54 +226,47 @@ const CandidateStatistics: React.FC = () => {
     });
 
     const barLabels = statistics.feedbacks.map(
-      (f, i) =>
-        `Interview ${i + 1} - ${new Date(f.interviewDate).toLocaleDateString()}`
+      (f, i) => `Interview ${i + 1} - ${new Date(f.interviewDate).toLocaleDateString()}`
     );
 
     return {
-      radarData: radarLabels.length > 0 && {
+      radarData: {
         labels: radarLabels,
-        datasets: [
-          {
-            label: "Skill Ratings",
-            data: radarValues,
-            backgroundColor: "rgba(10, 102, 194, 0.2)",
-            borderColor: "#0A66C2",
-            pointBackgroundColor: "#0A66C2",
-            pointBorderColor: "#fff",
-            borderWidth: 2,
-          },
-        ],
+        datasets: [{
+          label: "Skill Ratings",
+          data: radarValues,
+          backgroundColor: "rgba(10, 102, 194, 0.2)",
+          borderColor: "#0A66C2",
+          pointBackgroundColor: "#0A66C2",
+          pointBorderColor: "#fff",
+          borderWidth: 2,
+        }]
       },
-      doughnutData: ratingCounts.some((count) => count > 0) && {
+      doughnutData: {
         labels: ["5 Stars", "4 Stars", "3 Stars", "2 Stars", "1 Star"],
-        datasets: [
-          {
-            data: ratingCounts,
-            backgroundColor: [
-              "#0A66C2",
-              "#4CAF50",
-              "#FFC107",
-              "#FF5722",
-              "#9E9E9E",
-            ],
-            borderWidth: 1,
-            borderColor: "#fff",
-          },
-        ],
+        datasets: [{
+          data: ratingCounts,
+          backgroundColor: [
+            "#0A66C2",
+            "#4CAF50",
+            "#FFC107",
+            "#FF5722",
+            "#9E9E9E",
+          ],
+          borderWidth: 1,
+          borderColor: "#fff",
+        }]
       },
-      barData: statistics.feedbacks.length > 0 && {
+      barData: {
         labels: barLabels,
-        datasets: [
-          {
-            label: "Ratings",
-            data: statistics.feedbacks.map((f) => f.rating),
-            backgroundColor: "#0A66C2",
-            borderRadius: 8,
-            barThickness: 20,
-          },
-        ],
-      },
+        datasets: [{
+          label: "Ratings",
+          data: statistics.feedbacks.map((f) => f.rating),
+          backgroundColor: "#0A66C2",
+          borderRadius: 8,
+          barThickness: 20,
+        }]
+      }
     };
   }, [statistics]);
 
@@ -288,7 +311,7 @@ const CandidateStatistics: React.FC = () => {
               onClick={() => setActiveTab(tab.id)}
               className={`pb-4 text-sm md:text-base font-medium transition-all duration-200 ${
                 activeTab === tab.id
-                  ? "border-[#0A66C2] text-[#0A66C2]"
+                  ? "border-[#0A66C2] text-primary"
                   : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
               }`}
             >
@@ -311,18 +334,18 @@ const CandidateStatistics: React.FC = () => {
             <StatCard
               title="Completed Interviews"
               value={statistics?.completedInterviews}
-              icon={<Briefcase size={24} className="text-[#0A66C2]" />}
+              icon={<Briefcase size={24} className="text-primary" />}
             />
             <StatCard
               title="Average Rating"
               value={statistics?.averageRating.toFixed(1)}
-              icon={<Star size={24} className="text-[#0A66C2]" />}
+              icon={<Star size={24} className="text-primary" />}
               customContent={renderStars(statistics?.averageRating || 0)}
             />
             <StatCard
               title="Total Feedbacks"
               value={statistics?.totalFeedbackCount}
-              icon={<ClipboardList size={24} className="text-[#0A66C2]" />}
+              icon={<ClipboardList size={24} className="text-primary" />}
             />
           </motion.div>
         )}
@@ -357,26 +380,29 @@ const CandidateStatistics: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
-            className="grid grid-cols-1  gap-6"
+            className="grid grid-cols-1 gap-6"
           >
-            <ChartCard title="Skill Ratings">
-              <div className="h-[320px]">
-                <Radar data={chartData?.radarData} options={radarOptions} />
-              </div>
-            </ChartCard>
-            <ChartCard title="Rating Distribution">
-              <div className="h-[320px]">
-                <Doughnut
-                  data={chartData?.doughnutData}
-                  options={doughnutOptions}
-                />
-              </div>
-            </ChartCard>
-            <ChartCard title="Overall Ratings">
-              <div className="h-[320px]">
-                <Bar data={chartData?.barData} options={barOptions} />
-              </div>
-            </ChartCard>
+            {!statistics || statistics.feedbacks.length === 0 ? (
+              <EmptyState message="No analysis data available yet" />
+            ) : (
+              <>
+                <ChartCard title="Skill Ratings">
+                  <div className="h-[320px]">
+                    <Radar data={chartData.radarData} options={radarOptions} />
+                  </div>
+                </ChartCard>
+                <ChartCard title="Rating Distribution">
+                  <div className="h-[320px]">
+                    <Doughnut data={chartData.doughnutData} options={doughnutOptions} />
+                  </div>
+                </ChartCard>
+                <ChartCard title="Overall Ratings">
+                  <div className="h-[320px]">
+                    <Bar data={chartData.barData} options={barOptions} />
+                  </div>
+                </ChartCard>
+              </>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -409,7 +435,7 @@ const StatCard: React.FC<{
         <h3 className="text-sm md:text-base font-medium text-gray-500">
           {title}
         </h3>
-        <p className="text-2xl md:text-3xl font-bold text-[#0A66C2]">{value}</p>
+        <p className="text-2xl md:text-3xl font-bold text-primary">{value}</p>
         {customContent && <div className="mt-2">{customContent}</div>}
       </div>
     </div>
