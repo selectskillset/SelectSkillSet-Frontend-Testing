@@ -95,15 +95,21 @@ const CareerJourney = () => {
           >
             Our Comprehensive Solutions
           </motion.span>
-          <motion.h2
-            className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 mb-4"
-            initial={{ opacity: 0, y: 20 }}
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-50px" }}
-            transition={{ duration: 0.4, delay: 0.1 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
           >
-            Tailored Support for Every Professional
-          </motion.h2>
+            <h2
+              className="text-4xl md:text-5xl font-extrabold 
+                                 bg-clip-text text-transparent
+                                 bg-gradient-to-r from-primary to-secondary mb-6"
+            >
+              Tailored Support for Every Professional
+            </h2>
+          </motion.div>
           <motion.p
             className="text-lg text-gray-600 max-w-3xl mx-auto"
             initial={{ opacity: 0, y: 20 }}
@@ -153,17 +159,21 @@ const CareerJourney = () => {
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, margin: "-50px 0px" }}
-                  transition={{ 
-                    duration: 0.5, 
+                  transition={{
+                    duration: 0.5,
                     delay,
-                    ease: [0.16, 1, 0.3, 1] // Smooth easing curve
+                    ease: [0.16, 1, 0.3, 1], // Smooth easing curve
                   }}
                 >
                   {/* Mobile indicator - only shows on small screens */}
                   <div className="lg:hidden absolute left-0 top-6 w-3 h-3 rounded-full bg-primary border-4 border-white z-10"></div>
 
                   <div
-                    className={`w-full lg:w-[46%] p-6 lg:p-8 rounded-xl border ${colors.border} ${colors.hover} ${colors.bg} transition-all duration-300 shadow-sm hover:shadow-md ${
+                    className={`w-full lg:w-[46%] p-6 lg:p-8 rounded-xl border ${
+                      colors.border
+                    } ${colors.hover} ${
+                      colors.bg
+                    } transition-all duration-300 shadow-sm hover:shadow-md ${
                       isEven ? "lg:mr-auto" : "lg:ml-auto"
                     }`}
                   >
@@ -201,9 +211,9 @@ const CareerJourney = () => {
                               initial={{ opacity: 0, x: -10 }}
                               whileInView={{ opacity: 1, x: 0 }}
                               viewport={{ once: true }}
-                              transition={{ 
-                                duration: 0.3, 
-                                delay: delay + 0.3 + (i * 0.05) 
+                              transition={{
+                                duration: 0.3,
+                                delay: delay + 0.3 + i * 0.05,
                               }}
                             >
                               <span className="mr-2.5 mt-0.5 flex-shrink-0">

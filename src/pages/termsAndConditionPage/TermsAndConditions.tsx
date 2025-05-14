@@ -13,7 +13,7 @@ const termsData = [
   {
     id: 1,
     title: "Definitions",
-    icon: <Info size={24} className="text-[#0A66C2]" />,
+    icon: <Info size={24} className="text-primary" />,
     content: (
       <ul className="list-disc pl-6 space-y-2 text-gray-700">
         <li>
@@ -34,7 +34,7 @@ const termsData = [
   {
     id: 2,
     title: "Eligibility",
-    icon: <AlertCircle size={24} className="text-[#0A66C2]" />,
+    icon: <AlertCircle size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         You must be at least 18 years old to use our website and services. By
@@ -45,7 +45,7 @@ const termsData = [
   {
     id: 3,
     title: "Services Offered",
-    icon: <Shield size={24} className="text-[#0A66C2]" />,
+    icon: <Shield size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         SelectSkillSet provides mock interview sessions with professionals to
@@ -57,7 +57,7 @@ const termsData = [
   {
     id: 4,
     title: "User Responsibilities",
-    icon: <FileText size={24} className="text-[#0A66C2]" />,
+    icon: <FileText size={24} className="text-primary" />,
     content: (
       <ul className="list-disc pl-6 space-y-2 text-gray-700">
         <li>Provide accurate and complete information during registration.</li>
@@ -69,7 +69,7 @@ const termsData = [
   {
     id: 5,
     title: "Payments and Refund Policy",
-    icon: <Lock size={24} className="text-[#0A66C2]" />,
+    icon: <Lock size={24} className="text-primary" />,
     content: (
       <ul className="list-disc pl-6 space-y-2 text-gray-700">
         <li>Fees are clearly stated at the time of booking.</li>
@@ -84,7 +84,7 @@ const termsData = [
   {
     id: 6,
     title: "Intellectual Property",
-    icon: <Info size={24} className="text-[#0A66C2]" />,
+    icon: <Info size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         All content, trademarks, logos, and materials remain our property.
@@ -95,7 +95,7 @@ const termsData = [
   {
     id: 7,
     title: "Limitation of Liability",
-    icon: <AlertCircle size={24} className="text-[#0A66C2]" />,
+    icon: <AlertCircle size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         We are not responsible for direct or indirect losses resulting from the
@@ -106,13 +106,13 @@ const termsData = [
   {
     id: 8,
     title: "Privacy Policy",
-    icon: <Lock size={24} className="text-[#0A66C2]" />,
+    icon: <Lock size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         Your personal data will be handled in accordance with our{" "}
         <a
           href="/privacy-policy"
-          className="text-[#0A66C2] hover:underline transition-colors duration-300"
+          className="text-primary hover:underline transition-colors duration-300"
         >
           Privacy Policy
         </a>
@@ -123,7 +123,7 @@ const termsData = [
   {
     id: 9,
     title: "Termination",
-    icon: <AlertCircle size={24} className="text-[#0A66C2]" />,
+    icon: <AlertCircle size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         We reserve the right to suspend or terminate access for violations of
@@ -134,7 +134,7 @@ const termsData = [
   {
     id: 10,
     title: "Governing Law",
-    icon: <Shield size={24} className="text-[#0A66C2]" />,
+    icon: <Shield size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         These Terms are governed by Irish law, and disputes are subject to the
@@ -145,7 +145,7 @@ const termsData = [
   {
     id: 11,
     title: "Amendments",
-    icon: <Info size={24} className="text-[#0A66C2]" />,
+    icon: <Info size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         We may update these Terms from time to time. Significant changes will be
@@ -156,13 +156,13 @@ const termsData = [
   {
     id: 12,
     title: "Contact Us",
-    icon: <Mail size={24} className="text-[#0A66C2]" />,
+    icon: <Mail size={24} className="text-primary" />,
     content: (
       <p className="text-gray-700">
         For any questions, please email us at{" "}
         <a
           href="mailto:contact@selectskillset.com"
-          className="text-[#0A66C2] hover:underline transition-colors duration-300"
+          className="text-primary hover:underline transition-colors duration-300"
         >
           contact@selectskillset.com
         </a>
@@ -174,39 +174,63 @@ const termsData = [
 
 const TermsAndConditions = () => {
   return (
-    <div className="min-h-screen  font-sans text-gray-800">
-      <main className="container mx-auto p-4 sm:p-8">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800">
+      <main className="container mx-auto p-4 sm:p-8 lg:p-12">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          transition={{ duration: 0.4 }}
+          className="space-y-8"
         >
-          <motion.div className="bg-white rounded-3xl shadow-xl p-8 space-y-6 col-span-1 md:col-span-2 lg:col-span-3">
-            <h2 className="text-3xl font-extrabold text-[#0A66C2] tracking-tight">
+          {/* Header Section */}
+          <motion.div
+            className="bg-white rounded-3xl shadow-xl p-6 sm:p-8 lg:p-12"
+            initial={{ scale: 0.98 }}
+            animate={{ scale: 1 }}
+          >
+            <h2 className="text-3xl md:text-4xl font-extrabold text-primary mb-4">
               Terms and Conditions
             </h2>
-            <p className="text-base text-gray-600">
+            <p className="text-lg text-gray-600">
               Effective Date: 11 December 2024
             </p>
           </motion.div>
 
-          {/* Terms Cards */}
-          {termsData.map((term) => (
-            <motion.div
-              key={term.id}
-              whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-3xl shadow-xl p-8 space-y-6"
-            >
-              <div className="flex items-center gap-4">
-                {term.icon}
-                <h3 className="text-2xl font-semibold text-gray-800">
-                  {term.title}
-                </h3>
-              </div>
-              <div>{term.content}</div>
-            </motion.div>
-          ))}
+          {/* Terms Grid */}
+          <motion.div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6"
+            variants={{
+              hidden: { opacity: 0 },
+              visible: {
+                opacity: 1,
+                transition: { staggerChildren: 0.1, delayChildren: 0.2 },
+              },
+            }}
+            initial="hidden"
+            animate="visible"
+          >
+            {termsData.map((term) => (
+              <motion.div
+                key={term.id}
+                variants={{
+                  hidden: { opacity: 0, y: 20 },
+                  visible: { opacity: 1, y: 0 },
+                }}
+                whileHover={{ scale: 1.02 }}
+                className="bg-white rounded-xl shadow-lg p-6 h-full flex flex-col"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-2 bg-primary/10 rounded-lg">
+                    {term.icon}
+                  </div>
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {term.title}
+                  </h3>
+                </div>
+                <div className="text-gray-700 flex-1">{term.content}</div>
+              </motion.div>
+            ))}
+          </motion.div>
         </motion.div>
       </main>
     </div>

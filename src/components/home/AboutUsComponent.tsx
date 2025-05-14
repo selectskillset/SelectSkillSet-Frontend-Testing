@@ -12,10 +12,9 @@ interface AboutUsProps {
 
 const AboutUsComponent: React.FC<AboutUsProps> = ({
   src = image,
-  alt = "About Selectskillset",
+  alt = "About SELECTSKILLSET",
   className,
 }) => {
-  const navigate = useNavigate();
   // Distinct border-radius keyframes for each layer
   const borderRadiusKeyframesOuter = useMemo(
     () => [
@@ -126,7 +125,7 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
               About SELECTSKILLSET
             </h2>
             <p className="text-lg text-gray-600 mb-8">
-              At Selectskillset, we empower job seekers, freelancers, and HR
+              At SELECTSKILLSET, we empower job seekers, freelancers, and HR
               professionals through practice and feedback. Our platform bridges
               the gap between candidates and companies by offering:
             </p>
@@ -161,12 +160,12 @@ const AboutUsComponent: React.FC<AboutUsProps> = ({
             </p>
 
             {/* Call-to-Action Button */}
-            <button
+            {/* <button
               onClick={() => navigate("/about")}
               className="inline-flex items-center bg-gradient-to-r from-primary to-secondary text-white py-3 px-6 rounded-lg hover:scale-105 transition-transform duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-dark"
             >
               Learn More <ChevronRight className="w-5 h-5 ml-2" />
-            </button>
+            </button> */}
           </motion.div>
         </div>
       </div>
