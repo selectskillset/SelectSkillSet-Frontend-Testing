@@ -6,36 +6,31 @@ import CorporateSettingsPage from "../dashboards/corporateDashboard/setting/Corp
 import CandidateProfilePage from "../dashboards/corporateDashboard/CandidateProfilePage";
 import { CorporateProvider } from "../context/CorporateContext";
 import BookmarkedCandidatesPage from "../dashboards/corporateDashboard/BookmarkedCandidatesPage";
+import CorporateLayout from "../dashboards/corporateDashboard/CorporateLayout";
+import CandidatesList from "../dashboards/corporateDashboard/CandidatesList";
 
-// CorporateRoutes component that defines routes specific to the corporate's dashboard
+
 const CorporateRoutes = () => {
   return (
     <CorporateProvider>
       <Routes>
-        {/* Route for corporate's main dashboard page */}
-        <Route path="/corporate-dashboard" element={<CorporateDashboard />} />
-
-        {/* Route for editing the corporate's profile */}
-        <Route
-          path="/corporate/edit-profile"
-          element={<EditCorporateProfile />}
-        />
-
-        {/* Route for filtering and viewing candidates for the corporate */}
-        <Route
-          path="/corporate/filter-candidate"
-          element={<FilterCandidates />}
-        />
-        <Route path="/corporate-settings" element={<CorporateSettingsPage />} />
-
-        <Route
-          path="/candidateProfile/:id"
-          element={<CandidateProfilePage />}
-        />
-        <Route
-          path="/corporate-bookmarked"
-          element={<BookmarkedCandidatesPage />}
-        />
+        <Route element={<CorporateLayout />}>
+          {/* Main dashboard route */}
+          <Route path="corporate-dashboard" element={<CorporateDashboard />} />
+          
+          {/* Candidate management routes */}
+          <Route path="corporate-candidates" element={<CandidatesList />} />
+          <Route path="corporate/filter-candidate" element={<FilterCandidates />} />
+          <Route path="candidateProfile/:id" element={<CandidateProfilePage />} />
+          
+          {/* Bookmarks route */}
+          <Route path="corporate-bookmarked" element={<BookmarkedCandidatesPage />} />
+          
+          
+          {/* Profile and settings routes */}
+          <Route path="corporate/edit-profile" element={<EditCorporateProfile />} />
+          <Route path="corporate-settings" element={<CorporateSettingsPage />} />
+        </Route>
       </Routes>
     </CorporateProvider>
   );

@@ -1,21 +1,21 @@
 import React, { memo, useRef, useState, useCallback, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { useMediaQuery } from "react-responsive";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
   Home,
-  Calendar,
-  Clock,
+  Users,
+  Filter,
+  Bookmark,
   ChevronDown,
   X,
-  User,
-  Settings,
   Menu,
   BarChart2,
-  Edit,
+  Briefcase,
+  Settings,
+  AlertTriangle,
 } from "lucide-react";
-import { useCandidate } from "../../context/CandidateContext";
-import ProfileStrength from "./ProfileStrength";
+import { useCorporate } from "../../context/CorporateContext";
 
 interface SidebarItemProps {
   icon: React.ReactNode;
@@ -85,38 +85,40 @@ interface NavItem {
 const navItems: NavItem[] = [
   {
     key: "dashboard",
-    path: "/candidate-dashboard",
+    path: "/corporate-dashboard",
     icon: <Home size={18} />,
     label: "Dashboard",
   },
   {
-    key: "schedule",
-    path: "/candidate-schedule-interviews",
-    icon: <Calendar size={18} />,
-    label: "Schedule Interview",
+    key: "candidates",
+    path: "/corporate-candidates",
+    icon: <Users size={18} />,
+    label: "Candidates",
   },
   {
-    key: "upcoming",
-    path: "/candidate-interviews",
-    icon: <Clock size={18} />,
-    label: "Upcoming Interviews",
+    key: "filter",
+    path: "/corporate/filter-candidate",
+    icon: <Filter size={18} />,
+    label: "Filter Candidates",
   },
   {
-    key: "statistics",
-    path: "/candidate-statestics",
-    icon: <BarChart2 size={18} />,
-    label: "Interview Statistics",
+    key: "bookmarks",
+    path: "/corporate-bookmarked",
+    icon: <Bookmark size={18} />,
+    label: "Bookmarks",
   },
+
   {
     key: "settings",
-    path: "/candidate-settings",
+    path: "/corporate-settings",
     icon: <Settings size={18} />,
     label: "Settings",
   },
 ];
 
-const CandidateLayout: React.FC = () => {
-  const { completion } = useCandidate();
+const CorporateLayout: React.FC = () => {
+  const { profile } = useCorporate();
+
   const location = useLocation();
   const navigate = useNavigate();
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -163,7 +165,7 @@ const CandidateLayout: React.FC = () => {
 
   const currentPageTitle =
     navItems.find((item) => location.pathname.startsWith(item.path))?.label ||
-    "";
+    "Dashboard";
 
   const getCurrentTabHeading = useCallback(() => {
     const currentItem = navItems.find((item) =>
@@ -174,12 +176,16 @@ const CandidateLayout: React.FC = () => {
       switch (currentItem.key) {
         case "dashboard":
           return "Dashboard Overview";
-        case "schedule":
-          return "Schedule New Interview";
-        case "upcoming":
-          return "Your Upcoming Interviews";
+        case "candidates":
+          return "Candidate Directory";
+        case "filter":
+          return "Filter Candidates";
+        case "bookmarks":
+          return "Bookmarked Candidates";
+        case "jobs":
+          return "Job Postings Management";
         case "statistics":
-          return "Interview Statistics";
+          return "Corporate Statistics";
         case "settings":
           return "Settings";
         default:
@@ -264,7 +270,7 @@ const CandidateLayout: React.FC = () => {
               }`}
             >
               <span className="font-semibold text-gray-900 text-lg">
-                Candidate Dashboard
+                Corporate Dashboard
               </span>
             </motion.div>
 
@@ -305,16 +311,23 @@ const CandidateLayout: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1, duration: 0.2 }}
-                className="mt-6"
+                className="mt-6 p-4 bg-primary/5 rounded-xl border border-primary/10"
               >
-                <ProfileStrength
-                  completion={
-                    completion || {
-                      completionPercentage: 0,
-                      missingFields: [],
-                    }
-                  }
-                />
+                <Link to="/corporate-bookmarked">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-primary/10 p-2 rounded-lg">
+                      <Bookmark className="text-primary w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-primary">
+                        {profile?.bookmarks?.length || 0} Bookmarked Candidates
+                      </h4>
+                      <p className="text-xs text-primary/70">
+                        View your saved candidates
+                      </p>
+                    </div>
+                  </div>
+                </Link>
               </motion.div>
             )}
           </nav>
@@ -324,6 +337,22 @@ const CandidateLayout: React.FC = () => {
         <motion.main
           className={`flex-1 p-4 sm:p-6 transition-all duration-300`}
         >
+          {!profile?.isVerified && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-yellow-100 p-4 flex items-center justify-center gap-3 mb-5 rounded-md"
+            >
+              <AlertTriangle className="text-yellow-600" />
+              <span className="text-yellow-800 font-medium">
+                Your corporate account is currently under review. Our team is
+                verifying your details and you will be notified once it's
+                completed.
+              </span>
+            </motion.div>
+          )}
+
           <h3 className="mb-5 text-lg font-semibold text-gray-800 lg:mb-7">
             {getCurrentTabHeading()}
           </h3>
@@ -338,4 +367,4 @@ const CandidateLayout: React.FC = () => {
   );
 };
 
-export default memo(CandidateLayout);
+export default memo(CorporateLayout);

@@ -1,7 +1,6 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import CandidateDashboard from "../dashboards/candidateDashboard/CandidateDashboard";
 import EditCandidateProfile from "../dashboards/candidateDashboard/EditCandidateProfile";
-import CandidateEvaluationForm from "../dashboards/candidateDashboard/CandidateEvaluationForm";
 import CandidateSettingsPage from "../dashboards/candidateDashboard/setting/CandidateSettingsPage";
 import CandidateInterviews from "../dashboards/candidateDashboard/CandidateInterviews";
 import { CandidateProvider } from "../context/CandidateContext";
@@ -35,11 +34,6 @@ const CandidateRoutes = () => {
             path="candidate-settings"
             element={<CandidateSettingsPage />}
           />
-          <Route
-            path="candidate-feedback/:interviewerId/:interviewRequestId"
-            element={<CandidateEvaluationForm />}
-          />
-        
         </Route>
       </Routes>
     </CandidateProvider>

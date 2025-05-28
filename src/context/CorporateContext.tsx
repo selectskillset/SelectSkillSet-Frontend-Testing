@@ -1,22 +1,32 @@
-// src/context/CorporateContext.tsx
 import React, {
   createContext,
   useContext,
   useState,
+  useCallback,
+  useMemo,
   useEffect,
   useRef,
-  ReactNode,
 } from "react";
-import {toast} from "sonner";
 import axiosInstance from "../components/common/axiosConfig";
+import { useNavigate } from "react-router-dom";
 
-// Interfaces
+type ApiError = {
+  response?: {
+    status: number;
+    data?: {
+      message: string;
+    };
+  };
+  message?: string;
+};
+
 interface Candidate {
   _id: string;
   firstName: string;
   lastName: string;
   email: string;
   phoneNumber: string;
+  countryCode: string;
   location?: string;
   resume?: string;
   skills: string[];
@@ -26,6 +36,7 @@ interface Candidate {
 }
 
 interface CorporateProfile {
+  _id: string;
   contactName: string;
   email: string;
   profilePhoto: string;
@@ -33,99 +44,180 @@ interface CorporateProfile {
   countryCode: string;
   companyName: string;
   bookmarks: Array<{ candidateId: string }>;
+  isVerified: boolean;
+  website?: string;
+  location?: string;
 }
 
-interface CorporateContextType {
+interface CorporateState {
   profile: CorporateProfile | null;
   candidates: Candidate[];
   totalCandidates: number;
-  loading: boolean;
-  setProfile: (profile: CorporateProfile | null) => void;
-  setCandidates: (candidates: Candidate[]) => void;
-  setTotalCandidates: (total: number) => void;
-  setLoading: (loading: boolean) => void;
-  fetchCandidates: (page: number, limit?: number) => Promise<void>;
-  fetchProfile: () => Promise<void>;
+  loading: {
+    profile: boolean;
+    candidates: boolean;
+  };
+  error: string | null;
 }
 
-// Create Context
-const CorporateContext = createContext<CorporateContextType | undefined>(
-  undefined
-);
+interface CorporateContextType extends CorporateState {
+  fetchProfile: (force?: boolean) => Promise<void>;
+  fetchCandidates: (page: number, limit?: number) => Promise<void>;
+  updateProfile: (data: FormData | Record<string, any>) => Promise<void>;
+  refreshProfile: () => Promise<void>;
+}
 
-// Constants
-const CANDIDATES_PER_PAGE = 5;
+const CACHE_DURATION = 5 * 60 * 1000;
+const CANDIDATES_PER_PAGE = 8;
 
-// Provider Component
-export const CorporateProvider = ({ children }: { children: ReactNode }) => {
-  const [profile, setProfile] = useState<CorporateProfile | null>(null);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
-  const [totalCandidates, setTotalCandidates] = useState<number>(0);
-  const [loading, setLoading] = useState<boolean>(false);
-  const hasFetchedInitialData = useRef(false);
+const CorporateContext = createContext<CorporateContextType | null>(null);
 
-  // Fetch Corporate Profile
-  const fetchProfile = async () => {
-    try {
-      const response = await axiosInstance.get("/corporate/getProfile");
-      setProfile(response.data?.corporate || null);
-    
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-      toast.error("Failed to fetch profile.");
-    }
-  };
+export const CorporateProvider = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => {
+  const navigate = useNavigate();
+  const lastFetchedRef = useRef<number>(0);
+  const [state, setState] = useState<CorporateState>({
+    profile: null,
+    candidates: [],
+    totalCandidates: 0,
+    loading: {
+      profile: false,
+      candidates: false,
+    },
+    error: null,
+  });
 
-  // Fetch Candidates
-  const fetchCandidates = async (
-    page: number,
-    limit: number = CANDIDATES_PER_PAGE
-  ) => {
-    try {
-      const response = await axiosInstance.get("/corporate/getAllCandidates", {
-        params: { page, limit },
-      });
-      const { candidates: fetchedCandidates, total } = response.data || {};
-      setCandidates(fetchedCandidates || []);
-      setTotalCandidates(total || 0);
-     
-    } catch (error) {
-      console.error("Error fetching candidates:", error);
-      toast.error("Failed to fetch candidates.");
-    }
-  };
+  useEffect(() => {
+    const interceptor = axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          sessionStorage.removeItem("corporateToken");
+          navigate("/corporate-login");
+        }
+        return Promise.reject(error);
+      }
+    );
 
-  // // Fetch Initial Data Only Once
-  // useEffect(() => {
-  //   if (!hasFetchedInitialData.current) {
-  //     const loadInitialData = async () => {
-  //       setLoading(true);
-  //       try {
-  //         await Promise.all([fetchProfile(), fetchCandidates(1)]);
-  //         hasFetchedInitialData.current = true;
-  //       } catch (error) {
-  //         console.error("Error loading initial data:", error);
-  //         toast.error("Failed to load initial data.");
-  //       } finally {
-  //         setLoading(false);
-  //       }
-  //     };
-  //     loadInitialData();
-  //   }
-  // }, []); // Empty dependency array ensures this runs only once
+    return () => axiosInstance.interceptors.response.eject(interceptor);
+  }, [navigate]);
 
-  const value = {
-    profile,
-    candidates,
-    totalCandidates,
-    loading,
-    setProfile,
-    setCandidates,
-    setTotalCandidates,
-    setLoading,
-    fetchCandidates,
-    fetchProfile,
-  };
+  const handleApiRequest = useCallback(
+    async <T,>(
+      apiCall: () => Promise<T>,
+      loadingKey: keyof CorporateState["loading"]
+    ) => {
+      const token = sessionStorage.getItem("corporateToken");
+      if (!token) return;
+
+      setState((prev) => ({
+        ...prev,
+        loading: { ...prev.loading, [loadingKey]: true },
+        error: null,
+      }));
+
+      try {
+        await apiCall();
+      } catch (err) {
+        const error = err as ApiError;
+        const errorMessage =
+          error.response?.data?.message || error.message || "An error occurred";
+        setState((prev) => ({ ...prev, error: errorMessage }));
+        throw error;
+      } finally {
+        setState((prev) => ({
+          ...prev,
+          loading: { ...prev.loading, [loadingKey]: false },
+        }));
+      }
+    },
+    [navigate]
+  );
+
+  const fetchProfile = useCallback(
+    async (force = false) => {
+      await handleApiRequest(async () => {
+        const token = sessionStorage.getItem("corporateToken");
+        if (!token) return;
+
+        if (!force && Date.now() - lastFetchedRef.current < CACHE_DURATION)
+          return;
+
+        const response = await axiosInstance.get("/corporate/getProfile");
+        lastFetchedRef.current = Date.now();
+
+        setState((prev) => ({
+          ...prev,
+          profile: response.data?.corporate || null,
+        }));
+      }, "profile");
+    },
+    [handleApiRequest]
+  );
+
+  const updateProfile = useCallback(
+    async (data: FormData | Record<string, any>) => {
+      await handleApiRequest(async () => {
+        const formData = data instanceof FormData ? data : new FormData();
+
+        if (!(data instanceof FormData)) {
+          Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined) formData.append(key, value);
+          });
+        }
+
+        await axiosInstance.put("/corporate/updateProfile", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+
+        lastFetchedRef.current = 0;
+        await fetchProfile(true);
+      }, "profile");
+    },
+    [handleApiRequest, fetchProfile]
+  );
+
+  const fetchCandidates = useCallback(
+    async (page: number, limit: number = CANDIDATES_PER_PAGE) => {
+      await handleApiRequest(async () => {
+        const { data } = await axiosInstance.get(
+          "/corporate/getAllCandidates",
+          {
+            params: { page, limit },
+          }
+        );
+        setState((prev) => ({
+          ...prev,
+          candidates: data?.candidates || [],
+          totalCandidates: data?.total || 0,
+        }));
+      }, "candidates");
+    },
+    [handleApiRequest]
+  );
+
+  const refreshProfile = useCallback(async () => {
+    await fetchProfile(true);
+  }, [fetchProfile]);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem("corporateToken");
+    if (token) fetchProfile();
+  }, [fetchProfile]);
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      fetchProfile,
+      fetchCandidates,
+      updateProfile,
+      refreshProfile,
+    }),
+    [state, fetchProfile, fetchCandidates, updateProfile, refreshProfile]
+  );
 
   return (
     <CorporateContext.Provider value={value}>
@@ -134,13 +226,9 @@ export const CorporateProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Custom Hook to Use the Context
-export const useCorporateContext = () => {
+export const useCorporate = () => {
   const context = useContext(CorporateContext);
-  if (!context) {
-    throw new Error(
-      "useCorporateContext must be used within a CorporateProvider"
-    );
-  }
+  if (!context)
+    throw new Error("useCorporate must be used within CorporateProvider");
   return context;
 };

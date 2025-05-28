@@ -12,6 +12,11 @@ import {
   MoreVertical,
   ChevronRight,
   ChevronLeft,
+  Calendar,
+  Mail,
+  RefreshCw,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import CandidateRescheduleModal from "../../components/common/CandidateRescheduleModal";
 
@@ -20,13 +25,46 @@ interface Interview {
   date: string;
   time: string;
   interviewerName: string;
-  status: string;
+  status: "Approved" | "Cancelled" | "Requested" | "Completed" | "Rescheduled";
   interviewerPhoto?: string;
   from: string;
   to: string;
   additionalNotes?: string;
   interviewerId: string;
 }
+
+const statusConfig = {
+  Approved: {
+    icon: CheckCircle,
+    color: "text-green-600",
+    bgColor: "bg-green-50",
+    label: "Approved",
+  },
+  Cancelled: {
+    icon: XCircle,
+    color: "text-red-600",
+    bgColor: "bg-red-50",
+    label: "Cancelled",
+  },
+  Requested: {
+    icon: Timer,
+    color: "text-yellow-600",
+    bgColor: "bg-yellow-50",
+    label: "Requested",
+  },
+  Completed: {
+    icon: UserCheck,
+    color: "text-blue-600",
+    bgColor: "bg-blue-50",
+    label: "Completed",
+  },
+  Rescheduled: {
+    icon: RefreshCw,
+    color: "text-purple-600",
+    bgColor: "bg-purple-50",
+    label: "Rescheduled",
+  },
+};
 
 const CandidateUpcomingInterviews: React.FC = () => {
   const { interviews, isLoading, fetchInterviews, error, rescheduleInterview } =
@@ -37,20 +75,20 @@ const CandidateUpcomingInterviews: React.FC = () => {
     useState<Interview | null>(null);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5;
+  const itemsPerPage = 6;
 
   // Memoized interview processing
   const processedInterviews = useMemo(() => {
     const filtered = interviews.filter(
       (interview) =>
-        interview.interviewerName
+        interview?.interviewerName
           ?.toLowerCase()
           .includes(searchQuery.toLowerCase()) ||
         interview.status?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return filtered.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
   }, [interviews, searchQuery]);
 
@@ -66,21 +104,6 @@ const CandidateUpcomingInterviews: React.FC = () => {
   useEffect(() => {
     fetchInterviews();
   }, [fetchInterviews]);
-
-  // Status styling generator
-  const getStatusStyle = useCallback((status: string) => {
-    const base = "flex items-center px-3 py-1 rounded-full text-sm font-medium";
-    switch (status) {
-      case "Approved":
-        return `${base} bg-[#E3F2FD] text-[#0A66C2]`;
-      case "Cancelled":
-        return `${base} bg-[#FFEBEE] text-[#D32F2F]`;
-      case "Requested":
-        return `${base} bg-[#FFF3E0] text-[#EF6C00]`;
-      default:
-        return `${base} bg-gray-100 text-gray-600`;
-    }
-  }, []);
 
   // Click outside handler for dropdown menus
   useEffect(() => {
@@ -101,9 +124,10 @@ const CandidateUpcomingInterviews: React.FC = () => {
         <motion.div
           animate={{ opacity: [0.5, 1, 0.5] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-gray-500"
+          className="flex flex-col items-center gap-2 text-gray-500"
         >
-          Loading interviews...
+          <RefreshCw className="animate-spin w-8 h-8" />
+          <span>Loading interviews...</span>
         </motion.div>
       </div>
     );
@@ -114,10 +138,20 @@ const CandidateUpcomingInterviews: React.FC = () => {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        className="text-red-600 text-center p-8"
+        className="flex flex-col items-center justify-center p-8 text-center"
       >
-        <XCircle className="w-8 h-8 mx-auto mb-2" />
-        <p>{error}</p>
+        <AlertCircle className="w-10 h-10 text-red-500 mb-4" />
+        <h3 className="text-lg font-medium text-gray-900 mb-1">
+          Failed to load interviews
+        </h3>
+        <p className="text-gray-600 max-w-md">{error}</p>
+        <button
+          onClick={fetchInterviews}
+          className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+        >
+          <RefreshCw size={16} />
+          Try Again
+        </button>
       </motion.div>
     );
 
@@ -125,6 +159,7 @@ const CandidateUpcomingInterviews: React.FC = () => {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
       className="max-w-7xl mx-auto p-6 space-y-6 border border-gray-100 rounded-xl bg-white shadow-sm my-5"
     >
       {/* Header Section */}
@@ -138,90 +173,94 @@ const CandidateUpcomingInterviews: React.FC = () => {
           </p>
         </div>
         <div className="relative w-full lg:w-96">
-          <Search className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Search interviews..."
+            placeholder="Search by name or status..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0A66C2] focus:border-[#0A66C2] transition-all"
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
             aria-label="Search interviews"
           />
         </div>
       </div>
 
-      {/* Interview List */}
-      <ul className="space-y-3">
-        <AnimatePresence>
-          {paginatedInterviews.reverse().map((interview, index) => (
-            <InterviewItem
-              key={interview.id}
-              interview={interview}
-              index={index}
-              getStatusStyle={getStatusStyle}
-              openMenuId={openMenuId}
-              setOpenMenuId={setOpenMenuId}
-              setReschedulingInterview={setReschedulingInterview}
-            />
-          ))}
-        </AnimatePresence>
-      </ul>
+      {/* Interview Cards Grid */}
+      {processedInterviews.length > 0 ? (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <AnimatePresence>
+              {paginatedInterviews.map((interview, index) => (
+                <InterviewCard
+                  key={interview.id}
+                  interview={interview}
+                  index={index}
+                  openMenuId={openMenuId}
+                  setOpenMenuId={setOpenMenuId}
+                  setReschedulingInterview={setReschedulingInterview}
+                />
+              ))}
+            </AnimatePresence>
+          </div>
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-6">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
-
-      {/* Empty State */}
-      {!processedInterviews.length && (
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center mt-8">
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            </div>
+          )}
+        </>
+      ) : (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-12"
+          className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-xl"
         >
-          <Watch className="w-12 h-12 mx-auto text-gray-300" />
-          <p className="text-gray-500 mt-4">No upcoming interviews found</p>
+          <Watch className="w-12 h-12 text-gray-300 mb-4" />
+          <h3 className="text-lg font-medium text-gray-500 mb-1">
+            No interviews scheduled
+          </h3>
+          <p className="text-gray-400 max-w-md text-center">
+            You don't have any upcoming interviews. Book a session to get
+            started.
+          </p>
         </motion.div>
       )}
 
       {/* Reschedule Modal */}
       <AnimatePresence>
-        {reschedulingInterview &&
-          reschedulingInterview.status === "Approved" && (
-            <CandidateRescheduleModal
-              request={reschedulingInterview}
-              onClose={() => setReschedulingInterview(null)}
-              onReschedule={async (data) => {
-                try {
-                  await rescheduleInterview(data.id, {
-                    newDate: data.newDate,
-                    isoDate: data.isoDate,
-                    from: data.startTime,
-                    to: data.endTime,
-                  });
-                  await fetchInterviews();
-                } catch (error) {
-                  console.error("Rescheduling failed:", error);
-                  throw error;
-                }
-              }}
-            />
-          )}
+        {reschedulingInterview && (
+          <CandidateRescheduleModal
+            request={reschedulingInterview}
+            onClose={() => setReschedulingInterview(null)}
+            onReschedule={async (data) => {
+              try {
+                await rescheduleInterview(data.id, {
+                  newDate: data.newDate,
+                  isoDate: data.isoDate,
+                  from: data.startTime,
+                  to: data.endTime,
+                });
+                await fetchInterviews();
+              } catch (error) {
+                console.error("Rescheduling failed:", error);
+                throw error;
+              }
+            }}
+          />
+        )}
       </AnimatePresence>
     </motion.div>
   );
 };
 
-interface InterviewItemProps {
+interface InterviewCardProps {
   interview: Interview;
   index: number;
-  getStatusStyle: (status: string) => string;
   openMenuId: string | null;
   setOpenMenuId: React.Dispatch<React.SetStateAction<string | null>>;
   setReschedulingInterview: React.Dispatch<
@@ -229,166 +268,212 @@ interface InterviewItemProps {
   >;
 }
 
-const InterviewItem: React.FC<InterviewItemProps> = ({
-  interview,
-  index,
-  getStatusStyle,
-  openMenuId,
-  setOpenMenuId,
-  setReschedulingInterview,
-}) => {
-  return (
-    <motion.li
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ delay: index * 0.05 }}
-      className="group bg-white rounded-lg p-5 shadow-sm border border-gray-200 hover:shadow-md transition-all "
-    >
-      <Link
-        to={`/interviewer-profile/${interview.interviewerId}`}
-        className="block space-y-3"
-        aria-label={`View ${interview.interviewerName}'s profile`}
+const InterviewCard: React.FC<InterviewCardProps> = React.memo(
+  ({ interview, index, openMenuId, setOpenMenuId, setReschedulingInterview }) => {
+    const status = statusConfig[interview.status] || statusConfig.Requested;
+    const StatusIcon = status.icon;
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2, delay: index * 0.05 }}
+        className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-all overflow-hidden group"
       >
-        {/* Interviewer Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-gray-100 border-2 border-[#0A66C2] overflow-hidden">
+        {/* Status Ribbon */}
+        <div
+          className={`${status.bgColor} ${status.color} px-4 py-2 flex items-center justify-between`}
+        >
+          <div className="flex items-center gap-2">
+            <StatusIcon className="w-4 h-4" />
+            <span className="text-xs font-medium">{status.label}</span>
+          </div>
+          {interview.status === "Approved" && (
+            <div className="relative">
+              <button
+                id={`menu-${interview.id}`}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setOpenMenuId(
+                    openMenuId === interview.id ? null : interview.id
+                  );
+                }}
+                className="p-1 text-gray-400 hover:text-gray-600 hover:bg-white/30 rounded-lg transition-colors"
+                aria-label="Interview options"
+              >
+                <MoreVertical className="w-4 h-4" />
+              </button>
+
+              <AnimatePresence>
+                {openMenuId === interview.id && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 w-40 z-10 border border-gray-100"
+                  >
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setReschedulingInterview(interview);
+                        setOpenMenuId(null);
+                      }}
+                      className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
+                      aria-label="Reschedule interview"
+                    >
+                      <Clock className="w-4 h-4 text-blue-500" />
+                      Reschedule
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+        </div>
+
+        <div className="p-5 space-y-4">
+          {/* Interviewer Header */}
+          <Link
+            to={`/interviewer-profile/${interview.interviewerId}`}
+            className="flex items-center gap-3 group"
+          >
+            <div className="relative">
               <img
                 src={interview.interviewerPhoto || "/default-avatar.png"}
                 alt={interview.interviewerName}
-                className="w-full h-full object-cover"
+                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-sm"
                 loading="lazy"
               />
             </div>
             <div>
-              <h2 className="text-lg font-semibold text-gray-900 line-clamp-1">
-                {interview.interviewerName || "Interview Session"}
-              </h2>
+              <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                {interview.interviewerName}
+              </h3>
+              <p className="text-xs text-gray-500">Interview Session</p>
             </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className={getStatusStyle(interview.status)}>
-              {interview.status === "Approved" && (
-                <UserCheck className="w-4 h-4 mr-2" />
-              )}
-              {interview.status === "Cancelled" && (
-                <XCircle className="w-4 h-4 mr-2" />
-              )}
-              {interview.status === "Requested" && (
-                <Timer className="w-4 h-4 mr-2" />
-              )}
-              {interview.status}
-            </span>
-            {interview.status === "Approved" && (
-              <div className="relative">
-                <button
-                  id={`menu-${interview.id}`}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setOpenMenuId(
-                      openMenuId === interview.id ? null : interview.id
-                    );
-                  }}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                  aria-label="Interview options"
-                >
-                  <MoreVertical className="w-5 h-5 text-gray-600" />
-                </button>
-                <AnimatePresence>
-                  {openMenuId === interview.id && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 min-w-[160px] z-10 border border-gray-100"
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setReschedulingInterview(interview);
-                          setOpenMenuId(null);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
-                        aria-label="Reschedule interview"
-                      >
-                        <Clock className="w-4 h-4 text-blue-500" />
-                        Reschedule
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+          </Link>
+
+          {/* Interview Details */}
+          <div className="space-y-1">
+            <div className="flex flex-wrap text-sm">
+              <div className="flex items-center text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+                <Calendar className="w-4 h-4 mr-2 text-blue-500" />
+                <span>{interview.date}</span>
+              </div>
+              <div className="flex items-center text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg">
+                <Clock className="w-4 h-4 mr-2 text-blue-500" />
+                <span>
+                  {interview.from} - {interview.to}
+                </span>
+              </div>
+            </div>
+
+            {interview.additionalNotes && (
+              <div className="text-sm text-gray-600 bg-gray-50 p-3 rounded-lg">
+                <p className="line-clamp-2">{interview.additionalNotes}</p>
               </div>
             )}
           </div>
-        </div>
 
-        {/* Interview Details */}
-        <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
-          <div className="flex items-center">
-            <Clock className="w-4 h-4 mr-2 text-[#0A66C2]" />
-            <span>{interview.date}</span>
-          </div>
-          <span className="text-gray-300">•</span>
-          <div className="flex items-center">
-            <span className="text-gray-900 font-medium">
-              {interview.from} - {interview.to}
-            </span>
-            <span className="ml-1">GMT</span>
+          {/* Action Button */}
+          <div className="pt-2">
+            <Link
+              to={`/interviewer-profile/${interview.interviewerId}`}
+              className="inline-flex items-center  hover:underline text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+            >
+              View Profile
+              <ChevronRight className="w-4 h-4 ml-1" />
+            </Link>
           </div>
         </div>
-
-        {/* Additional Info */}
-        {interview.additionalNotes && (
-          <p className="text-gray-600 text-sm mt-2 line-clamp-2">
-            {interview.additionalNotes}
-          </p>
-        )}
-      </Link>
-    </motion.li>
-  );
-};
+      </motion.div>
+    );
+  }
+);
 
 const Pagination: React.FC<{
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-}> = ({ currentPage, totalPages, onPageChange }) => {
+}> = React.memo(({ currentPage, totalPages, onPageChange }) => {
+  const maxVisiblePages = 5;
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+  if (endPage - startPage + 1 < maxVisiblePages) {
+    startPage = Math.max(1, endPage - maxVisiblePages + 1);
+  }
+
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center gap-2">
       <button
         onClick={() => onPageChange(currentPage - 1)}
         disabled={currentPage === 1}
-        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-lg"
+        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+        aria-label="Previous page"
       >
         <ChevronLeft size={20} />
       </button>
 
       <div className="flex gap-1">
-        {Array.from({ length: totalPages }).map((_, index) => (
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => onPageChange(1)}
+              className="w-8 h-8 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
+            >
+              1
+            </button>
+            {startPage > 2 && (
+              <span className="flex items-center justify-center w-8 h-8 text-gray-400">
+                ...
+              </span>
+            )}
+          </>
+        )}
+
+        {Array.from({ length: endPage - startPage + 1 }).map((_, index) => (
           <button
-            key={index}
-            onClick={() => onPageChange(index + 1)}
-            className={`w-8 h-8 rounded-lg text-sm ${
-              currentPage === index + 1
-                ? "bg-[#0A66C2] text-white"
+            key={startPage + index}
+            onClick={() => onPageChange(startPage + index)}
+            className={`w-8 h-8 rounded-lg text-sm transition-colors ${
+              currentPage === startPage + index
+                ? "bg-blue-600 text-white"
                 : "text-gray-600 hover:bg-gray-100"
             }`}
           >
-            {index + 1}
+            {startPage + index}
           </button>
         ))}
+
+        {endPage < totalPages && (
+          <>
+            {endPage < totalPages - 1 && (
+              <span className="flex items-center justify-center w-8 h-8 text-gray-400">
+                ...
+              </span>
+            )}
+            <button
+              onClick={() => onPageChange(totalPages)}
+              className="w-8 h-8 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
       </div>
 
       <button
         onClick={() => onPageChange(currentPage + 1)}
         disabled={currentPage === totalPages}
-        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-[#0A66C2] hover:bg-[#0A66C2]/10 rounded-lg"
+        className="p-2 disabled:opacity-50 disabled:cursor-not-allowed text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+        aria-label="Next page"
       >
         <ChevronRight size={20} />
       </button>
     </div>
   );
-};
+});
 
 export default React.memo(CandidateUpcomingInterviews);

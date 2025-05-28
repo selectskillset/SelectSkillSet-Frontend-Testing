@@ -1,7 +1,7 @@
 import React, { useCallback, memo, useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { Star, Bookmark, X } from "lucide-react";
+import { Star, Bookmark } from "lucide-react";
 import axiosInstance from "../../components/common/axiosConfig";
 
 // Interface for a candidate
@@ -27,16 +27,40 @@ const CandidateCard = memo(({ candidate }: { candidate: Candidate }) => {
     navigate(`/candidateProfile/${candidate._id}`);
   }, [candidate._id, navigate]);
 
-  const handleRemoveBookmark = useCallback(
-    (e: React.MouseEvent) => {
-      e.stopPropagation(); // Prevent triggering view profile
-      console.log(
-        `Removed bookmark for ${candidate.firstName} ${candidate.lastName}`
+  const renderStars = (rating: number) => {
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={i} size={16} className="fill-yellow-400 text-yellow-400" />
       );
-      // Add dynamic removal logic here later
-    },
-    [candidate.firstName, candidate.lastName]
-  );
+    }
+
+    if (hasHalfStar) {
+      stars.push(
+        <Star
+          key="half"
+          size={16}
+          className="fill-yellow-400 text-yellow-400"
+        />
+      );
+    }
+
+    const emptyStars = 5 - stars.length;
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <Star
+          key={`empty-${i}`}
+          size={16}
+          className="fill-gray-300 text-gray-300"
+        />
+      );
+    }
+
+    return stars;
+  };
 
   return (
     <motion.div
@@ -47,17 +71,17 @@ const CandidateCard = memo(({ candidate }: { candidate: Candidate }) => {
       className="bg-white shadow-md rounded-lg p-5 border border-gray-100 hover:shadow-lg transition-all duration-300 cursor-pointer relative overflow-hidden group"
       onClick={handleViewProfile}
     >
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0077b5]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      <div className="absolute inset-0  opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       <div className="flex items-start justify-between gap-4 relative z-10">
         <div className="flex items-center gap-4 flex-1">
           <img
             src={candidate.profilePhoto || "https://via.placeholder.com/40"}
             alt={`${candidate.firstName} ${candidate.lastName}`}
-            className="w-12 h-12 rounded-full object-cover border-2 border-[#0077b5] shadow-sm"
+            className="w-12 h-12 rounded-full object-cover border-2 border-primary shadow-sm"
             loading="lazy"
           />
           <div className="flex-1">
-            <h3 className="text-lg font-semibold text-[#0077b5] leading-tight">
+            <h3 className="text-lg font-semibold text-primary leading-tight">
               {candidate.firstName} {candidate.lastName}
             </h3>
             <p className="text-xs text-gray-500 mt-1">
@@ -67,7 +91,7 @@ const CandidateCard = memo(({ candidate }: { candidate: Candidate }) => {
               {candidate.skills.slice(0, 3).map((skill, index) => (
                 <span
                   key={index}
-                  className="px-2 py-0.5 bg-[#0077b5]/10 text-[#0077b5] text-xs rounded-md shadow-sm"
+                  className="px-2 py-0.5 bg-primary/10 text-primary text-xs rounded-md shadow-sm"
                 >
                   {skill}
                 </span>
@@ -79,14 +103,13 @@ const CandidateCard = memo(({ candidate }: { candidate: Candidate }) => {
               )}
             </div>
             <div className="flex items-center gap-1 mt-2">
-              <Star className="w-3.5 h-3.5 text-yellow-400 fill-current" />
+              {renderStars(candidate.statistics.averageRating)}
               <span className="text-xs text-gray-600">
                 {candidate.statistics.averageRating.toFixed(1)} / 5
               </span>
             </div>
           </div>
         </div>
-       
       </div>
     </motion.div>
   );
@@ -129,19 +152,19 @@ const BookmarkedCandidatesPage: React.FC = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen bg-[#f3f2ef] py-6 px-4 sm:px-6 lg:px-8 antialiased">
+    <div className="container mx-auto p-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="bg-white shadow-md rounded-lg p-5 mb-6 border border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-4"
+          className=" p-5 mb-6 flex flex-col sm:flex-row justify-between items-center gap-4"
         >
           <div className="flex items-center gap-3">
-            <Bookmark className="w-6 h-6 text-[#0077b5]" />
+            <Bookmark className="w-6 h-6 text-primary" />
             <div>
-              <h1 className="text-xl font-semibold text-[#0077b5]">
+              <h1 className="text-xl font-semibold text-primary">
                 Bookmarked Candidates
               </h1>
               <p className="text-xs text-gray-500 mt-1">
@@ -151,7 +174,7 @@ const BookmarkedCandidatesPage: React.FC = () => {
           </div>
           <button
             onClick={handleBackToDashboard}
-            className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-1.5 rounded-md hover:bg-[#005885] transition-colors text-sm font-medium shadow-sm w-full sm:w-auto"
+            className="flex items-center gap-2 bg-primary text-white px-4 py-1.5 rounded-md hover:bg-primary-dark transition-colors text-sm font-medium shadow-sm w-full sm:w-auto"
           >
             Back to Dashboard
           </button>
@@ -160,7 +183,7 @@ const BookmarkedCandidatesPage: React.FC = () => {
         {/* Loading State */}
         {loading && (
           <div className="text-center py-12 text-gray-500 text-sm">
-            <span className="animate-spin inline-block w-4 h-4 border-2 border-blue-500 rounded-full border-t-transparent mr-2"></span>
+            <span className="animate-spin inline-block w-4 h-4 border-2 border-primary rounded-full border-t-transparent mr-2"></span>
             Loading bookmarked candidates...
           </div>
         )}

@@ -78,6 +78,7 @@ interface CandidateProfile {
   skills: string[];
   location: string;
   phoneNumber: string;
+  countryCode: string;
   jobTitle: string;
   profilePhoto: string;
   experiences: Experience[];
@@ -86,8 +87,15 @@ interface CandidateProfile {
   feedback: Feedback[];
 }
 
+interface CompletionData {
+  completed: boolean;
+  completionPercentage: number;
+  missingFields: string[];
+}
+
 interface CandidateState {
   profile: CandidateProfile | null;
+  completion: CompletionData | null;
   interviews: Interview[];
   statistics: Statistics | null;
   interviewers: Array<{
@@ -132,6 +140,7 @@ export const CandidateProvider = ({
   const lastFetchedRef = useRef<number>(0);
   const [state, setState] = useState<CandidateState>({
     profile: null,
+    completion: null,
     interviews: [],
     statistics: null,
     interviewers: [],
@@ -150,7 +159,7 @@ export const CandidateProvider = ({
       (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("candidateToken");
-          // navigate("/candidate-login");
+          navigate("/candidate-login");
         }
         return Promise.reject(error);
       }
@@ -165,6 +174,7 @@ export const CandidateProvider = ({
       loadingKey: keyof CandidateState["loading"]
     ) => {
       const token = sessionStorage.getItem("candidateToken");
+      if (!token) return;
 
       setState((prev) => ({
         ...prev,
@@ -193,29 +203,41 @@ export const CandidateProvider = ({
   const fetchProfile = useCallback(
     async (force = false) => {
       await handleApiRequest(async () => {
+        const token = sessionStorage.getItem("candidateToken");
+        if (!token) return;
+
         if (!force && Date.now() - lastFetchedRef.current < CACHE_DURATION)
           return;
 
-        const { data } = await axiosInstance.get("/candidate/getProfile");
+        const [profileResponse, completionResponse] = await Promise.all([
+          axiosInstance.get("/candidate/getProfile"),
+          axiosInstance.get("/candidate/profile-completion"),
+        ]);
+
         lastFetchedRef.current = Date.now();
+
+        const profileData = profileResponse.data.profile;
+        const completionData = completionResponse.data;
 
         setState((prev) => ({
           ...prev,
           profile: {
-            name: `${data.profile.firstName || ""} ${
-              data.profile.lastName || ""
+            name: `${profileData.firstName || ""} ${
+              profileData.lastName || ""
             }`.trim(),
-            email: data.profile.email,
-            skills: data.profile.skills || [],
-            location: data.profile.location,
-            phoneNumber: data.profile.phoneNumber,
-            jobTitle: data.profile.jobTitle,
-            profilePhoto: data.profile.profilePhoto,
-            experiences: data.profile.experiences || [],
-            linkedIn: data.profile.linkedIn,
-            resume: data.profile.resume,
-            feedback: data.statistics?.feedbacks || [],
+            email: profileData.email,
+            skills: profileData.skills || [],
+            location: profileData.location,
+            phoneNumber: profileData.phoneNumber,
+            countryCode: profileData.countryCode,
+            jobTitle: profileData.jobTitle,
+            profilePhoto: profileData.profilePhoto,
+            experiences: profileData.experiences || [],
+            linkedIn: profileData.linkedIn,
+            resume: profileData.resume,
+            feedback: profileData.statistics?.feedbacks || [],
           },
+          completion: completionData,
         }));
       }, "profile");
     },
@@ -238,8 +260,8 @@ export const CandidateProvider = ({
           headers: { "Content-Type": "multipart/form-data" },
         });
 
-        lastFetchedRef.current = 0; // Invalidate cache
-        await fetchProfile(true); // Force fresh fetch
+        lastFetchedRef.current = 0;
+        await fetchProfile(true);
       }, "profile");
     },
     [handleApiRequest, fetchProfile]
@@ -287,7 +309,8 @@ export const CandidateProvider = ({
   }, [handleApiRequest]);
 
   useEffect(() => {
-    fetchProfile();
+    const token = sessionStorage.getItem("candidateToken");
+    if (token) fetchProfile();
   }, [fetchProfile]);
 
   const value = useMemo(

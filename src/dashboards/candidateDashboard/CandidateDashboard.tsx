@@ -1,10 +1,9 @@
-import React, { memo, useCallback, useEffect, useState } from "react";
+// CandidateDashboard.tsx
+import React, { memo } from "react";
 import { motion } from "framer-motion";
 import { useCandidate } from "../../context/CandidateContext";
 import CandidateProfile from "./CandidateProfile";
 import { RefreshCw } from "lucide-react";
-import axiosInstance from "../../components/common/axiosConfig";
-import { CompletionData } from "./ProfileStrength";
 
 const LoadingState = memo(() => (
   <div className="flex items-center justify-center min-h-[calc(100vh-80px)]">
@@ -16,24 +15,9 @@ const LoadingState = memo(() => (
 ));
 
 const CandidateDashboard: React.FC = () => {
-  const { profile, loading, fetchProfile } = useCandidate();
-  const [completion, setCompletion] = useState<CompletionData | null>(null);
+  const { profile, loading, completion } = useCandidate();
 
-  const fetchData = useCallback(async () => {
-    try {
-      await fetchProfile();
-      const response = await axiosInstance.get("/candidate/profile-completion");
-      setCompletion(response.data);
-    } catch (error) {
-      console.error("Error fetching completion data:", error);
-    }
-  }, [fetchProfile]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
-  if (loading?.profile) return <LoadingState />;
+  if (loading.profile) return <LoadingState />;
 
   return (
     <div className="space-y-6">

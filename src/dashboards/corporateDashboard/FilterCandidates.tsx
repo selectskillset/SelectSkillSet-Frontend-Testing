@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import {toast} from "sonner";
-import { Loader2Icon } from "lucide-react";
+import React, { useState, useCallback, useMemo, useEffect } from "react";
+import { toast } from "sonner";
+import { Loader2, X, Star, User, UploadCloud, Plus } from "lucide-react";
 import axiosInstance from "../../components/common/axiosConfig";
 import { skillsData } from "../../components/common/SkillsData";
+import { useNavigate } from "react-router-dom";
 
 interface Candidate {
   _id: string;
@@ -21,6 +22,7 @@ interface Candidate {
 }
 
 const FilterCandidates: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     title: "",
     skillsRequired: [] as string[],
@@ -28,326 +30,400 @@ const FilterCandidates: React.FC = () => {
     jobDescriptionFile: null as File | null,
   });
   const [inputSkill, setInputSkill] = useState("");
-  const [suggestedSkills, setSuggestedSkills] = useState<string[]>([]);
   const [filteredCandidates, setFilteredCandidates] = useState<Candidate[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(
-    null
-  );
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isSkillsDropdownOpen, setIsSkillsDropdownOpen] = useState(false);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-
-    if (name === "skillsRequired") {
-      setInputSkill(value);
-      setSuggestedSkills(
-        skillsData.filter(
+  const suggestedSkills = useMemo(
+    () =>
+      skillsData
+        .filter(
           (skill) =>
-            skill.toLowerCase().includes(value.toLowerCase()) &&
+            skill.toLowerCase().includes(inputSkill.toLowerCase()) &&
             !formData.skillsRequired.includes(skill)
         )
-      );
-      return;
-    }
+        .slice(0, 5),
+    [inputSkill, formData.skillsRequired]
+  );
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      if (name === "skillsRequired") {
+        setInputSkill(value);
+        setIsSkillsDropdownOpen(value.length > 0);
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
+      }
+    },
+    []
+  );
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({
-        ...prev,
-        jobDescriptionFile: e.target.files[0],
-      }));
-    }
-  };
+  const handleAddSkill = useCallback(
+    (skill: string) => {
+      if (!skill.trim()) return;
+      const formattedSkill = skill.trim().toLowerCase();
+      if (
+        !formData.skillsRequired.some((s) => s.toLowerCase() === formattedSkill)
+      ) {
+        setFormData((prev) => ({
+          ...prev,
+          skillsRequired: [...prev.skillsRequired, skill.trim()],
+        }));
+      }
+      setInputSkill("");
+      setIsSkillsDropdownOpen(false);
+    },
+    [formData.skillsRequired]
+  );
 
-  const handleAddSkill = (skill: string) => {
-    setFormData((prev) => ({
-      ...prev,
-      skillsRequired: [...prev.skillsRequired, skill],
-    }));
-    setInputSkill("");
-    setSuggestedSkills([]);
-  };
-
-  const handleRemoveSkill = (skill: string) => {
+  const handleRemoveSkill = useCallback((skill: string) => {
     setFormData((prev) => ({
       ...prev,
       skillsRequired: prev.skillsRequired.filter((s) => s !== skill),
     }));
-  };
+  }, []);
 
-  const handleSubmit = async () => {
+  const handleKeyPress = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" && inputSkill.trim()) {
+        handleAddSkill(inputSkill);
+      }
+    },
+    [inputSkill, handleAddSkill]
+  );
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file && file.size > 5 * 1024 * 1024) {
+        toast.error("File size should be less than 5MB");
+        return;
+      }
+      file && setFormData((prev) => ({ ...prev, jobDescriptionFile: file }));
+    },
+    []
+  );
+
+  const validateForm = useCallback(() => {
+    const hasCriteria = Object.values(formData).some((value) =>
+      Array.isArray(value) ? value.length > 0 : Boolean(value)
+    );
+    if (!hasCriteria) {
+      toast.error("Please provide at least one filter criteria");
+      return false;
+    }
+    return true;
+  }, [formData]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!validateForm()) return;
+
     setLoading(true);
     try {
-      const data = new FormData();
-      data.append("title", formData.title);
-      data.append("description", formData.description);
-      formData.skillsRequired.forEach((skill) =>
-        data.append("skillsRequired[]", skill)
-      );
+      const form = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        if (key === "skillsRequired") {
+          value.forEach((skill) => form.append("skillsRequired[]", skill));
+        } else if (value) {
+          form.append(key, value);
+        }
+      });
 
-      if (formData.jobDescriptionFile) {
-        data.append("jobDescriptionFile", formData.jobDescriptionFile);
-      }
-
-      const response = await axiosInstance.post(
+      const { data } = await axiosInstance.post(
         "/corporate/candidates/filter",
-        data
+        form
       );
-      setFilteredCandidates(response.data.candidates || []);
-      toast.success("Candidates filtered successfully!");
+      setFilteredCandidates(data.candidates || []);
+      toast.success(
+        `Found ${data.candidates?.length || 0} matching candidates`
+      );
     } catch (error) {
-      console.error("Error filtering candidates:", error);
-      toast.error("Failed to filter candidates.");
+      toast.error(
+        error.response?.data?.message || "Failed to filter candidates"
+      );
     } finally {
       setLoading(false);
     }
-  };
+  }, [formData, validateForm]);
 
-  const openModal = (candidate: Candidate) => {
-    setSelectedCandidate(candidate);
-    setIsModalOpen(true);
-  };
+  const renderStars = useCallback((rating: number) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedCandidate(null);
-  };
+    return (
+      <div className="flex items-center gap-1">
+        {[...Array(5)].map((_, i) => (
+          <Star
+            key={i}
+            size={16}
+            className={`${
+              i < fullStars || (i === fullStars && hasHalfStar)
+                ? "fill-yellow-400 text-yellow-400"
+                : "fill-gray-300 text-gray-300"
+            }`}
+          />
+        ))}
+        <span className="text-sm font-medium">{rating.toFixed(1)}</span>
+      </div>
+    );
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row gap-6 p-6 bg-gray-50">
-      {/* Sidebar */}
-      <aside className="bg-white shadow-lg rounded-xl w-full lg:w-1/3 p-6">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Filter Candidates
-        </h2>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Title
-            </label>
-            <input
-              type="text"
-              name="title"
-              value={formData.title}
-              onChange={handleInputChange}
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter title"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Skills Required
-            </label>
-            <input
-              type="text"
-              name="skillsRequired"
-              value={inputSkill}
-              onChange={handleInputChange}
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter skills"
-            />
-            {suggestedSkills.length > 0 && (
-              <ul className="mt-2 bg-white border rounded-lg shadow-lg max-h-40 overflow-auto">
-                {suggestedSkills.map((skill) => (
-                  <li
+    <div className="container mx-auto p-4 md:p-8 bg-white rounded-xl shadow-sm border border-gray-200">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Filter Sidebar */}
+        <div className="lg:col-span-1 space-y-6 p-4 bg-gray-50 rounded-lg">
+          <h2 className="text-2xl font-semibold text-gray-800">
+            Filter Candidates
+          </h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Title
+              </label>
+              <input
+                name="title"
+                value={formData.title}
+                onChange={handleInputChange}
+                placeholder="e.g. Frontend Developer"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <div className="relative">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Required Skills
+              </label>
+              <div className="relative flex gap-2">
+                <input
+                  name="skillsRequired"
+                  value={inputSkill}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyPress}
+                  placeholder="Search or add skills..."
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                />
+                <button
+                  onClick={() =>
+                    inputSkill.trim() && handleAddSkill(inputSkill)
+                  }
+                  disabled={!inputSkill.trim()}
+                  className="px-3 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  aria-label="Add skill"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
+
+              {isSkillsDropdownOpen && suggestedSkills.length > 0 && (
+                <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg">
+                  {suggestedSkills.map((skill) => (
+                    <li
+                      key={skill}
+                      onClick={() => handleAddSkill(skill)}
+                      className="px-4 py-2 hover:bg-gray-50 cursor-pointer transition-colors text-sm"
+                    >
+                      {skill}
+                    </li>
+                  ))}
+                </ul>
+              )}
+
+              <div className="mt-2 flex flex-wrap gap-2">
+                {formData.skillsRequired.map((skill) => (
+                  <span
                     key={skill}
-                    className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
-                    onClick={() => handleAddSkill(skill)}
+                    className="inline-flex items-center pl-3 pr-2 py-1 bg-primary/10 text-primary rounded-full text-sm"
                   >
                     {skill}
-                  </li>
+                    <button
+                      onClick={() => handleRemoveSkill(skill)}
+                      className="ml-1.5 text-primary/70 hover:text-primary"
+                      aria-label={`Remove ${skill} skill`}
+                    >
+                      <X size={14} />
+                    </button>
+                  </span>
                 ))}
-              </ul>
-            )}
-            <div className="mt-2 flex gap-2 flex-wrap">
-              {formData.skillsRequired.map((skill) => (
-                <span
-                  key={skill}
-                  className="bg-blue-100 text-blue-600 px-3 py-1 rounded-full text-sm cursor-pointer"
-                  onClick={() => handleRemoveSkill(skill)}
-                >
-                  {skill} ✖
-                </span>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Description
-            </label>
-            <textarea
-              name="description"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="mt-1 w-full px-4 py-2 border rounded-lg focus:ring focus:ring-blue-300"
-              placeholder="Enter description"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-600">
-              Upload JD
-            </label>
-            <input
-              type="file"
-              onChange={handleFileChange}
-              className="mt-1 w-full px-4 py-2 border rounded-lg"
-            />
-          </div>
-          <button
-            onClick={handleSubmit}
-            className="mt-4 w-full bg-gradient-to-r  bg-[#0077b5] text-white px-4 py-2 rounded-lg hover:bg-[#005a94]  hover:opacity-90 transition"
-          >
-            {loading ? (
-              <Loader2Icon className="animate-spin mx-auto" />
-            ) : (
-              "Filter Candidates"
-            )}
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <div className="flex-1 p-6 bg-white shadow-lg rounded-xl">
-        <h2 className="text-2xl font-semibold text-gray-800 mb-4">
-          Filtered Candidates
-        </h2>
-        {loading ? (
-          <div className="flex justify-center items-center h-48">
-            <Loader2Icon className="animate-spin text-blue-600 text-2xl" />
-          </div>
-        ) : (
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="bg-blue-50">
-                <th className="py-3 px-4 text-left">Profile</th>
-                <th className="py-3 px-4 text-left">Name</th>
-                <th className="py-3 px-4 text-left">Skills</th>
-                <th className="py-3 px-4 text-left">Location</th>
-                <th className="py-3 px-4 text-left">Rating</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredCandidates.length > 0 ? (
-                filteredCandidates.map((candidate) => (
-                  <tr
-                    key={candidate._id}
-                    className="border-t hover:bg-gray-100"
-                    onClick={() => openModal(candidate)}
-                  >
-                    <td className="py-3 px-4">
-                      <img
-                        src={
-                          candidate.profilePhoto ||
-                          "https://via.placeholder.com/40"
-                        }
-                        alt={`${candidate.firstName} ${candidate.lastName}`}
-                        className="w-10 h-10 rounded-full"
-                      />
-                    </td>
-                    <td className="py-3 px-4">
-                      {candidate.firstName} {candidate.lastName}
-                    </td>
-                    <td className="py-3 px-4">
-                      {candidate.skills.join(", ") || "No skills provided"}
-                    </td>
-                    <td className="py-3 px-4">
-                      {candidate.location || "Not specified"}
-                    </td>
-                    <td className="py-3 px-4">
-                      {candidate.statistics.averageRating.toFixed(1)}
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="text-center py-4">
-                    No candidates found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* Candidate Modal */}
-      {isModalOpen && selectedCandidate && (
-        <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center z-50"
-          onClick={closeModal}
-        >
-          <div
-            className="bg-white rounded-xl p-8 w-3/4 max-w-lg"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-2xl font-semibold text-gray-800 mb-4">
-              {selectedCandidate.firstName} {selectedCandidate.lastName}
-            </h3>
-            <img
-              src={
-                selectedCandidate.profilePhoto ||
-                "https://via.placeholder.com/150"
-              }
-              alt={`${selectedCandidate.firstName} ${selectedCandidate.lastName}`}
-              className="w-24 h-24 rounded-full mb-4 mx-auto"
-            />
-            <div className="space-y-4">
-              <div>
-                <strong>Email:</strong> {selectedCandidate.email}
-              </div>
-              <div>
-                <strong>phoneNumber:</strong> {selectedCandidate.phoneNumber}
-              </div>
-              <div>
-                <strong>Location:</strong>{" "}
-                {selectedCandidate.location || "Not specified"}
-              </div>
-              <div>
-                <strong>Resume:</strong>{" "}
-                <a
-                  href={selectedCandidate.resume}
-                  target="_blank"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  View Resume
-                </a>
-              </div>
-              <div>
-                <strong>LinkedIn:</strong>{" "}
-                <a
-                  href={selectedCandidate.linkedIn}
-                  target="_blank"
-                  className="text-blue-600 hover:text-blue-800"
-                >
-                  View Profile
-                </a>
-              </div>
-              <div>
-                <strong>Skills:</strong> {selectedCandidate.skills.join(", ")}
-              </div>
-              <div>
-                <strong>Rating:</strong>{" "}
-                {selectedCandidate.statistics.averageRating.toFixed(1)}
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Job Description
+              </label>
+              <textarea
+                name="description"
+                value={formData.description}
+                onChange={handleInputChange}
+                rows={3}
+                placeholder="Enter job description..."
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Upload Job Description
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer group">
+                <div className="flex-1 w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center transition-colors group-hover:border-primary">
+                  <UploadCloud className="w-6 h-6 text-gray-400 mb-2 group-hover:text-primary" />
+                  {formData.jobDescriptionFile ? (
+                    <div className="flex items-center justify-between w-full">
+                      <span className="text-gray-700 text-sm ">
+                        {formData.jobDescriptionFile.name}
+                      </span>
+                      {formData.jobDescriptionFile && (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              jobDescriptionFile: null,
+                            }))
+                          }
+                          className="p-2 text-gray-500 hover:text-gray-700"
+                          aria-label="Remove file"
+                        >
+                          <X size={18} />
+                        </button>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <p className="text-gray-500 text-sm">Click to upload</p>
+                      <p className="text-gray-400 text-xs mt-1">
+                        PDF, DOC, DOCX (max 5MB)
+                      </p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  accept=".pdf,.doc,.docx"
+                />
+              </label>
+            </div>
+
             <button
-              onClick={closeModal}
-              className="mt-6 w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:opacity-90"
+              onClick={handleSubmit}
+              disabled={loading}
+              className="w-full py-2.5 bg-primary hover:bg-primary-dark text-white rounded-lg font-medium flex items-center justify-center transition-colors disabled:opacity-70"
             >
-              Close
+              {loading ? (
+                <>
+                  <Loader2 className="animate-spin mr-2" size={18} />
+                  Filtering...
+                </>
+              ) : (
+                "Filter Candidates"
+              )}
             </button>
           </div>
         </div>
-      )}
+
+        {/* Results Section */}
+        <div className="lg:col-span-2 p-4 bg-white rounded-lg">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-2">
+            <h2 className="text-2xl font-semibold text-gray-800">
+              Matching Candidates
+            </h2>
+            <span className="text-sm text-gray-500">
+              {filteredCandidates.length} results
+            </span>
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center items-center h-48">
+              <Loader2 className="animate-spin text-primary text-2xl" />
+            </div>
+          ) : filteredCandidates.length > 0 ? (
+            <div className="overflow-x-auto rounded-lg border border-gray-200">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    {["Profile", "Name", "Skills", "Location", "Rating"].map(
+                      (header) => (
+                        <th
+                          key={header}
+                          className="px-4 py-3 text-left text-sm font-medium text-gray-700"
+                        >
+                          {header}
+                        </th>
+                      )
+                    )}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredCandidates.map((candidate) => (
+                    <tr
+                      key={candidate._id}
+                      onClick={() =>
+                        navigate(`/candidateProfile/${candidate._id}`)
+                      }
+                      className="hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <img
+                          src={candidate.profilePhoto || "/default-profile.png"}
+                          alt={`${candidate.firstName} ${candidate.lastName}`}
+                          className="w-10 h-10 rounded-full object-cover"
+                          onError={(e) =>
+                            (e.currentTarget.src = "/default-profile.png")
+                          }
+                        />
+                      </td>
+                      <td className="px-4 py-3 font-medium text-gray-900">
+                        {candidate.firstName} {candidate.lastName}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        <div className="flex flex-wrap gap-1">
+                          {candidate.skills.slice(0, 3).map((skill) => (
+                            <span
+                              key={skill}
+                              className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs"
+                            >
+                              {skill}
+                            </span>
+                          ))}
+                          {candidate.skills.length > 3 && (
+                            <span className="px-2 py-1 text-gray-500 text-xs">
+                              +{candidate.skills.length - 3}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-gray-600">
+                        {candidate.location || "Remote"}
+                      </td>
+                      <td className="px-4 py-3">
+                        {renderStars(candidate.statistics.averageRating)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="text-center p-8">
+              <div className="mx-auto w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                <User className="w-12 h-12 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-700 mb-2">
+                No candidates found
+              </h3>
+              <p className="text-gray-500">
+                Adjust your filters or try different search terms
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

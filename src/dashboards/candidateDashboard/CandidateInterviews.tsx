@@ -226,7 +226,8 @@ const CandidateInterviews = () => {
       onClick: () =>
         handleFilterChange("experience", filters.experience >= 10 ? 0 : 10),
       icon: <Briefcase size={14} className="text-blue-500" />,
-      tooltip: "Filter for highly experienced professionals (10+ years in field)",
+      tooltip:
+        "Filter for highly experienced professionals (10+ years in field)",
     },
     {
       key: "affordable",
@@ -249,7 +250,6 @@ const CandidateInterviews = () => {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
       <div className="w-[92vw] lg:w-full mx-auto px-4 sm:px-5 lg:px-6 py-5">
-
         <motion.header
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -275,8 +275,6 @@ const CandidateInterviews = () => {
                   <button
                     onClick={clearFilters}
                     className="ml-2 text-sm text-primary hover:underline"
-                    data-tooltip-id="global-tooltip"
-                    data-tooltip-content="Reset all filters to their default values"
                   >
                     Clear filters
                   </button>
@@ -305,8 +303,6 @@ const CandidateInterviews = () => {
               <button
                 onClick={handleSearch}
                 className="px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors shadow-sm"
-                data-tooltip-id="global-tooltip"
-                data-tooltip-content="Execute search with current filters"
               >
                 <Search size={16} />
               </button>
@@ -325,8 +321,6 @@ const CandidateInterviews = () => {
                       ? "bg-primary text-white shadow-sm"
                       : "bg-white text-gray-700 border border-gray-200 hover:bg-gray-50"
                   }`}
-                  data-tooltip-id="global-tooltip"
-                  data-tooltip-content={chip.tooltip}
                 >
                   {chip.icon}
                   {chip.label}
@@ -375,8 +369,6 @@ const CandidateInterviews = () => {
                   <button
                     onClick={clearFilters}
                     className="px-4 md:px-5 py-2 text-sm md:text-base bg-white text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 border border-gray-200"
-                    data-tooltip-id="global-tooltip"
-                    data-tooltip-content="Reset all search filters to their default values"
                   >
                     <X size={16} />
                     Clear Filters
@@ -384,8 +376,6 @@ const CandidateInterviews = () => {
                   <button
                     onClick={handleFindPerfectMatch}
                     className="px-4 md:px-5 py-2 text-sm md:text-base bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors flex items-center justify-center gap-2"
-                    data-tooltip-id="global-tooltip"
-                    data-tooltip-content="Our algorithm will find the best matching professionals based on your profile"
                   >
                     <Sparkles size={16} />
                     Find Matches
@@ -464,7 +454,7 @@ const InterviewerCard = React.memo(
       >
         <div className="flex justify-end mb-2">
           {isTopRated && (
-            <div 
+            <div
               className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-white w-24 rounded-sm absolute text-[12px] font-medium flex items-center justify-center gap-1"
               data-tooltip-id="global-tooltip"
               data-tooltip-content="This professional is in the top 10% of rated interviewers"
@@ -482,12 +472,10 @@ const InterviewerCard = React.memo(
                 alt={`${interviewer.firstName} ${interviewer.lastName}`}
                 className="w-14 h-14 rounded-lg object-cover border-2 border-primary/20"
                 loading="lazy"
-                data-tooltip-id="global-tooltip"
-                data-tooltip-content={`${interviewer.firstName}'s profile picture`}
               />
               {interviewer.isVerified && (
                 <div className="absolute -top-2 -right-2">
-                  <div 
+                  <div
                     data-tooltip-id="global-tooltip"
                     data-tooltip-content="Verified professional - Identity and credentials confirmed by SelectSkillset"
                   >
@@ -503,28 +491,15 @@ const InterviewerCard = React.memo(
             <div className="flex-1 min-w-0">
               <div className="flex justify-between items-start gap-2">
                 <div className="truncate">
-                  <h3 
-                    className="text-base font-semibold text-gray-900 truncate"
-                    data-tooltip-id="global-tooltip"
-                    data-tooltip-content={`${interviewer.firstName} ${interviewer.lastName}`}
-                  >
+                  <h3 className="text-base font-semibold text-gray-900 truncate">
                     {interviewer.firstName} {interviewer.lastName}
                   </h3>
-                  <p 
-                    className="text-xs text-gray-600 truncate"
-                    data-tooltip-id="global-tooltip"
-                    data-tooltip-content={`Current role: ${interviewer.jobTitle}`}
-                  >
+                  <p className="text-xs text-gray-600 truncate">
                     {interviewer.jobTitle}
                   </p>
                   <div className="flex items-center gap-1 text-xs text-gray-500 mt-1">
                     <MapPin size={12} className="text-primary" />
-                    <span
-                      data-tooltip-id="global-tooltip"
-                      data-tooltip-content={`Based in ${interviewer.location}`}
-                    >
-                      {interviewer.location}
-                    </span>
+                    <span>{interviewer.location}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -533,7 +508,7 @@ const InterviewerCard = React.memo(
               </div>
 
               <div className="mt-2">
-                <p 
+                <p
                   className="text-xs text-gray-600 line-clamp-2"
                   data-tooltip-id="global-tooltip"
                   data-tooltip-content={interviewer.summary}
@@ -549,8 +524,6 @@ const InterviewerCard = React.memo(
                     <span
                       key={index}
                       className="px-2 py-1 bg-primary/5 text-primary rounded-full text-xs font-medium"
-                      data-tooltip-id="global-tooltip"
-                      data-tooltip-content={`Specialized in ${skill}`}
                     >
                       {skill}
                     </span>
@@ -559,7 +532,9 @@ const InterviewerCard = React.memo(
                   <span
                     className="px-1.5 py-1 text-gray-500 rounded-full text-xs"
                     data-tooltip-id="global-tooltip"
-                    data-tooltip-content={`Additional skills: ${interviewer.skills.slice(3).join(", ")}`}
+                    data-tooltip-content={`Additional skills: ${interviewer.skills
+                      .slice(3)
+                      .join(", ")}`}
                   >
                     +{interviewer.skills.length - 3}
                   </span>
@@ -571,7 +546,7 @@ const InterviewerCard = React.memo(
           <div className="grid grid-cols-2 gap-2 mt-3 text-xs">
             <div className="flex items-center gap-1">
               <Briefcase size={12} className="text-primary" />
-              <span 
+              <span
                 data-tooltip-id="global-tooltip"
                 data-tooltip-content={`${expYears} years of professional experience in this field`}
               >
@@ -581,7 +556,7 @@ const InterviewerCard = React.memo(
 
             <div className="flex items-center gap-1">
               <Euro size={12} className="text-primary" />
-              <span 
+              <span
                 data-tooltip-id="global-tooltip"
                 data-tooltip-content={`Standard rate: €${price} per hour`}
               >
@@ -589,7 +564,7 @@ const InterviewerCard = React.memo(
               </span>
             </div>
 
-            {interviewer.availability?.dates.length > 0 && (
+            {/* {interviewer.availability?.dates.length > 0 && (
               <div className="flex flex-wrap items-center gap-2 col-span-2">
                 <Clock size={14} className="text-primary flex-shrink-0" />
                 <span className="text-sm font-medium text-gray-700">
@@ -623,7 +598,7 @@ const InterviewerCard = React.memo(
                       data-tooltip-id="global-tooltip"
                       data-tooltip-content={`Also available on: ${interviewer.availability.dates
                         .slice(2)
-                        .map(d => new Date(d.date).toLocaleDateString())
+                        .map((d) => new Date(d.date).toLocaleDateString())
                         .join(", ")}`}
                     >
                       +{interviewer.availability.dates.length - 2} more
@@ -631,19 +606,20 @@ const InterviewerCard = React.memo(
                   )}
                 </div>
               </div>
-            )}
+            )} */}
           </div>
 
-          <div className="mt-4">
+          <div className="mt-4 w-full flex items-center justify-end">
             <button
               onClick={() =>
                 navigate(`/interviewer-profile/${interviewer._id}`)
               }
-              className="w-full px-3 py-2 text-xs sm:text-sm bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors font-medium"
+              className="flex items-center justify-end hover:underline  text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
               data-tooltip-id="global-tooltip"
               data-tooltip-content="View complete profile, reviews, and book an interview"
             >
               View Profile
+              <ChevronRight className="w-4 h-4 ml-1" />
             </button>
           </div>
         </div>
@@ -658,10 +634,12 @@ const StarRating = React.memo(({ rating }: { rating: number }) => {
   const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
 
   return (
-    <div 
+    <div
       className="flex items-center"
       data-tooltip-id="global-tooltip"
-      data-tooltip-content={`Average rating: ${rating.toFixed(1)}/5 (based on multiple interviews)`}
+      data-tooltip-content={`Average rating: ${rating.toFixed(
+        1
+      )}/5 (based on multiple interviews)`}
     >
       {[...Array(fullStars)].map((_, i) => (
         <Star
@@ -739,8 +717,6 @@ const Pagination = React.memo(
           disabled={currentPage === 1}
           className="p-1 md:p-2 disabled:opacity-50 disabled:cursor-not-allowed text-primary hover:bg-primary/5 rounded-lg flex items-center gap-1"
           aria-label="Previous page"
-          data-tooltip-id="global-tooltip"
-          data-tooltip-content="Navigate to previous page of results"
         >
           <ChevronLeft size={16} />
           <span className="sr-only md:not-sr-only text-sm">Previous</span>
@@ -759,8 +735,12 @@ const Pagination = React.memo(
                   : "text-gray-600 hover:bg-gray-100"
               } ${typeof page !== "number" ? "pointer-events-none" : ""}`}
               disabled={typeof page !== "number"}
-              data-tooltip-id={typeof page === "number" ? "global-tooltip" : undefined}
-              data-tooltip-content={typeof page === "number" ? `Go to page ${page}` : undefined}
+              data-tooltip-id={
+                typeof page === "number" ? "global-tooltip" : undefined
+              }
+              data-tooltip-content={
+                typeof page === "number" ? `Go to page ${page}` : undefined
+              }
             >
               {page}
             </button>
@@ -772,8 +752,6 @@ const Pagination = React.memo(
           disabled={currentPage === totalPages}
           className="p-1 md:p-2 disabled:opacity-50 disabled:cursor-not-allowed text-primary hover:bg-primary/5 rounded-lg flex items-center gap-1"
           aria-label="Next page"
-          data-tooltip-id="global-tooltip"
-          data-tooltip-content="Navigate to next page of results"
         >
           <span className="sr-only md:not-sr-only text-sm">Next</span>
           <ChevronRight size={16} />
