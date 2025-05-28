@@ -1,35 +1,87 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { Check, Star, Info, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import Loader from "../../components/ui/Loader";
 
-const steps = [
-  "Clarity of Communication",
-  "Professionalism",
-  "Knowledge of the Role",
-  "Engagement and Interest",
-  "Interview Structure",
-  "Timing",
-  "Opportunity to Ask Questions",
-  "Behavioral/Technical Questions",
-  "Feedback/Next Steps Communication",
-  "Overall Experience",
+// Color Constants
+const COLORS = {
+  primary: "#4338CA",
+  primaryLight: "#6366F1",
+  primaryDark: "#3730A3",
+  secondary: "#7C3AED",
+  secondaryLight: "#A78BFA",
+  secondaryDark: "#5B21B6",
+  success: "#16A34A",
+  warning: "#D97706",
+  error: "#DC2626",
+  gray: {
+    50: "#F9FAFB",
+    100: "#F3F4F6",
+    200: "#E5E7EB",
+    300: "#D1D5DB",
+    400: "#9CA3AF",
+    500: "#6B7280",
+    600: "#4B5563",
+    700: "#374151",
+    800: "#1F2937",
+    900: "#111827",
+  },
+  star: "#F59E0B",
+};
+
+// Evaluation Steps Data
+const EVALUATION_STEPS = [
+  {
+    title: "Clarity of Communication",
+    description: "How clear and concise were the interviewer's questions and instructions? Did they effectively communicate what they were looking for?",
+  },
+  {
+    title: "Professionalism",
+    description: "Was the interviewer polite, respectful, and professional throughout the interaction?",
+  },
+  {
+    title: "Knowledge of the Role",
+    description: "Did the interviewer have a good understanding of the job role and the expectations for the position?",
+  },
+  {
+    title: "Engagement and Interest",
+    description: "Did the interviewer seem genuinely interested in your responses and engage in a meaningful conversation?",
+  },
+  {
+    title: "Interview Structure",
+    description: "Was the interview organized with a clear structure, such as an introduction, questions, and a closing discussion? Did the process feel efficient?",
+  },
+  {
+    title: "Timing",
+    description: "Was the interview conducted within the expected time frame, or did it feel rushed/dragged on?",
+  },
+  {
+    title: "Opportunity to Ask Questions",
+    description: "Did the interviewer provide ample opportunity for you to ask questions about the role, team, or company?",
+  },
+  {
+    title: "Behavioral/Technical Questions",
+    description: "Were the questions relevant and fair, aligned with the role's requirements, and did they test your skills effectively?",
+  },
+  {
+    title: "Feedback/Next Steps Communication",
+    description: "Did the interviewer explain the next steps in the interview process and when you could expect feedback?",
+  },
+  {
+    title: "Overall Experience",
+    description: "How would you rate the overall experience in terms of professionalism, fairness, and insight into the company or role?",
+  },
 ];
 
-const descriptions = [
-  "How clear and concise were the interviewer's questions and instructions? Did they effectively communicate what they were looking for?",
-  "Was the interviewer polite, respectful, and professional throughout the interaction?",
-  "Did the interviewer have a good understanding of the job role and the expectations for the position?",
-  "Did the interviewer seem genuinely interested in your responses and engage in a meaningful conversation?",
-  "Was the interview organized with a clear structure, such as an introduction, questions, and a closing discussion? Did the process feel efficient?",
-  "Was the interview conducted within the expected time frame, or did it feel rushed/dragged on?",
-  "Did the interviewer provide ample opportunity for you to ask questions about the role, team, or company?",
-  "Were the questions relevant and fair, aligned with the role's requirements, and did they test your skills effectively?",
-  "Did the interviewer explain the next steps in the interview process and when you could expect feedback?",
-  "How would you rate the overall experience in terms of professionalism, fairness, and insight into the company or role?",
+const RATING_LABELS = [
+  "Exceptional - Outstanding experience",
+  "Above Average - Exceeds expectations",
+  "Average - Meets requirements",
+  "Satisfactory - Needs improvement",
+  "Unsatisfactory - Below standards",
 ];
 
 interface FormState {
@@ -41,9 +93,9 @@ interface FormState {
 
 const CandidateEvaluationForm: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
-  const [formData, setFormData] = useState<FormState>(
-    steps.reduce((acc, step) => {
-      acc[step] = { rating: 0, comments: "" };
+  const [formData, setFormData] = useState<FormState>(() =>
+    EVALUATION_STEPS.reduce((acc, step) => {
+      acc[step.title] = { rating: 0, comments: "" };
       return acc;
     }, {} as FormState)
   );
@@ -56,11 +108,14 @@ const CandidateEvaluationForm: React.FC = () => {
   const { interviewerId, interviewRequestId } = useParams();
 
   const handleNavigation = useCallback((direction: "next" | "prev") => {
-    setCurrentStep((prev) => (direction === "next" ? prev + 1 : prev - 1));
+    setCurrentStep((prev) => {
+      const newStep = direction === "next" ? prev + 1 : prev - 1;
+      return Math.max(0, Math.min(newStep, EVALUATION_STEPS.length - 1));
+    });
   }, []);
 
   const validateCurrentStep = useCallback(() => {
-    const current = formData[steps[currentStep]];
+    const current = formData[EVALUATION_STEPS[currentStep].title];
     if (current.rating === 0 || current.comments.trim() === "") {
       toast.error("Please complete all fields before continuing");
       return false;
@@ -75,7 +130,7 @@ const CandidateEvaluationForm: React.FC = () => {
       prev.includes(currentStep) ? prev : [...prev, currentStep]
     );
 
-    if (currentStep === steps.length - 1) {
+    if (currentStep === EVALUATION_STEPS.length - 1) {
       setShowConfirmation(true);
     } else {
       handleNavigation("next");
@@ -86,7 +141,10 @@ const CandidateEvaluationForm: React.FC = () => {
     (rating: number) => {
       setFormData((prev) => ({
         ...prev,
-        [steps[currentStep]]: { ...prev[steps[currentStep]], rating },
+        [EVALUATION_STEPS[currentStep].title]: {
+          ...prev[EVALUATION_STEPS[currentStep].title],
+          rating,
+        },
       }));
     },
     [currentStep]
@@ -96,8 +154,8 @@ const CandidateEvaluationForm: React.FC = () => {
     (e: React.ChangeEvent<HTMLTextAreaElement>) => {
       setFormData((prev) => ({
         ...prev,
-        [steps[currentStep]]: {
-          ...prev[steps[currentStep]],
+        [EVALUATION_STEPS[currentStep].title]: {
+          ...prev[EVALUATION_STEPS[currentStep].title],
           comments: e.target.value,
         },
       }));
@@ -131,7 +189,7 @@ const CandidateEvaluationForm: React.FC = () => {
     const handleKeyNavigation = (e: KeyboardEvent) => {
       if (e.key === "ArrowLeft" && currentStep > 0) {
         handleNavigation("prev");
-      } else if (e.key === "ArrowRight" && currentStep < steps.length - 1) {
+      } else if (e.key === "ArrowRight" && currentStep < EVALUATION_STEPS.length - 1) {
         handleNavigation("next");
       }
     };
@@ -142,61 +200,10 @@ const CandidateEvaluationForm: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <AnimatePresence>
-        {showGuidelines && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
-            onClick={() => setShowGuidelines(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-xl"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  Evaluation Guidelines
-                </h2>
-                <button
-                  onClick={() => setShowGuidelines(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-              <div className="space-y-4 text-gray-600">
-                <p className="leading-relaxed">
-                  Please rate the interview using the following scale:
-                </p>
-                <ul className="space-y-3">
-                  {[5, 4, 3, 2, 1].map((rating) => (
-                    <li key={rating} className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-                        {rating}
-                      </div>
-                      <span className="font-medium">
-                        {
-                          [
-                            "Exceptional - Outstanding experience",
-                            "Above Average - Exceeds expectations",
-                            "Average - Meets requirements",
-                            "Satisfactory - Needs improvement",
-                            "Unsatisfactory - Below standards",
-                          ][5 - rating]
-                        }
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <GuidelinesModal
+        isOpen={showGuidelines}
+        onClose={() => setShowGuidelines(false)}
+      />
 
       <motion.div
         initial={{ y: 20, opacity: 0 }}
@@ -210,215 +217,312 @@ const CandidateEvaluationForm: React.FC = () => {
             </h1>
             <button
               onClick={() => setShowGuidelines(true)}
-              className="p-2 text-gray-500 hover:text-blue-600 rounded-lg hover:bg-gray-100"
+              className="p-2 text-gray-500 hover:text-primary rounded-lg hover:bg-gray-100 transition-colors"
             >
               <Info size={20} />
             </button>
           </div>
 
-          <div className="mb-8 overflow-x-auto pb-2">
-            <div className="flex gap-2">
-              {steps.map((step, index) => (
-                <button
-                  key={step}
-                  onClick={() => setCurrentStep(index)}
-                  className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
-                    currentStep === index
-                      ? "bg-blue-100 text-blue-600"
-                      : completedSteps.includes(index)
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-500"
-                  }`}
-                >
-                  {completedSteps.includes(index) ? (
-                    <span className="flex items-center gap-2">
-                      <Check size={14} /> {index + 1}
-                    </span>
-                  ) : (
-                    `Step ${index + 1}`
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ProgressIndicator
+            steps={EVALUATION_STEPS}
+            currentStep={currentStep}
+            completedSteps={completedSteps}
+            onStepClick={setCurrentStep}
+          />
 
           <AnimatePresence mode="wait">
-            <motion.div
+            <FormStep
               key={currentStep}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              className="space-y-8"
-            >
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">
-                  {steps[currentStep]}
-                </h3>
-                <p className="text-gray-600 mt-2">
-                  {descriptions[currentStep]}
-                </p>
-              </div>
-
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Performance Rating
-                  </label>
-                  <div className="flex gap-2 flex-wrap">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <button
-                        key={rating}
-                        onClick={() => handleRatingChange(rating)}
-                        className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
-                          formData[steps[currentStep]].rating >= rating
-                            ? "bg-blue-500 text-white shadow-lg"
-                            : "bg-gray-100 text-gray-400 hover:bg-blue-50"
-                        }`}
-                      >
-                        <Star
-                          size={20}
-                          fill={
-                            formData[steps[currentStep]].rating >= rating
-                              ? "currentColor"
-                              : "none"
-                          }
-                        />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    Detailed Feedback
-                  </label>
-                  <textarea
-                    value={formData[steps[currentStep]].comments}
-                    onChange={handleCommentsChange}
-                    placeholder="Provide specific examples and observations..."
-                    className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                    rows={4}
-                  />
-                </div>
-              </div>
-            </motion.div>
+              step={EVALUATION_STEPS[currentStep]}
+              formData={formData}
+              onRatingChange={handleRatingChange}
+              onCommentsChange={handleCommentsChange}
+            />
           </AnimatePresence>
 
-          <div className="mt-10 flex items-center justify-between">
-            <button
-              onClick={() => handleNavigation("prev")}
-              disabled={currentStep === 0}
-              className="px-4 py-2 text-gray-600 hover:text-blue-600 disabled:opacity-50 flex items-center gap-2"
-            >
-              <ChevronLeft size={18} />
-              <span className="hidden sm:inline">Previous</span>
-            </button>
-
-            <div className="text-sm text-gray-500">
-              {currentStep + 1} of {steps.length}
-            </div>
-
-            <button
-              onClick={handleStepProgress}
-              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
-            >
-              {currentStep === steps.length - 1 ? (
-                "Review and Submit"
-              ) : (
-                <>
-                  <span className="hidden sm:inline">Next</span>
-                  <ChevronRight size={18} />
-                </>
-              )}
-            </button>
-          </div>
+          <FormNavigation
+            currentStep={currentStep}
+            totalSteps={EVALUATION_STEPS.length}
+            onPrev={() => handleNavigation("prev")}
+            onNext={handleStepProgress}
+          />
         </div>
       </motion.div>
 
-      <AnimatePresence>
-        {showConfirmation && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
-          >
-            <motion.div
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl"
-            >
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Confirm Evaluation
-                </h2>
-                <button
-                  onClick={() => setShowConfirmation(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X size={24} />
-                </button>
-              </div>
-
-              <div className="flex-1 overflow-y-auto pr-2 space-y-4">
-                {steps.map((step, index) => (
-                  <div key={step} className="p-4 bg-gray-50 rounded-lg">
-                    <h3 className="font-medium text-gray-900 mb-2">{step}</h3>
-                    <div className="flex items-center gap-2 text-sm mb-2">
-                      <Star
-                        size={16}
-                        className={`${
-                          formData[step].rating >= 3
-                            ? "text-green-500"
-                            : "text-yellow-500"
-                        }`}
-                        fill="currentColor"
-                      />
-                      <span
-                        className={`font-medium ${
-                          formData[step].rating >= 3
-                            ? "text-green-600"
-                            : "text-yellow-600"
-                        }`}
-                      >
-                        {formData[step].rating}/5
-                      </span>
-                    </div>
-                    <p className="text-gray-600 text-sm whitespace-pre-wrap">
-                      {formData[step].comments}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
-                <button
-                  onClick={() => setShowConfirmation(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                >
-                  Edit Evaluation
-                </button>
-                <button
-                  onClick={submitEvaluation}
-                  disabled={isSubmitting}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-75 flex items-center gap-2"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader className="w-4 h-4" />
-                      Submitting...
-                    </>
-                  ) : (
-                    "Confirm Submission"
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <ConfirmationModal
+        isOpen={showConfirmation}
+        formData={formData}
+        isSubmitting={isSubmitting}
+        onClose={() => setShowConfirmation(false)}
+        onSubmit={submitEvaluation}
+      />
     </div>
   );
 };
+
+// Sub-components
+const GuidelinesModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
+  isOpen,
+  onClose,
+}) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="bg-white rounded-2xl p-6 w-full max-w-2xl shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">
+              Evaluation Guidelines
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+          <div className="space-y-4 text-gray-600">
+            <p className="leading-relaxed">
+              Please rate the interview using the following scale:
+            </p>
+            <ul className="space-y-3">
+              {RATING_LABELS.map((label, index) => (
+                <li key={label} className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-primary/10 text-primary rounded-full flex items-center justify-center">
+                    {5 - index}
+                  </div>
+                  <span className="font-medium">{label}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
+
+const ProgressIndicator: React.FC<{
+  steps: typeof EVALUATION_STEPS;
+  currentStep: number;
+  completedSteps: number[];
+  onStepClick: (index: number) => void;
+}> = ({ steps, currentStep, completedSteps, onStepClick }) => (
+  <div className="mb-8 overflow-x-auto pb-2">
+    <div className="flex gap-2">
+      {steps.map((step, index) => (
+        <button
+          key={step.title}
+          onClick={() => onStepClick(index)}
+          className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
+            currentStep === index
+              ? "bg-primary/10 text-primary"
+              : completedSteps.includes(index)
+              ? "bg-success/10 text-success"
+              : "bg-gray-100 text-gray-500"
+          }`}
+        >
+          {completedSteps.includes(index) ? (
+            <span className="flex items-center gap-2">
+              <Check size={14} /> {index + 1}
+            </span>
+          ) : (
+            `Step ${index + 1}`
+          )}
+        </button>
+      ))}
+    </div>
+  </div>
+);
+
+const FormStep: React.FC<{
+  step: typeof EVALUATION_STEPS[number];
+  formData: FormState;
+  onRatingChange: (rating: number) => void;
+  onCommentsChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}> = ({ step, formData, onRatingChange, onCommentsChange }) => {
+  const currentData = formData[step.title];
+
+  return (
+    <motion.div
+      key={step.title}
+      initial={{ opacity: 0, x: 10 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -10 }}
+      className="space-y-8"
+    >
+      <div>
+        <h3 className="text-lg font-semibold text-gray-900">{step.title}</h3>
+        <p className="text-gray-600 mt-2">{step.description}</p>
+      </div>
+
+      <div className="space-y-6">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Performance Rating
+          </label>
+          <div className="flex gap-2 flex-wrap">
+            {[1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                onClick={() => onRatingChange(rating)}
+                className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all ${
+                  currentData.rating >= rating
+                    ? "bg-primary text-white shadow-lg"
+                    : "bg-gray-100 text-gray-400 hover:bg-primary/10"
+                }`}
+              >
+                <Star
+                  size={20}
+                  fill={currentData.rating >= rating ? "currentColor" : "none"}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-3">
+            Detailed Feedback
+          </label>
+          <textarea
+            value={currentData.comments}
+            onChange={onCommentsChange}
+            placeholder="Provide specific examples and observations..."
+            className="w-full p-4 border border-gray-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all"
+            rows={4}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const FormNavigation: React.FC<{
+  currentStep: number;
+  totalSteps: number;
+  onPrev: () => void;
+  onNext: () => void;
+}> = ({ currentStep, totalSteps, onPrev, onNext }) => (
+  <div className="mt-10 flex items-center justify-between">
+    <button
+      onClick={onPrev}
+      disabled={currentStep === 0}
+      className="px-4 py-2 text-gray-600 hover:text-primary disabled:opacity-50 flex items-center gap-2 transition-colors"
+    >
+      <ChevronLeft size={18} />
+      <span className="hidden sm:inline">Previous</span>
+    </button>
+
+    <div className="text-sm text-gray-500">
+      {currentStep + 1} of {totalSteps}
+    </div>
+
+    <button
+      onClick={onNext}
+      className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark flex items-center gap-2 transition-colors"
+    >
+      {currentStep === totalSteps - 1 ? (
+        "Review and Submit"
+      ) : (
+        <>
+          <span className="hidden sm:inline">Next</span>
+          <ChevronRight size={18} />
+        </>
+      )}
+    </button>
+  </div>
+);
+
+const ConfirmationModal: React.FC<{
+  isOpen: boolean;
+  formData: FormState;
+  isSubmitting: boolean;
+  onClose: () => void;
+  onSubmit: () => void;
+}> = ({ isOpen, formData, isSubmitting, onClose, onSubmit }) => (
+  <AnimatePresence>
+    {isOpen && (
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center"
+      >
+        <motion.div
+          initial={{ scale: 0.95 }}
+          animate={{ scale: 1 }}
+          className="bg-white rounded-2xl p-6 w-full max-w-2xl max-h-[90vh] flex flex-col shadow-xl"
+        >
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">
+              Confirm Evaluation
+            </h2>
+            <button
+              onClick={onClose}
+              className="text-gray-500 hover:text-gray-700 transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-2 space-y-4">
+            {Object.entries(formData).map(([step, data]) => (
+              <div key={step} className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="font-medium text-gray-900 mb-2">{step}</h3>
+                <div className="flex items-center gap-2 text-sm mb-2">
+                  <Star
+                    size={16}
+                    className={data.rating >= 3 ? "text-success" : "text-warning"}
+                    fill="currentColor"
+                  />
+                  <span className={data.rating >= 3 ? "text-success" : "text-warning"}>
+                    {data.rating}/5
+                  </span>
+                </div>
+                <p className="text-gray-600 text-sm whitespace-pre-wrap">
+                  {data.comments}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 pt-4 border-t border-gray-200 flex justify-end gap-3">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              Edit Evaluation
+            </button>
+            <button
+              onClick={onSubmit}
+              disabled={isSubmitting}
+              className="px-6 py-2 bg-primary text-white rounded-lg hover:bg-primaryDark disabled:opacity-75 flex items-center gap-2 transition-colors"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader className="w-4 h-4" />
+                  Submitting...
+                </>
+              ) : (
+                "Confirm Submission"
+              )}
+            </button>
+          </div>
+        </motion.div>
+      </motion.div>
+    )}
+  </AnimatePresence>
+);
 
 export default CandidateEvaluationForm;

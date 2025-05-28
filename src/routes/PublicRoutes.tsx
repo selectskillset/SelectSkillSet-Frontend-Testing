@@ -9,6 +9,8 @@ import CandidateApproveReschedule from "../pages/reschedule/CandidateApproveResc
 import InterviewerApproveReschedule from "../pages/reschedule/InterviewerApproveReschedule";
 import CareerPage from "../pages/career/CareerPage";
 import ReportIssue from "../pages/report/ReportIssue";
+import CandidateEvaluationForm from "../dashboards/candidateDashboard/CandidateEvaluationForm";
+import InterviewEvaluationForm from "../dashboards/InterviewerDashboard/InterviewEvaluationForm";
 
 // PublicRoutes component that defines routes for public-facing pages of the website
 const PublicRoutes = () => {
@@ -44,7 +46,14 @@ const PublicRoutes = () => {
       <Route path="/careers" element={<CareerPage />} />
       <Route path="/report-issue" element={<ReportIssue />} />
 
-    
+      <Route
+        path="candidate-feedback/:interviewerId/:interviewRequestId"
+        element={<CandidateEvaluationForm />}
+      />
+      <Route
+        path="interviewer-feedback/:candidateId/:interviewRequestId"
+        element={<InterviewEvaluationForm />}
+      />
     </Routes>
   );
 };

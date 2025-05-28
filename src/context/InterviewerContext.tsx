@@ -1,6 +1,24 @@
-// InterviewerContext.tsx
-import React, { createContext, useState, useCallback, useEffect } from "react";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  useMemo,
+  useEffect,
+  useRef,
+} from "react";
 import axiosInstance from "../components/common/axiosConfig";
+import { useNavigate } from "react-router-dom";
+
+type ApiError = {
+  response?: {
+    status: number;
+    data?: {
+      message: string;
+    };
+  };
+  message?: string;
+};
 
 interface Availability {
   date: string;
@@ -18,25 +36,6 @@ interface InterviewRequest {
   day: string;
   time: string;
   status: string;
-}
-
-interface Profile {
-  name: string;
-  email: string;
-  location: string;
-  phoneNumber: string;
-  jobTitle: string;
-  profilePhoto: string;
-  isVerified: boolean;
-  skills: string[];
-  interviewRequests: InterviewRequest[];
-  completedInterviews: number;
-  pendingRequests: number;
-  totalAccepted: number;
-  averageRating: number;
-  feedbacks: any[];
-  experiences: any[];
-  availability: Availability[];
 }
 
 interface Feedback {
@@ -57,57 +56,203 @@ interface InterviewerStatistics {
   feedbacks: Feedback[];
 }
 
-interface InterviewerContextType {
+interface ProfileCompletion {
+  totalPercentage: number;
+  isComplete: boolean;
+  missingSections: { section: string; percentage: number }[];
+}
+
+interface InterviewerProfile {
+  name: string;
+  email: string;
+  location: string;
+  phoneNumber: string;
+  countryCode: string;
+  summary: string;
+  jobTitle: string;
+  profilePhoto: string;
+  isVerified: boolean;
+  skills: string[];
+  experiences: any[];
+  price: number;
+}
+
+interface InterviewerState {
+  profile: InterviewerProfile | null;
+  completion: ProfileCompletion | null;
   availabilities: Availability[];
+  interviewRequests: InterviewRequest[];
+  statistics: InterviewerStatistics | null;
+  loading: {
+    profile: boolean;
+    availabilities: boolean;
+    interviewRequests: boolean;
+    statistics: boolean;
+  };
+  error: string | null;
+}
+
+interface InterviewerContextType extends InterviewerState {
+  fetchProfile: (force?: boolean) => Promise<void>;
   fetchAvailabilities: () => Promise<void>;
+  fetchInterviewRequests: () => Promise<void>;
+  fetchStatistics: () => Promise<void>;
   addAvailability: (data: Availability) => Promise<void>;
   deleteAvailability: (id: string) => Promise<void>;
-  interviewRequests: InterviewRequest[];
-  fetchInterviewRequests: () => Promise<void>;
   updateInterviewRequest: (
     id: string,
     status: "Approved" | "Cancelled"
   ) => Promise<void>;
-  profile: Profile | null;
-  fetchProfile: () => Promise<void>;
-  statistics: InterviewerStatistics | null;
-  fetchStatistics: () => Promise<void>;
   rescheduleInterviewRequest: (
     id: string,
-    newDate: string,
-    newTime: string
+    updateData: {
+      newDate: string;
+      isoDate: string;
+      from: string;
+      to: string;
+    }
   ) => Promise<void>;
+  updateProfile: (data: FormData) => Promise<void>;
 }
 
-export const InterviewerContext = createContext<InterviewerContextType | null>(
-  null
-);
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+const InterviewerContext = createContext<InterviewerContextType | null>(null);
 
 export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [availabilities, setAvailabilities] = useState<Availability[]>([]);
-  const [interviewRequests, setInterviewRequests] = useState<
-    InterviewRequest[]
-  >([]);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [statistics, setStatistics] = useState<InterviewerStatistics | null>(
-    null
+  const navigate = useNavigate();
+  const lastFetchedRef = useRef<number>(0);
+  const [state, setState] = useState<InterviewerState>({
+    profile: null,
+    completion: null,
+    availabilities: [],
+    interviewRequests: [],
+    statistics: null,
+    loading: {
+      profile: false,
+      availabilities: false,
+      interviewRequests: false,
+      statistics: false,
+    },
+    error: null,
+  });
+
+  // Add response interceptor for handling 401 errors
+  useEffect(() => {
+    const interceptor = axiosInstance.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          sessionStorage.removeItem("interviewerToken");
+          navigate("/interviewer-login");
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => axiosInstance.interceptors.response.eject(interceptor);
+  }, [navigate]);
+
+  const handleApiRequest = useCallback(
+    async <T,>(
+      apiCall: () => Promise<T>,
+      loadingKey: keyof InterviewerState["loading"]
+    ) => {
+      const token = sessionStorage.getItem("interviewerToken");
+      if (!token) return;
+
+      setState((prev) => ({
+        ...prev,
+        loading: { ...prev.loading, [loadingKey]: true },
+        error: null,
+      }));
+
+      try {
+        return await apiCall();
+      } catch (err) {
+        const error = err as ApiError;
+        const errorMessage =
+          error.response?.data?.message || error.message || "An error occurred";
+        setState((prev) => ({ ...prev, error: errorMessage }));
+        throw error;
+      } finally {
+        setState((prev) => ({
+          ...prev,
+          loading: { ...prev.loading, [loadingKey]: false },
+        }));
+      }
+    },
+    []
   );
 
-  // Availability functions
+  const fetchProfile = useCallback(
+    async (force = false) => {
+      await handleApiRequest(async () => {
+        if (!force && Date.now() - lastFetchedRef.current < CACHE_DURATION)
+          return;
+
+        const [profileResponse, completionResponse] = await Promise.all([
+          axiosInstance.get("/interviewer/getProfile"),
+          axiosInstance.get("/interviewer/profile-completion"),
+        ]);
+
+        lastFetchedRef.current = Date.now();
+
+        const profileData = profileResponse.data.profile;
+        const completionData = completionResponse.data;
+
+        setState((prev) => ({
+          ...prev,
+          profile: {
+            name: `${profileData.firstName || ""} ${
+              profileData.lastName || ""
+            }`.trim(),
+            email: profileData.email,
+            location: profileData.location || "Location not provided",
+            phoneNumber: profileData.phoneNumber || "Phone number not provided",
+            countryCode: profileData.countryCode || "Country code not provided",
+            summary: profileData.summary || "",
+            jobTitle: profileData.jobTitle || "Job title not provided",
+            profilePhoto: profileData.profilePhoto || "",
+            isVerified: profileData.isVerified || false,
+            skills: profileData.skills || [],
+            experiences: profileData.experiences || [],
+            price: profileData.price || 0,
+          },
+          completion: completionData,
+        }));
+      }, "profile");
+    },
+    [handleApiRequest]
+  );
+
+  const updateProfile = useCallback(
+    async (formData: FormData) => {
+      await handleApiRequest(async () => {
+        await axiosInstance.put("/interviewer/updateProfile", formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
+        lastFetchedRef.current = 0; // Invalidate cache
+        await fetchProfile(true);
+      }, "profile");
+    },
+    [handleApiRequest, fetchProfile]
+  );
+
   const fetchAvailabilities = useCallback(async () => {
-    try {
+    await handleApiRequest(async () => {
       const { data } = await axiosInstance.get("/interviewer/getAvailability");
-      if (data?.success) setAvailabilities(data.availability || []);
-    } catch (error) {
-      console.error("Error fetching availabilities:", error);
-    }
-  }, []);
+      setState((prev) => ({
+        ...prev,
+        availabilities: data.availability || [],
+      }));
+    }, "availabilities");
+  }, [handleApiRequest]);
 
   const addAvailability = useCallback(
     async (newAvailability: Availability) => {
-      try {
+      await handleApiRequest(async () => {
         const { data } = await axiosInstance.post(
           "/interviewer/addAvailability",
           {
@@ -115,43 +260,46 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         );
         if (data?.success) await fetchAvailabilities();
-      } catch (error) {
-        console.error("Error adding availability:", error);
-        throw error;
-      }
+      }, "availabilities");
     },
-    [fetchAvailabilities]
+    [handleApiRequest, fetchAvailabilities]
   );
 
-  const deleteAvailability = useCallback(async (id: string) => {
-    try {
-      const { data } = await axiosInstance.delete(
-        "/interviewer/deleteAvailability",
-        { data: { id } }
-      );
-      if (data?.success)
-        setAvailabilities((prev) => prev.filter((a) => a._id !== id));
-    } catch (error) {
-      console.error("Error deleting availability:", error);
-      throw error;
-    }
-  }, []);
+  const deleteAvailability = useCallback(
+    async (id: string) => {
+      await handleApiRequest(async () => {
+        const { data } = await axiosInstance.delete(
+          "/interviewer/deleteAvailability",
+          {
+            data: { id },
+          }
+        );
+        if (data?.success) {
+          setState((prev) => ({
+            ...prev,
+            availabilities: prev.availabilities.filter((a) => a._id !== id),
+          }));
+        }
+      }, "availabilities");
+    },
+    [handleApiRequest]
+  );
 
-  // Interview Requests functions
   const fetchInterviewRequests = useCallback(async () => {
-    try {
+    await handleApiRequest(async () => {
       const { data } = await axiosInstance.get(
         "/interviewer/getInterviewRequests"
       );
-      if (data?.success) setInterviewRequests(data.interviewRequests || []);
-    } catch (error) {
-      console.error("Error fetching interview requests:", error);
-    }
-  }, []);
+      setState((prev) => ({
+        ...prev,
+        interviewRequests: data.interviewRequests || [],
+      }));
+    }, "interviewRequests");
+  }, [handleApiRequest]);
 
   const updateInterviewRequest = useCallback(
     async (id: string, status: "Approved" | "Cancelled") => {
-      try {
+      await handleApiRequest(async () => {
         const { data } = await axiosInstance.put(
           "/interviewer/updateInterviewRequest",
           {
@@ -160,18 +308,16 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
           }
         );
         if (data?.success) {
-          setInterviewRequests((prev) =>
-            prev.map((request) =>
+          setState((prev) => ({
+            ...prev,
+            interviewRequests: prev.interviewRequests.map((request) =>
               request.id === id ? { ...request, status } : request
-            )
-          );
+            ),
+          }));
         }
-      } catch (error) {
-        console.error("Error updating interview request:", error);
-        throw error;
-      }
+      }, "interviewRequests");
     },
-    []
+    [handleApiRequest]
   );
 
   const rescheduleInterviewRequest = useCallback(
@@ -184,123 +330,110 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
         to: string;
       }
     ) => {
-      try {
+      await handleApiRequest(async () => {
         const { data } = await axiosInstance.put(
           "/interviewer/rescheduleInterviewRequest",
           {
             interviewRequestId: id,
-            newDate: updateData.newDate,
-            from: updateData.from,
-            to: updateData.to,
-            // Only include isoDate if your backend actually needs it
-            isoDate: updateData.isoDate,
+            ...updateData,
           }
         );
 
         if (data?.success) {
-          setInterviewRequests((prev) =>
-            prev.map((request) =>
+          setState((prev) => ({
+            ...prev,
+            interviewRequests: prev.interviewRequests.map((request) =>
               request.id === id
                 ? {
                     ...request,
                     date: updateData.newDate,
                     time: `${updateData.from} - ${updateData.to}`,
                     status: "RescheduleRequested",
-                    isoDate: updateData.isoDate,
                   }
                 : request
-            )
-          );
+            ),
+          }));
         }
         return data;
-      } catch (error) {
-        console.error("Error rescheduling interview:", error);
-        throw error;
-      }
+      }, "interviewRequests");
     },
-    []
+    [handleApiRequest]
   );
-  // Profile functions
-  const fetchProfile = useCallback(async () => {
-    try {
-      const { data } = await axiosInstance.get("/interviewer/getProfile");
-      if (data?.success) {
-        const profileData = data.profile;
-        setProfile({
-          name: `${profileData.firstName || ""} ${
-            profileData.lastName || ""
-          }`.trim(),
-          email: profileData.email,
-          location: profileData.location || "Location not provided",
-          phoneNumber: profileData.phoneNumber || "Phone number not provided",
-          jobTitle: profileData.jobTitle || "Job title not provided",
-          profilePhoto: profileData.profilePhoto || "",
-          isVerified: profileData.isVerified || false,
-          experiences: profileData.experiences || [],
-          skills: profileData.skills || [],
-          interviewRequests: profileData.interviewRequests || [],
-          completedInterviews: profileData.statistics?.completedInterviews || 0,
-          pendingRequests: profileData.statistics?.pendingRequests || 0,
-          totalAccepted: profileData.statistics?.totalAccepted || 0,
-          averageRating: profileData.statistics?.averageRating || 0,
-          feedbacks: profileData.feedbacks || [],
-          availability: profileData.availability || [],
-        });
-      }
-    } catch (error) {
-      console.error("Error fetching profile:", error);
-    }
-  }, []);
 
-  // Statistics functions
   const fetchStatistics = useCallback(async () => {
-    try {
+    await handleApiRequest(async () => {
       const { data } = await axiosInstance.get(
         "/interviewer/get-interviewer-statistics"
       );
-      setStatistics(data?.statistics || null);
-    } catch (error) {
-      console.error("Error fetching statistics:", error);
-      setStatistics(null);
-    }
-  }, []);
+      setState((prev) => ({ ...prev, statistics: data.statistics || null }));
+    }, "statistics");
+  }, [handleApiRequest]);
 
   // Initial data fetch
-  // useEffect(() => {
-  //   const initializeData = async () => {
-  //     await Promise.all([
-  //       fetchAvailabilities(),
-  //       fetchInterviewRequests(),
-  //       fetchProfile(),
-  //       fetchStatistics(),
-  //     ]);
-  //   };
-  //   initializeData();
-  // }, [
-  //   fetchAvailabilities,
-  //   fetchInterviewRequests,
-  //   fetchProfile,
-  //   fetchStatistics,
-  // ]);
+  useEffect(() => {
+    const token = sessionStorage.getItem("interviewerToken");
+    if (token) {
+      const initializeData = async () => {
+        try {
+          await Promise.all([
+            fetchProfile(),
+            fetchStatistics(),
+            fetchInterviewRequests(),
+            fetchAvailabilities(),
+          ]);
+        } catch (error) {
+          console.error("Error initializing data:", error);
+        }
+      };
+      initializeData();
+    }
+  }, [
+    fetchProfile,
+    fetchStatistics,
+    fetchInterviewRequests,
+    fetchAvailabilities,
+  ]);
+
+  const value = useMemo(
+    () => ({
+      ...state,
+      fetchProfile,
+      fetchAvailabilities,
+      addAvailability,
+      deleteAvailability,
+      fetchInterviewRequests,
+      updateInterviewRequest,
+      rescheduleInterviewRequest,
+      fetchStatistics,
+      updateProfile,
+    }),
+    [
+      state,
+      fetchProfile,
+      fetchAvailabilities,
+      addAvailability,
+      deleteAvailability,
+      fetchInterviewRequests,
+      updateInterviewRequest,
+      rescheduleInterviewRequest,
+      fetchStatistics,
+      updateProfile,
+    ]
+  );
 
   return (
-    <InterviewerContext.Provider
-      value={{
-        availabilities,
-        fetchAvailabilities,
-        addAvailability,
-        deleteAvailability,
-        interviewRequests,
-        fetchInterviewRequests,
-        updateInterviewRequest,
-        profile,
-        fetchProfile,
-        statistics,
-        fetchStatistics,
-        rescheduleInterviewRequest,
-      }}
-    >
+    <InterviewerContext.Provider value={value}>
       {children}
     </InterviewerContext.Provider>
   );
+};
+
+export const useInterviewer = () => {
+  const context = useContext(InterviewerContext);
+  if (!context) {
+    throw new Error(
+      "useInterviewer must be used within an InterviewerProvider"
+    );
+  }
+  return context;
 };
