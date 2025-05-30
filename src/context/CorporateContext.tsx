@@ -96,7 +96,7 @@ export const CorporateProvider = ({
       (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("corporateToken");
-          navigate("/corporate-login");
+          // navigate("/corporate-login");
         }
         return Promise.reject(error);
       }
