@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { User, Mail, Building, Send } from "lucide-react";
@@ -40,6 +40,71 @@ const formSchema = z.object({
 
 type FormData = z.infer<typeof formSchema>;
 
+interface FormInputProps {
+  id: keyof FormData;
+  icon: React.ElementType;
+  placeholder: string;
+  type?: string;
+  value: string;
+  error?: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}
+
+const FormInput: React.FC<FormInputProps> = React.memo(
+  ({ id, icon: Icon, placeholder, type = "text", value, error, onChange }) => (
+    <motion.div variants={itemVariants} className="space-y-1">
+      <div className="relative">
+        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80" />
+        <input
+          type={type}
+          id={id}
+          name={id}
+          value={value}
+          onChange={onChange}
+          className={`w-full pl-12 pr-4 py-3 text-sm border ${
+            error ? "border-destructive" : "border-muted"
+          } rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 bg-background`}
+          placeholder={placeholder}
+          aria-describedby={`${id}-error`}
+        />
+      </div>
+      {error && (
+        <p id={`${id}-error`} className="text-destructive text-xs pl-2">
+          {error}
+        </p>
+      )}
+    </motion.div>
+  )
+);
+
+interface FormTextareaProps {
+  value: string;
+  error?: string;
+  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+}
+
+const FormTextarea: React.FC<FormTextareaProps> = React.memo(
+  ({ value, error, onChange }) => (
+    <motion.div variants={itemVariants} className="space-y-1">
+      <textarea
+        id="message"
+        name="message"
+        value={value}
+        onChange={onChange}
+        rows={4}
+        className="w-full px-4 py-3 text-sm border border-muted rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 resize-none bg-background"
+        placeholder="Additional details about your needs..."
+        aria-describedby="message-error"
+      />
+      {error && (
+        <p id="message-error" className="text-destructive text-xs pl-2">
+          {error}
+        </p>
+      )}
+    </motion.div>
+  )
+);
+
 const RequestDemoPage = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState<FormData>({
@@ -51,13 +116,16 @@ const RequestDemoPage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+  const handleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const { name, value } = e.target;
+      setFormData((prev) => ({ ...prev, [name]: value }));
+      if (errors[name]) {
+        setErrors((prev) => ({ ...prev, [name]: "" }));
+      }
+    },
+    [errors]
+  );
 
   const validateForm = () => {
     try {
@@ -100,61 +168,6 @@ const RequestDemoPage = () => {
       setIsLoading(false);
     }
   };
-
-  const FormInput = ({
-    id,
-    icon: Icon,
-    placeholder,
-    type = "text",
-  }: {
-    id: keyof FormData;
-    icon: React.ElementType;
-    placeholder: string;
-    type?: string;
-  }) => (
-    <motion.div variants={itemVariants} className="space-y-1">
-      <div className="relative">
-        <Icon className="absolute left-4 top-1/2 -translate-y-1/2 text-primary/80" />
-        <input
-          type={type}
-          id={id}
-          name={id}
-          value={formData[id]}
-          onChange={handleChange}
-          className={`w-full pl-12 pr-4 py-3 text-sm border ${
-            errors[id] ? "border-destructive" : "border-muted"
-          } rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 bg-background`}
-          placeholder={placeholder}
-          aria-describedby={`${id}-error`}
-        />
-      </div>
-      {errors[id] && (
-        <p id={`${id}-error`} className="text-destructive text-xs pl-2">
-          {errors[id]}
-        </p>
-      )}
-    </motion.div>
-  );
-
-  const FormTextarea = () => (
-    <motion.div variants={itemVariants} className="space-y-1">
-      <textarea
-        id="message"
-        name="message"
-        value={formData.message}
-        onChange={handleChange}
-        rows={4}
-        className="w-full px-4 py-3 text-sm border border-muted rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all duration-200 resize-none bg-background"
-        placeholder="Additional details about your needs..."
-        aria-describedby="message-error"
-      />
-      {errors.message && (
-        <p id="message-error" className="text-destructive text-xs pl-2">
-          {errors.message}
-        </p>
-      )}
-    </motion.div>
-  );
 
   return (
     <div className="min-h-screen bg-white flex items-center py-8 lg:py-12">
@@ -199,19 +212,36 @@ const RequestDemoPage = () => {
             </motion.div>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              <FormInput id="name" icon={User} placeholder="Full Name" />
+              <FormInput
+                id="name"
+                icon={User}
+                placeholder="Full Name"
+                value={formData.name}
+                error={errors.name}
+                onChange={handleChange}
+              />
               <FormInput
                 id="email"
                 icon={Mail}
                 placeholder="Work Email"
                 type="email"
+                value={formData.email}
+                error={errors.email}
+                onChange={handleChange}
               />
               <FormInput
                 id="company"
                 icon={Building}
                 placeholder="Company Name"
+                value={formData.company}
+                error={errors.company}
+                onChange={handleChange}
               />
-              <FormTextarea />
+              <FormTextarea
+                value={formData.message}
+                error={errors.message}
+                onChange={handleChange}
+              />
 
               <motion.button
                 type="submit"
