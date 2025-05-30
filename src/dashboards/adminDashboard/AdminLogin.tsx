@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { Eye, EyeOff, Shield } from "lucide-react";
 import { motion } from "framer-motion";
-import adminLoginImage from "../../images/admin-login.svg";
+import adminLoginImage from "../../images/Login-amico.svg";
 
 export const AdminLogin = () => {
   const navigate = useNavigate();
