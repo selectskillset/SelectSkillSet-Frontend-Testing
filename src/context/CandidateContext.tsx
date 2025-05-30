@@ -159,7 +159,7 @@ export const CandidateProvider = ({
       (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("candidateToken");
-          navigate("/candidate-login");
+          // navigate("/candidate-login");
         }
         return Promise.reject(error);
       }

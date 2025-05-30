@@ -145,7 +145,7 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
       (error) => {
         if (error.response?.status === 401) {
           sessionStorage.removeItem("interviewerToken");
-          navigate("/interviewer-login");
+          // navigate("/interviewer-login");
         }
         return Promise.reject(error);
       }

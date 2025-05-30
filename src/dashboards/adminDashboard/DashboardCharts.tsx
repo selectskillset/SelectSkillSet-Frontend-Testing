@@ -84,6 +84,8 @@ const DashboardCharts = ({
             size: 14,
           },
           usePointStyle: true,
+          pointStyle: "circle",
+          color: colors.slate,
         },
       },
       tooltip: {
@@ -94,7 +96,7 @@ const DashboardCharts = ({
         usePointStyle: true,
         callbacks: {
           label: (context) =>
-            ` ${context.dataset.label}: ${context.formattedValue}`,
+            `${context.dataset.label}: ${context.raw}`,
         },
       },
     },
@@ -115,7 +117,7 @@ const DashboardCharts = ({
         },
         ticks: {
           stepSize: 1,
-          color: "#6B7280",
+          color: colors.slate,
         },
       },
       x: {
@@ -123,7 +125,7 @@ const DashboardCharts = ({
           display: false,
         },
         ticks: {
-          color: "#6B7280",
+          color: colors.slate,
         },
       },
     },

@@ -45,18 +45,7 @@ const NAV_LINKS = {
   candidate: [],
   interviewer: [],
   corporate: [],
-  admin: [
-    {
-      path: "/admin/dashboard/profiles",
-      label: "Users",
-      icon: <User size={20} />,
-    },
-    {
-      path: "/admin/settings",
-      label: "Settings",
-      icon: <Settings size={20} />,
-    },
-  ],
+  admin: [],
 };
 
 export const Navbar = React.memo(() => {
@@ -130,9 +119,14 @@ export const Navbar = React.memo(() => {
     if (isMenuOpen) setIsMenuOpen(false);
   }, [navigate, isMenuOpen]);
 
-  // Navigation handlers
   const handleProfileNavigation = useCallback(() => {
-    const dashboardPath = userType ? `/${userType}-dashboard` : "/";
+    const dashboardPath =
+      userType === "admin"
+        ? "/admin/dashboard"
+        : userType
+        ? `/${userType}-dashboard`
+        : "/";
+
     navigate(dashboardPath);
   }, [userType, navigate]);
 
