@@ -1,39 +1,25 @@
-import React, { memo, useMemo, useCallback, useEffect, useState } from "react";
+import React, { memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  FileText,
   User,
   Briefcase,
   Star,
-  CheckCircle,
+  DollarSign,
   AlertCircle,
+  Plus,
+  CheckCircle,
   Pencil,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../components/common/axiosConfig";
-
-type MissingSection = {
-  section: string;
-  percentage: number;
-  sectionId: string;
-};
-
-export type CompletionData = {
-  totalPercentage: number;
-  isComplete: boolean;
-  missingSections: MissingSection[];
-};
+import { Link, useNavigate } from "react-router-dom";
+import { useInterviewer } from "../../context/InterviewerContext";
 
 const SectionIcon = memo(({ section }: { section: string }) => {
-  const iconMap = useMemo(
-    () => ({
-      "Basic Information": <User className="w-4 h-4 text-primary" />,
-      Resume: <FileText className="w-4 h-4 text-primary" />,
-      "Work Experience": <Briefcase className="w-4 h-4 text-primary" />,
-      Skills: <Star className="w-4 h-4 text-primary" />,
-    }),
-    []
-  );
+  const iconMap = {
+    "Basic Information": <User className="w-4 h-4 text-primary" />,
+    "Job Title": <Briefcase className="w-4 h-4 text-primary" />,
+    Experience: <Star className="w-4 h-4 text-primary" />,
+    Price: <DollarSign className="w-4 h-4 text-primary" />,
+  };
 
   return iconMap[section] || <AlertCircle className="w-4 h-4 text-primary" />;
 });
@@ -48,46 +34,21 @@ const ProgressPulse = memo(({ active }: { active: boolean }) => (
 
 const ProfileStrength: React.FC = () => {
   const navigate = useNavigate();
-  const [completion, setCompletion] = useState<CompletionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { completion, loading, error } = useInterviewer();
 
-  const fetchCompletionData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get("/candidate/profile-completion");
-      setCompletion(response.data);
-    } catch (err) {
-      console.error("Error fetching completion data:", err);
-      setError("Failed to load profile strength data");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCompletionData();
-  }, [fetchCompletionData]);
-
-  const hasMissingSections = useMemo(
-    () => completion?.missingSections && completion.missingSections.length > 0,
-    [completion?.missingSections]
-  );
-
-  const showRemainingPercentage = useMemo(
-    () =>
-      completion && !completion.isComplete && completion.totalPercentage < 100,
-    [completion]
-  );
+  const hasMissingSections =
+    completion?.missingSections && completion.missingSections.length > 0;
+  const showRemainingPercentage =
+    completion && !completion.isComplete && completion.totalPercentage < 100;
 
   const handleSectionClick = useCallback(
     (sectionId: string) => {
-      navigate(`/edit-candidate-profile#${sectionId}`);
+      navigate(`/edit-interviewer-profile#${sectionId}`);
     },
     [navigate]
   );
 
-  if (loading) {
+  if (loading.profile) {
     return (
       <div className="p-4 md:p-6 bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto flex justify-center items-center h-40">
         <div className="flex flex-col items-center gap-2">
@@ -106,7 +67,7 @@ const ProfileStrength: React.FC = () => {
           <span>{error}</span>
         </div>
         <button
-          onClick={fetchCompletionData}
+          onClick={() => window.location.reload()}
           className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
         >
           Retry
@@ -122,10 +83,10 @@ const ProfileStrength: React.FC = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="p-4  bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto"
+      className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto"
     >
       {/* Header Section */}
-      <div className="flex  xs:flex-row items-start xs:items-center justify-between gap-2 mb-4">
+      <div className="flex xs:flex-row items-start xs:items-center justify-between gap-2 mb-4">
         <h3 className="text-sm md:text-base font-semibold text-gray-900">
           Profile Strength
         </h3>
@@ -195,7 +156,11 @@ const ProfileStrength: React.FC = () => {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
                 className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200 cursor-pointer"
-                onClick={() => handleSectionClick(section.sectionId)}
+                onClick={() =>
+                  handleSectionClick(
+                    section.section.toLowerCase().replace(/\s+/g, "-")
+                  )
+                }
               >
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
@@ -228,6 +193,13 @@ const ProfileStrength: React.FC = () => {
                 ? "Complete all sections to maximize your profile strength"
                 : "Keep your profile updated for better opportunities"}
             </p>
+            <Link
+              to="/edit-interviewer-profile"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary-dark transition-colors"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit Profile
+            </Link>
           </div>
         </motion.div>
       )}

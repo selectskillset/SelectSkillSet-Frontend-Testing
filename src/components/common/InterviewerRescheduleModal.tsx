@@ -302,7 +302,7 @@ const InterviewerRescheduleModal: React.FC<InterviewerRescheduleModalProps> = ({
             className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
               isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
+                : "primary hover:primary text-white"
             }`}
           >
             {isSubmitting ? "Processing..." : "Confirm Reschedule"}

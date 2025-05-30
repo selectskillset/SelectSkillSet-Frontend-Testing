@@ -1,6 +1,6 @@
 import { Lock, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import axiosInstance from "../../../components/common/axiosConfig";
 
 interface BankDetails {
@@ -35,6 +35,7 @@ const FIELD_CONFIG = [
     label: "Account Number",
     placeholder: "Enter account number",
     validate: (value: string) => {
+      if (!value.trim()) return "Account number is required";
       if (!/^\d+$/.test(value)) return "Must contain only numbers";
       if (value.length < 9 || value.length > 18) return "Must be 9-18 digits";
       return undefined;
@@ -44,10 +45,12 @@ const FIELD_CONFIG = [
     name: "ifscCode",
     label: "IFSC Code",
     placeholder: "Enter IFSC code (e.g., ABCD0123456)",
-    validate: (value: string) =>
-      /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value)
+    validate: (value: string) => {
+      if (!value.trim()) return "IFSC code is required";
+      return /^[A-Z]{4}0[A-Z0-9]{6}$/.test(value)
         ? undefined
-        : "Invalid IFSC format (e.g., ABCD0123456)",
+        : "Invalid IFSC format (e.g., ABCD0123456)";
+    },
   },
   {
     name: "branch",
@@ -129,7 +132,9 @@ const InterviewerBankAccountSettings: React.FC = () => {
       if (serverErrors) {
         setErrors(serverErrors);
       } else {
-        toast.error(error.response?.data?.message || "Update failed");
+        toast.error(
+          error.response?.data?.message || "Failed to update bank details"
+        );
       }
     } finally {
       setIsLoading(false);
@@ -145,9 +150,8 @@ const InterviewerBankAccountSettings: React.FC = () => {
       [name]: processedValue,
     }));
 
-    // Clear error only if field becomes valid
-    const fieldConfig = FIELD_CONFIG.find((f) => f.name === name);
-    if (fieldConfig && !fieldConfig.validate(processedValue)) {
+    // Clear error when user starts typing
+    if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
   };
@@ -161,32 +165,39 @@ const InterviewerBankAccountSettings: React.FC = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="rounded-xl shadow-sm p-8 ">
-        <div className="mb-8 flex items-center gap-3 border-b pb-4">
-          <Lock className="text-[#0A66C2]" size={24} />
-          <h1 className="text-2xl font-semibold text-gray-800">
-            Bank Account Settings
-          </h1>
+    <div className="container mx-auto max-w-4xl bg-white rounded-xl shadow-sm p-6 md:p-8">
+      <div className="mb-8">
+        {/* Header Section */}
+        <div className="mb-6 md:mb-8 pb-4 border-b border-gray-200">
+          <div className="flex items-center gap-3">
+            <Lock className="text-primary" size={24} />
+            <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
+              Bank Account Settings
+            </h1>
+          </div>
         </div>
 
+        {/* Security Notice */}
         <div className="mb-6 bg-amber-50 p-4 rounded-lg flex items-start gap-3">
           <ShieldAlert className="text-amber-600 mt-1" size={18} />
           <p className="text-sm text-amber-800">
             All bank details are encrypted with 256-bit SSL and stored securely.
+            We never share your financial information with third parties.
           </p>
         </div>
 
+        {/* Form Section */}
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
             {FIELD_CONFIG.map((field) => {
               const value = bankDetails[field.name as keyof BankDetails];
               const error = errors[field.name];
 
               return (
-                <div key={field.name} className="space-y-2">
+                <div key={field.name} className="space-y-1.5">
                   <label className="block text-sm font-medium text-gray-700">
                     {field.label}
+                    <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -195,11 +206,11 @@ const InterviewerBankAccountSettings: React.FC = () => {
                     onChange={handleChange}
                     onBlur={() => handleBlur(field.name)}
                     placeholder={field.placeholder}
-                    className={`w-full p-3 border rounded-lg focus:ring-2 ${
+                    className={`w-full p-2.5 border rounded-lg focus:ring-2 focus:outline-none transition-colors ${
                       error
-                        ? "border-red-500 focus:ring-red-500"
-                        : "border-gray-300 focus:ring-[#0A66C2]"
-                    } ${isLoading ? "bg-gray-100" : ""}`}
+                        ? "border-error focus:ring-error-100"
+                        : "border-gray-300 focus:border-primary focus:ring-primary-100"
+                    } ${isLoading ? "bg-gray-50" : "bg-white"}`}
                     disabled={isLoading}
                     aria-invalid={!!error}
                     aria-describedby={`${field.name}-error`}
@@ -207,7 +218,7 @@ const InterviewerBankAccountSettings: React.FC = () => {
                   {error && (
                     <p
                       id={`${field.name}-error`}
-                      className="text-red-500 text-sm mt-1"
+                      className="text-error text-xs mt-1"
                     >
                       {error}
                     </p>
@@ -217,17 +228,42 @@ const InterviewerBankAccountSettings: React.FC = () => {
             })}
           </div>
 
-          <div className="pt-6 border-t">
+          {/* Submit Button */}
+          <div className="pt-4 border-t border-gray-200">
             <button
               type="submit"
               disabled={isLoading}
-              className={`bg-[#0A66C2] text-white px-6 py-3 rounded-lg font-medium w-full sm:w-auto ${
-                isLoading
-                  ? "opacity-75 cursor-not-allowed"
-                  : "hover:bg-[#005885]"
-              } transition-colors`}
+              className={`inline-flex justify-center items-center px-6 py-2.5 rounded-lg font-medium text-white bg-primary hover:bg-primary-dark transition-colors ${
+                isLoading ? "opacity-70 cursor-not-allowed" : ""
+              }`}
             >
-              {isLoading ? "Saving..." : "Save Bank Details"}
+              {isLoading ? (
+                <>
+                  <svg
+                    className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    ></circle>
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    ></path>
+                  </svg>
+                  Saving...
+                </>
+              ) : (
+                "Save Bank Details"
+              )}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { useParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -124,7 +124,7 @@ const CandidateProfilePage = () => {
         newBookmarkState ? "Bookmarked candidate" : "Removed bookmark"
       );
     } catch (error) {
-      setState((prev) => ({ ...prev, isBookmark: !prev.isBookmarked }));
+      setState((prev) => ({ ...prev, isBookmarked: !prev.isBookmarked }));
       toast.error("Failed to update bookmark");
     }
   }, [id, state.isBookmarked]);
@@ -198,8 +198,8 @@ const CandidateProfilePage = () => {
   };
 
   return (
-    <div className="min-h-screen  antialiased">
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="container mx-auto p-8 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <main className="">
         {/* Profile Header */}
         <motion.div
           animate={{ opacity: 1, y: 0 }}
@@ -209,10 +209,10 @@ const CandidateProfilePage = () => {
             <img
               src={state.candidate.profilePhoto || "/default-avatar.jpg"}
               alt={`${state.candidate.firstName} ${state.candidate.lastName}`}
-              className="w-20 h-20 rounded-full object-cover border-2 border-[#0077b5]"
+              className="w-20 h-20 rounded-full object-cover border-2 border-primary"
             />
             <div>
-              <h1 className="text-2xl font-semibold text-[#0077b5]">
+              <h1 className="text-2xl font-semibold text-primary">
                 {state.candidate.firstName} {state.candidate.lastName}
               </h1>
               <p className="text-gray-600 mt-1 text-sm">
@@ -244,7 +244,7 @@ const CandidateProfilePage = () => {
             </button>
             <a
               href={`mailto:${state.candidate.email}`}
-              className="flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] text-sm"
+              className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark text-sm"
             >
               <Mail size={16} />
               Contact
@@ -258,7 +258,7 @@ const CandidateProfilePage = () => {
             animate={{ opacity: 1, x: 0 }}
             className="bg-white rounded-xl shadow-md p-6"
           >
-            <h2 className="text-lg font-semibold text-[#0077b5] mb-4 flex items-center gap-2">
+            <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
               <Mail className="w-5 h-5 text-gray-500" />
               Contact Information
             </h2>
@@ -278,7 +278,7 @@ const CandidateProfilePage = () => {
                     href={state.candidate.linkedIn}
                     target="_blank"
                     rel="noopener"
-                    className="text-[#0077b5] hover:underline truncate"
+                    className="text-primary hover:underline truncate"
                   >
                     {state.candidate.linkedIn.replace(
                       /^https?:\/\/(www\.)?linkedin\.com\/in\//,
@@ -298,7 +298,7 @@ const CandidateProfilePage = () => {
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-xl shadow-md p-6"
             >
-              <h2 className="text-lg font-semibold text-[#0077b5] mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gray-500" />
                 Skills
               </h2>
@@ -307,7 +307,7 @@ const CandidateProfilePage = () => {
                   state.candidate.skills.map((skill, index) => (
                     <span
                       key={index}
-                      className="px-3 py-1 bg-[#0077b5]/10 text-[#0077b5] text-sm rounded-full"
+                      className="px-3 py-1 bg-primary/10 text-primary text-sm rounded-full"
                     >
                       {skill}
                     </span>
@@ -322,7 +322,7 @@ const CandidateProfilePage = () => {
               animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-xl shadow-md p-6"
             >
-              <h2 className="text-lg font-semibold text-[#0077b5] mb-4 flex items-center gap-2">
+              <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-gray-500" />
                 Resume
               </h2>
@@ -331,7 +331,7 @@ const CandidateProfilePage = () => {
                   href={state.candidate.resume}
                   target="_blank"
                   rel="noopener"
-                  className="inline-flex items-center gap-2 bg-[#0077b5] text-white px-4 py-2 rounded-md hover:bg-[#005885] text-sm"
+                  className="inline-flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-md hover:bg-primary-dark text-sm"
                 >
                   <FileText size={16} />
                   View Resume
@@ -347,7 +347,7 @@ const CandidateProfilePage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-xl shadow-md p-6 mt-6"
         >
-          <h2 className="text-lg font-semibold text-[#0077b5] mb-4 flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-primary mb-4 flex items-center gap-2">
             <Briefcase className="w-5 h-5 text-gray-500" />
             Work Experience
           </h2>
@@ -359,57 +359,57 @@ const CandidateProfilePage = () => {
                 const logoUrls = getCompanyLogoUrl(exp.company);
                 return (
                   <div
-                  key={index}
-                  className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
-                >
-                  <div className="flex gap-4">
-                    {/* Company Logo */}
-                    <div className="flex-shrink-0">
-                      <img
-                        src={logoUrls.clearbit}
-                        alt={exp.company}
-                        className="w-12 h-12 rounded-lg object-contain border border-gray-200"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src =
-                            logoUrls.initials;
-                        }}
-                      />
-                    </div>
-
-                    {/* Experience Details */}
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h5 className="text-gray-800 font-medium text-lg">
-                            {exp.position}
-                          </h5>
-                          <p className="text-gray-700 font-medium">
-                            {exp.company}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {exp.location} ·{" "}
-                            {exp.employmentType || "Full-time"}
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-sm text-gray-600">
-                            {exp.startDate} -{" "}
-                            {exp.current ? "Present" : exp.endDate}
-                          </p>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {exp.totalExperience}
-                          </p>
-                        </div>
+                    key={index}
+                    className="mb-4 pb-4 border-b border-gray-100 last:mb-0 last:pb-0 last:border-b-0"
+                  >
+                    <div className="flex gap-4">
+                      {/* Company Logo */}
+                      <div className="flex-shrink-0">
+                        <img
+                          src={logoUrls.clearbit}
+                          alt={exp.company}
+                          className="w-12 h-12 rounded-lg object-contain border border-gray-200"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              logoUrls.initials;
+                          }}
+                        />
                       </div>
 
-                      {exp.description && (
-                        <p className="mt-2 text-gray-600 text-sm">
-                          {exp.description}
-                        </p>
-                      )}
+                      {/* Experience Details */}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <h5 className="text-gray-800 font-medium text-lg">
+                              {exp.position}
+                            </h5>
+                            <p className="text-gray-700 font-medium">
+                              {exp.company}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {exp.location} ·{" "}
+                              {exp.employmentType || "Full-time"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-gray-600">
+                              {exp.startDate} -{" "}
+                              {exp.current ? "Present" : exp.endDate}
+                            </p>
+                            <p className="text-sm text-gray-500 mt-1">
+                              {exp.totalExperience}
+                            </p>
+                          </div>
+                        </div>
+
+                        {exp.description && (
+                          <p className="mt-2 text-gray-600 text-sm">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
                 );
               })
             )}
@@ -421,7 +421,7 @@ const CandidateProfilePage = () => {
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-xl shadow-md p-6 mt-6"
         >
-          <h2 className="text-lg font-semibold text-[#0077b5] mb-4">
+          <h2 className="text-lg font-semibold text-primary mb-4">
             Interview Feedback
           </h2>
           <div className="space-y-4">
@@ -483,7 +483,7 @@ const CandidateProfilePage = () => {
               >
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-xl font-semibold text-[#0077b5]">
+                    <h3 className="text-xl font-semibold text-primary">
                       Feedback Details
                     </h3>
                     <button
@@ -520,7 +520,7 @@ const CandidateProfilePage = () => {
                             <h4 className="font-medium text-gray-700">
                               {category}
                             </h4>
-                            <span className="bg-[#0077b5] text-white px-2 py-1 rounded-full text-sm">
+                            <span className="bg-primary text-white px-2 py-1 rounded-full text-sm">
                               {data.rating}/5
                             </span>
                           </div>

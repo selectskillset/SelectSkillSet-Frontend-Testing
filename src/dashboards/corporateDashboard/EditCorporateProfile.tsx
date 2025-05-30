@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {toast} from "sonner";
+import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
 import { countryData } from "../../components/common/countryData";
 import { Camera, Pencil, ChevronDown } from "lucide-react";
@@ -156,12 +156,12 @@ const EditCorporateProfile = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
     >
       {isLoading ? (
         <Loader />
       ) : (
-        <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 space-y-6">
+        <div className=" p-6 space-y-6">
           <h2 className="text-3xl font-bold text-gray-900 text-center">
             Edit Corporate Profile
           </h2>
@@ -206,7 +206,6 @@ const EditCorporateProfile = () => {
 
           {/* Form Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
             {[
               "contactName",
               "email",
@@ -305,7 +304,7 @@ const EditCorporateProfile = () => {
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className={`px-6 py-2.5 text-white bg-blue-600 rounded-lg hover:bg-blue-700 ${
+              className={`px-6 py-2.5 text-white bg-primary rounded-lg hover:bg-secondary ${
                 isSaving ? "opacity-50 cursor-not-allowed" : ""
               }`}
             >

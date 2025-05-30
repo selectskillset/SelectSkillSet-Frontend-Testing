@@ -42,74 +42,10 @@ const NAV_LINKS = {
     },
     { path: "/login", label: "Login", icon: <UserPlus size={20} /> },
   ],
-  candidate: [
-    // {
-    //   path: "/candidate-dashboard",
-    //   label: "Dashboard",
-    //   icon: <User size={20} />,
-    // },
-    // {
-    //   path: "/candidate-schedule-interviews",
-    //   label: "Schedule Interview",
-    //   icon: <Calendar size={20} />,
-    // },
-    // {
-    //   path: "/candidate-interviews",
-    //   label: "Upcoming Interviews",
-    //   icon: <Clock size={20} />,
-    // },
-    // {
-    //   path: "/candidate-settings",
-    //   label: "Settings",
-    //   icon: <Settings size={20} />,
-    // },
-  ],
-  interviewer: [
-    {
-      path: "/interviewer-dashboard",
-      label: "Dashboard",
-      icon: <User size={20} />,
-    },
-    {
-      path: "/interviewer-availability",
-      label: "My Availability",
-      icon: <Calendar size={20} />,
-    },
-    {
-      path: "/interviewer-requests",
-      label: "Interview Requests",
-      icon: <Clock size={20} />,
-    },
-    {
-      path: "/interviewer-settings",
-      label: "Settings",
-      icon: <Settings size={20} />,
-    },
-  ],
-  corporate: [
-    {
-      path: "/corporate-dashboard",
-      label: "Dashboard",
-      icon: <User size={20} />,
-    },
-    {
-      path: "/corporate-settings",
-      label: "Settings",
-      icon: <Settings size={20} />,
-    },
-  ],
-  admin: [
-    {
-      path: "/admin/dashboard/profiles",
-      label: "Users",
-      icon: <User size={20} />,
-    },
-    {
-      path: "/admin/settings",
-      label: "Settings",
-      icon: <Settings size={20} />,
-    },
-  ],
+  candidate: [],
+  interviewer: [],
+  corporate: [],
+  admin: [],
 };
 
 export const Navbar = React.memo(() => {
@@ -183,9 +119,14 @@ export const Navbar = React.memo(() => {
     if (isMenuOpen) setIsMenuOpen(false);
   }, [navigate, isMenuOpen]);
 
-  // Navigation handlers
   const handleProfileNavigation = useCallback(() => {
-    const dashboardPath = userType ? `/${userType}-dashboard` : "/";
+    const dashboardPath =
+      userType === "admin"
+        ? "/admin/dashboard"
+        : userType
+        ? `/${userType}-dashboard`
+        : "/";
+
     navigate(dashboardPath);
   }, [userType, navigate]);
 

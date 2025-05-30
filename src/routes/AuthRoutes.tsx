@@ -9,6 +9,7 @@ import InterviewerLogin from "../components/auth/Interviewer/InterviewerLogin";
 import { InterviewerSignup } from "../components/auth/Interviewer/InterviewerSignup";
 import { ForgotPassword } from "../components/auth/ForgotPassword";
 import { ResetPassword } from "../components/auth/ResetPassword";
+import AdminLogin from "../dashboards/adminDashboard/AdminLogin";
 
 // AuthRoutes component that defines routes for all authentication-related pages
 const AuthRoutes = () => {
@@ -40,6 +41,7 @@ const AuthRoutes = () => {
 
       {/* Route for interviewer signup page */}
       <Route path="/interviewer-signup" element={<InterviewerSignup />} />
+
     </Routes>
   );
 };

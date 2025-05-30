@@ -1,11 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 import { useMemo, useState, useCallback, useEffect } from "react";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Search,
-
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAdminContext } from "../../context/AdminContext";
 import { useNavigate } from "react-router-dom";
@@ -28,21 +23,14 @@ const TablePage = () => {
     candidates: {
       title: "Candidates List",
       data: data?.candidates || [],
-      columns: [
-        "Name",
-        "Email",
-        "Job Title",
-        "Location",
-        "Interviews",
-        "Actions",
-      ],
+      columns: ["Name", "Email", "Job Title", "Location", "Interviews", "Actions"],
     },
     interviewers: {
       title: "Interviewers List",
       data: data?.interviewers || [],
       columns: [
         "Name",
-        "Verification", // Added verification column
+        "Verification",
         "Email",
         "Job Title",
         "Location",
@@ -64,7 +52,7 @@ const TablePage = () => {
     },
   };
 
-  const highlightText = useCallback((text: string, query: string) => {
+  const highlightText = useCallback((text, query) => {
     if (!query) return text;
     const regex = new RegExp(`(${query})`, "gi");
     return text.split(regex).map((part, index) =>
@@ -94,7 +82,7 @@ const TablePage = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-primary"></div>
       </div>
     );
   }
@@ -112,7 +100,7 @@ const TablePage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen bg-gray-100 p-5"
+      className="min-h-screen "
     >
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         <h1 className="text-3xl font-bold text-gray-800 px-6 py-4 border-b border-gray-100">
@@ -130,7 +118,7 @@ const TablePage = () => {
               placeholder={`Search ${userType}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all"
             />
           </div>
         </div>
@@ -170,17 +158,13 @@ const TablePage = () => {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="relative group">
                           {item.isVerified ? (
-                            <>
-                              <span className="w-5 h-5 text-green-500">
-                                Verified
-                              </span>
-                            </>
+                            <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                              Verified
+                            </span>
                           ) : (
-                            <>
-                              <span className="w-5 h-5 text-red-500">
-                                Not Verified
-                              </span>
-                            </>
+                            <span className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                              Not Verified
+                            </span>
                           )}
                         </div>
                       </td>
@@ -209,7 +193,7 @@ const TablePage = () => {
                         onClick={() =>
                           navigate(`/admin/${userType}/${item._id}`)
                         }
-                        className="px-3 py-1.5 text-sm font-medium text-blue-600 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                        className="px-3 py-1.5 text-sm font-medium text-primary bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
                       >
                         View Profile
                       </button>

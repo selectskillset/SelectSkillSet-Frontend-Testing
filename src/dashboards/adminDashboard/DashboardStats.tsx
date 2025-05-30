@@ -45,8 +45,8 @@ const DashboardStats = ({
     {
       label: "Pending Interviews",
       value: pendingCount,
-      color: "bg-orange-50",
-      iconColor: "bg-orange-500",
+      color: "bg-yellow-50",
+      iconColor: "bg-yellow-500",
       icon: <Clock className="w-6 h-6 text-white" />,
     },
   ];
@@ -58,29 +58,35 @@ const DashboardStats = ({
           key={stat.label}
           whileHover={{
             scale: 1.03,
-            boxShadow: "0px 8px 15px rgba(0, 0, 0, 0.1)",
+            boxShadow: "0px 10px 15px rgba(0, 0, 0, 0.1)",
           }}
           transition={{ duration: 0.3 }}
-          className={`relative p-6 rounded-2xl shadow-md hover:shadow-lg cursor-pointer overflow-hidden group ${stat.color}`}
+          className={`relative p-6 rounded-2xl shadow-sm hover:shadow-lg cursor-pointer overflow-hidden group ${stat.color}`}
           onClick={() =>
-            stat.type &&
-            navigate(`/admin/dashboard/table?userType=${stat.type}`)
+            stat.type && navigate(`/admin/table?userType=${stat.type}`)
           }
           aria-label={`View ${stat.label}`}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              stat.type && navigate(`/admin/table?userType=${stat.type}`);
+            }
+          }}
         >
           {/* Background Gradient */}
           <div
             className={`absolute inset-0 bg-gradient-to-br from-${stat.iconColor.replace(
               "bg-",
               ""
-            )}/20 to-transparent opacity-70 group-hover:opacity-100 transition-opacity`}
+            )}/20 to-transparent opacity-70 group-hover:opacity-100 transition-opacity duration-300`}
           ></div>
 
           {/* Content */}
           <div className="relative z-10 flex items-center justify-between">
             {/* Left Side */}
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">
+              <p className="text-xs font-medium text-gray-600 uppercase tracking-wider mb-1">
                 {stat.label}
               </p>
               <p className="text-3xl font-bold text-gray-800">{stat.value}</p>
@@ -88,7 +94,7 @@ const DashboardStats = ({
 
             {/* Icon */}
             <div
-              className={`p-3 rounded-lg ${stat.iconColor} shadow-sm group-hover:scale-110 transition-transform`}
+              className={`p-3 rounded-lg ${stat.iconColor} shadow-sm group-hover:scale-110 transition-transform duration-300`}
             >
               {stat.icon}
             </div>

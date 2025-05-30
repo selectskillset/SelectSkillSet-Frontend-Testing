@@ -1,13 +1,9 @@
-// AdminDashboard.tsx
-import { useNavigate } from "react-router-dom";
-import { User2Icon } from "lucide-react";
 import { useAdminContext } from "../../context/AdminContext";
 import { AdminDashboardSkeleton } from "../../components/ui/AdminDashboardSkeleton";
 import DashboardStats from "./DashboardStats";
 import DashboardCharts from "./DashboardCharts";
 
 const AdminDashboard = () => {
-  const navigate = useNavigate();
   const { data, loading } = useAdminContext();
 
   if (loading) {
@@ -16,7 +12,7 @@ const AdminDashboard = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen bg-gray-100 p-5">
+      <div className="min-h-screen ">
         <div className="max-w-7xl mx-auto">
           <div className="text-red-500">No data available</div>
         </div>
@@ -34,7 +30,7 @@ const AdminDashboard = () => {
   } = data;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-5">
+    <div className="min-h-screen ">
       <div className="max-w-7xl mx-auto">
         {/* Dashboard Stats */}
         <DashboardStats
