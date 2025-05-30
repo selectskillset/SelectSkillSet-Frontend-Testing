@@ -54,7 +54,7 @@ const TermsAndConditionsModal: React.FC<TermsAndConditionsModalProps> = ({ onClo
             You have the right to withdraw your consent at any time by contacting us at{" "}
             <a
               href="mailto:contact@selectskillset.com"
-              className="text-[#0A66C2] underline hover:text-[#005885] transition duration-300"
+              className="text-primary underline hover:text-primary transition duration-300"
             >
               contact@selectskillset.com
             </a>{" "}

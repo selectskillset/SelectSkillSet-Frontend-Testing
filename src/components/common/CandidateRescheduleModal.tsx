@@ -341,7 +341,7 @@ const CandidateRescheduleModal: React.FC<CandidateRescheduleModalProps> = ({
             className={`w-full py-2.5 px-4 rounded-lg font-medium transition-colors ${
               isSubmitting
                 ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700 text-white"
+                : "primary hover:bg-blue-700 text-white"
             }`}
             aria-label={
               isSubmitting ? "Processing reschedule" : "Confirm reschedule"
