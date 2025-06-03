@@ -18,7 +18,7 @@ import {
   BadgeCheck,
   Loader as LoaderIcon,
 } from "lucide-react";
-import { useInterviewer } from "../../context/InterviewerContext"; 
+import { useInterviewer } from "../../context/InterviewerContext";
 import { toast } from "sonner";
 
 const useOutsideClick = (
@@ -407,84 +407,83 @@ const RequestCard: React.FC<{
               </span>
             </div>
           </div>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between">
-          {request.status === "Requested" ? (
-            <div className="flex gap-2">
-              <button
-                onClick={(e) => handleResponse(e, "Approved")}
-                disabled={isLoading}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                  isLoading
-                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                    : "bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md"
-                }`}
-              >
-                {isLoading ? (
-                  <LoaderIcon className="w-4 h-4 animate-spin" />
-                ) : (
-                  <CheckCircle className="w-4 h-4" />
-                )}
-                <span className="text-sm">Accept</span>
-              </button>
-
-              <button
-                onClick={(e) => handleResponse(e, "Cancelled")}
-                disabled={isLoading}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                  isLoading
-                    ? "bg-gray-100 text-gray-500 cursor-not-allowed"
-                    : "bg-red-500 hover:bg-red-600 text-white shadow-sm hover:shadow-md"
-                }`}
-              >
-                {isLoading ? (
-                  <LoaderIcon className="w-4 h-4 animate-spin" />
-                ) : (
-                  <XCircle className="w-4 h-4" />
-                )}
-                <span className="text-sm">Decline</span>
-              </button>
-            </div>
-          ) : (
-            (request.status === "Approved" ||
-              request.status === "RescheduleRequested") && (
-              <div className="relative" ref={menuRef}>
+          <div className="mt-4 flex items-center justify-between">
+            {request.status === "Requested" ? (
+              <div className="flex gap-2">
                 <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setOpenMenu(!openMenu);
-                  }}
-                  className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  onClick={(e) => handleResponse(e, "Approved")}
+                  disabled={isLoading}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                    isLoading
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : "bg-green-500 hover:bg-green-600 text-white shadow-sm hover:shadow-md"
+                  }`}
                 >
-                  <MoreVertical className="w-5 h-5 text-gray-600" />
+                  {isLoading ? (
+                    <LoaderIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
+                  <span className="text-sm">Accept</span>
                 </button>
 
-                <AnimatePresence>
-                  {openMenu && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 min-w-[160px] z-10 border border-gray-100"
-                    >
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onReschedule(request);
-                          setOpenMenu(false);
-                        }}
-                        className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
-                      >
-                        <Clock className="w-4 h-4 text-blue-500" />
-                        Reschedule
-                      </button>
-                    </motion.div>
+                <button
+                  onClick={(e) => handleResponse(e, "Cancelled")}
+                  disabled={isLoading}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
+                    isLoading
+                      ? "bg-gray-100 text-gray-500 cursor-not-allowed"
+                      : "bg-red-500 hover:bg-red-600 text-white shadow-sm hover:shadow-md"
+                  }`}
+                >
+                  {isLoading ? (
+                    <LoaderIcon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <XCircle className="w-4 h-4" />
                   )}
-                </AnimatePresence>
+                  <span className="text-sm">Decline</span>
+                </button>
               </div>
-            )
-          )}
+            ) : (
+              (request.status === "Approved" ||
+                request.status === "RescheduleRequested") && (
+                <div className="relative" ref={menuRef}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenMenu(!openMenu);
+                    }}
+                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <MoreVertical className="w-5 h-5 text-gray-600" />
+                  </button>
+
+                  <AnimatePresence>
+                    {openMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute right-0 top-8 bg-white shadow-lg rounded-lg p-2 min-w-[160px] z-[9999] border border-gray-100"
+                      >
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onReschedule(request);
+                            setOpenMenu(false);
+                          }}
+                          className="w-full flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-md text-sm text-gray-700"
+                        >
+                          <Clock className="w-4 h-4 text-blue-500" />
+                          Reschedule
+                        </button>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )
+            )}
+          </div>
         </div>
       </div>
     </motion.div>
