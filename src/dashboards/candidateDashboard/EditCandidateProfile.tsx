@@ -107,7 +107,7 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = memo(
           <X size={20} />
         </button>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="md:col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Company Name
@@ -242,7 +242,7 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = memo(
             </label>
             <input
               type="date"
-              value={formatDateForInput(exp.endDate)}
+              value={formatDateForInput(exp.endDate || "")}
               onChange={handleDateChange("endDate")}
               disabled={exp.current}
               className={`w-full px-4 py-2.5 rounded-lg border ${
@@ -315,7 +315,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
   }) => {
     return (
       <div className="space-y-6">
-        {/* Profile photo section */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative w-32 h-32 rounded-full border-4 border-blue-100 bg-gray-100 overflow-hidden">
             {profile.profilePhoto || existingProfilePhoto ? (
@@ -353,9 +352,7 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
           </label>
         </div>
 
-        {/* Form fields */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* First Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               First Name
@@ -373,7 +370,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             )}
           </div>
 
-          {/* Last Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Last Name
@@ -391,7 +387,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             )}
           </div>
 
-          {/* Job Title */}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Job Title
@@ -426,7 +421,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             )}
           </div>
 
-          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Location
@@ -444,7 +438,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             )}
           </div>
 
-          {/* LinkedIn */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               LinkedIn Profile
@@ -457,7 +450,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             />
           </div>
 
-          {/* Country */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Country
@@ -485,7 +477,6 @@ const BasicInfoTab: React.FC<BasicInfoTabProps> = memo(
             </div>
           </div>
 
-          {/* Phone Number */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number
@@ -805,32 +796,56 @@ const EditCandidateProfile = () => {
 
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
-    if (!profile.firstName.trim())
+    if (!profile.firstName.trim()) {
       newErrors.firstName = "First name is required";
-    if (!profile.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!profile.jobTitle.trim()) newErrors.jobTitle = "Job title is required";
-    if (!profile.skills.length)
+      toast.error("First name is required");
+    }
+    if (!profile.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+      toast.error("Last name is required");
+    }
+    if (!profile.jobTitle.trim()) {
+      newErrors.jobTitle = "Job title is required";
+      toast.error("Job title is required");
+    }
+    if (!profile.skills.length) {
       newErrors.skills = "At least one skill is required";
+      toast.error("At least one skill is required");
+    }
     if (!profile.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
+      toast.error("Phone number is required");
     } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits`;
+      toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
     }
 
     profile.experiences.forEach((exp, index) => {
-      if (!exp.company.trim())
+      if (!exp.company.trim()) {
         newErrors[`experience-${index}-company`] = "Company name is required";
-      if (!exp.position.trim())
+        toast.error(`Company name is required for experience ${index + 1}`);
+      }
+      if (!exp.position.trim()) {
         newErrors[`experience-${index}-position`] = "Position is required";
-      if (!exp.location.trim())
+        toast.error(`Position is required for experience ${index + 1}`);
+      }
+      if (!exp.location.trim()) {
         newErrors[`experience-${index}-location`] = "Location is required";
-      if (!exp.employmentType.trim())
+        toast.error(`Location is required for experience ${index + 1}`);
+      }
+      if (!exp.employmentType.trim()) {
         newErrors[`experience-${index}-employmentType`] =
           "Employment Type is required";
-      if (!exp.startDate)
+        toast.error(`Employment Type is required for experience ${index + 1}`);
+      }
+      if (!exp.startDate) {
         newErrors[`experience-${index}-startDate`] = "Start date is required";
-      if (!exp.current && !exp.endDate)
+        toast.error(`Start date is required for experience ${index + 1}`);
+      }
+      if (!exp.current && !exp.endDate) {
         newErrors[`experience-${index}-endDate`] = "End date is required";
+        toast.error(`End date is required for experience ${index + 1}`);
+      }
     });
 
     setErrors(newErrors);
@@ -959,9 +974,9 @@ const EditCandidateProfile = () => {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className=" bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
+      className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden"
     >
-      <div className=" mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+      <div className="mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
         <div className="p-6">
           <h2 className="text-3xl font-bold text-gray-900">Edit Profile</h2>
         </div>
