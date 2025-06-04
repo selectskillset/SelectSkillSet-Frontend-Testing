@@ -241,7 +241,7 @@ const ExperienceEntry: React.FC<ExperienceEntryProps> = React.memo(
             </label>
             <input
               type="date"
-              value={formatDateForInput(exp.endDate)}
+              value={formatDateForInput(exp.endDate || "")}
               onChange={handleDateChange("endDate")}
               disabled={exp.current}
               className={`w-full px-4 py-2.5 rounded-lg border ${
@@ -797,34 +797,64 @@ const EditInterviewerProfile = () => {
 
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
-    if (!profile.firstName.trim())
+    if (!profile.firstName.trim()) {
       newErrors.firstName = "First name is required";
-    if (!profile.lastName.trim()) newErrors.lastName = "Last name is required";
-    if (!profile.jobTitle.trim()) newErrors.jobTitle = "Job title is required";
-    if (!profile.summary.trim()) newErrors.summary = "Summary is required";
-    if (!profile.price.trim()) newErrors.price = "Price is required";
-    if (!profile.skills.length)
+      toast.error("First name is required");
+    }
+    if (!profile.lastName.trim()) {
+      newErrors.lastName = "Last name is required";
+      toast.error("Last name is required");
+    }
+    if (!profile.jobTitle.trim()) {
+      newErrors.jobTitle = "Job title is required";
+      toast.error("Job title is required");
+    }
+    if (!profile.summary.trim()) {
+      newErrors.summary = "Summary is required";
+      toast.error("Summary is required");
+    }
+    if (!profile.price.trim()) {
+      newErrors.price = "Price is required";
+      toast.error("Price is required");
+    }
+    if (!profile.skills.length) {
       newErrors.skills = "At least one skill is required";
+      toast.error("At least one skill is required");
+    }
     if (!profile.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
+      toast.error("Phone number is required");
     } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits`;
+      toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
     }
 
     profile.experiences.forEach((exp, index) => {
-      if (!exp.company.trim())
+      if (!exp.company.trim()) {
         newErrors[`experience-${index}-company`] = "Company name is required";
-      if (!exp.position.trim())
+        toast.error(`Company name is required for experience ${index + 1}`);
+      }
+      if (!exp.position.trim()) {
         newErrors[`experience-${index}-position`] = "Position is required";
-      if (!exp.location.trim())
+        toast.error(`Position is required for experience ${index + 1}`);
+      }
+      if (!exp.location.trim()) {
         newErrors[`experience-${index}-location`] = "Location is required";
-      if (!exp.employmentType.trim())
+        toast.error(`Location is required for experience ${index + 1}`);
+      }
+      if (!exp.employmentType.trim()) {
         newErrors[`experience-${index}-employmentType`] =
           "Employment Type is required";
-      if (!exp.startDate)
+        toast.error(`Employment Type is required for experience ${index + 1}`);
+      }
+      if (!exp.startDate) {
         newErrors[`experience-${index}-startDate`] = "Start date is required";
-      if (!exp.current && !exp.endDate)
+        toast.error(`Start date is required for experience ${index + 1}`);
+      }
+      if (!exp.current && !exp.endDate) {
         newErrors[`experience-${index}-endDate`] = "End date is required";
+        toast.error(`End date is required for experience ${index + 1}`);
+      }
     });
 
     setErrors(newErrors);
@@ -1061,4 +1091,5 @@ const EditInterviewerProfile = () => {
     </motion.div>
   );
 };
+
 export default EditInterviewerProfile;
