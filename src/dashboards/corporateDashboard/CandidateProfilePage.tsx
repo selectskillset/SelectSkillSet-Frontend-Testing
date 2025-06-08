@@ -207,7 +207,7 @@ const CandidateProfilePage = () => {
         >
           <div className="flex items-center gap-5">
             <img
-              src={state.candidate.profilePhoto || "/default-avatar.jpg"}
+              src={state.candidate.profilePhoto || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
               alt={`${state.candidate.firstName} ${state.candidate.lastName}`}
               className="w-20 h-20 rounded-full object-cover border-2 border-primary"
             />

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import axiosInstance from "../../components/common/axiosConfig";
@@ -16,6 +16,7 @@ import {
   Euro,
 } from "lucide-react";
 import Loader from "../../components/ui/Loader";
+import { useInterviewer } from "../../context/InterviewerContext";
 
 type Experience = {
   company: string;
@@ -674,6 +675,7 @@ const ExperienceTab: React.FC<ExperienceTabProps> = React.memo(
 
 const EditInterviewerProfile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState("basic");
   const [profile, setProfile] = useState<ProfileState>({
     firstName: "",
@@ -687,6 +689,7 @@ const EditInterviewerProfile = () => {
     profilePhoto: null,
     experiences: [],
   });
+
   const [existingProfilePhoto, setExistingProfilePhoto] = useState("");
   const [skillInput, setSkillInput] = useState("");
   const [jobTitleInput, setJobTitleInput] = useState("");
@@ -696,6 +699,14 @@ const EditInterviewerProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const {fetchProfile} = useInterviewer()
+
+  useEffect(() => {
+    const hash = location.hash.replace("#", "");
+    if (hash && ["basic", "skills", "experience"].includes(hash)) {
+      setActiveTab(hash);
+    }
+  }, [location.hash]);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -795,33 +806,29 @@ const EditInterviewerProfile = () => {
     }));
   }, []);
 
-  const validateForm = useCallback(() => {
+  const validateBasicInfo = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
-    if (!profile.firstName.trim()) {
+    if (!profile.firstName?.trim()) {
       newErrors.firstName = "First name is required";
       toast.error("First name is required");
     }
-    if (!profile.lastName.trim()) {
+    if (!profile.lastName?.trim()) {
       newErrors.lastName = "Last name is required";
       toast.error("Last name is required");
     }
-    if (!profile.jobTitle.trim()) {
+    if (!profile.jobTitle?.trim()) {
       newErrors.jobTitle = "Job title is required";
       toast.error("Job title is required");
     }
-    if (!profile.summary.trim()) {
+    if (!profile.summary?.trim()) {
       newErrors.summary = "Summary is required";
       toast.error("Summary is required");
     }
-    if (!profile.price.trim()) {
+    if (!profile.price?.trim()) {
       newErrors.price = "Price is required";
       toast.error("Price is required");
     }
-    if (!profile.skills.length) {
-      newErrors.skills = "At least one skill is required";
-      toast.error("At least one skill is required");
-    }
-    if (!profile.phoneNumber) {
+    if (!profile.phoneNumber?.trim()) {
       newErrors.phoneNumber = "Phone number is required";
       toast.error("Phone number is required");
     } else if (profile.phoneNumber.length !== selectedCountry.maxLength) {
@@ -829,29 +836,47 @@ const EditInterviewerProfile = () => {
       toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
     }
 
+    setErrors(newErrors);
+    return !Object.keys(newErrors).length;
+  }, [profile, selectedCountry]);
+
+  const validateSkills = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
+    if (!profile.skills.length) {
+      newErrors.skills = "At least one skill is required";
+      toast.error("At least one skill is required");
+    }
+
+    setErrors(newErrors);
+    return !Object.keys(newErrors).length;
+  }, [profile.skills]);
+
+  const validateExperience = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
+
     profile.experiences.forEach((exp, index) => {
-      if (!exp.company.trim()) {
+      if (!exp.company?.trim()) {
         newErrors[`experience-${index}-company`] = "Company name is required";
         toast.error(`Company name is required for experience ${index + 1}`);
       }
-      if (!exp.position.trim()) {
+      if (!exp.position?.trim()) {
         newErrors[`experience-${index}-position`] = "Position is required";
         toast.error(`Position is required for experience ${index + 1}`);
       }
-      if (!exp.location.trim()) {
+      if (!exp.location?.trim()) {
         newErrors[`experience-${index}-location`] = "Location is required";
         toast.error(`Location is required for experience ${index + 1}`);
       }
-      if (!exp.employmentType.trim()) {
+      if (!exp.employmentType?.trim()) {
         newErrors[`experience-${index}-employmentType`] =
           "Employment Type is required";
         toast.error(`Employment Type is required for experience ${index + 1}`);
       }
-      if (!exp.startDate) {
+      if (!exp.startDate?.trim()) {
         newErrors[`experience-${index}-startDate`] = "Start date is required";
         toast.error(`Start date is required for experience ${index + 1}`);
       }
-      if (!exp.current && !exp.endDate) {
+      if (!exp.current && !exp.endDate?.trim()) {
         newErrors[`experience-${index}-endDate`] = "End date is required";
         toast.error(`End date is required for experience ${index + 1}`);
       }
@@ -859,53 +884,73 @@ const EditInterviewerProfile = () => {
 
     setErrors(newErrors);
     return !Object.keys(newErrors).length;
-  }, [profile, selectedCountry]);
+  }, [profile.experiences]);
 
-  const handleSave = useCallback(async () => {
-    if (!validateForm()) return;
+const handleSave = useCallback(async () => {
+  let isValid = false;
+  if (activeTab === "basic") {
+    isValid = validateBasicInfo();
+  } else if (activeTab === "skills") {
+    isValid = validateSkills();
+  } else if (activeTab === "experience") {
+    isValid = validateExperience();
+  }
 
-    const formData = new FormData();
-    const payload = {
-      firstName: profile.firstName,
-      lastName: profile.lastName,
-      jobTitle: profile.jobTitle,
-      location: profile.location,
-      phoneNumber: profile.phoneNumber,
-      countryCode: selectedCountry.code,
-      summary: profile.summary,
-      price: profile.price,
-      skills: profile.skills,
-      experiences: profile.experiences.map((exp) => ({
-        ...exp,
-        endDate: exp.current ? null : exp.endDate,
-      })),
-    };
+  if (!isValid) return;
 
-    Object.entries(payload).forEach(([key, value]) => {
-      formData.append(
-        key,
-        key === "skills" || key === "experiences"
-          ? JSON.stringify(value)
-          : value
-      );
+  const formData = new FormData();
+  const payload = {
+    firstName: profile.firstName,
+    lastName: profile.lastName,
+    jobTitle: profile.jobTitle,
+    location: profile.location,
+    phoneNumber: profile.phoneNumber,
+    countryCode: selectedCountry.code,
+    summary: profile.summary,
+    price: profile.price,
+    skills: profile.skills,
+    experiences: profile.experiences.map((exp) => ({
+      ...exp,
+      endDate: exp.current ? null : exp.endDate,
+    })),
+  };
+
+  Object.entries(payload).forEach(([key, value]) => {
+    formData.append(
+      key,
+      key === "skills" || key === "experiences"
+        ? JSON.stringify(value)
+        : value
+    );
+  });
+
+  if (profile.profilePhoto) {
+    formData.append("profilePhoto", profile.profilePhoto);
+  }
+
+  setIsSaving(true);
+  try {
+    await axiosInstance.put("/interviewer/updateProfile", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-
-    if (profile.profilePhoto)
-      formData.append("profilePhoto", profile.profilePhoto);
-
-    setIsSaving(true);
-    try {
-      await axiosInstance.put("/interviewer/updateProfile", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Profile updated successfully");
-      navigate("/interviewer-dashboard");
-    } catch (error) {
-      toast.error("Failed to update profile");
-    } finally {
-      setIsSaving(false);
-    }
-  }, [profile, selectedCountry, navigate, validateForm]);
+    toast.success("Profile updated successfully");
+    await fetchProfile(true); 
+    navigate("/interviewer-dashboard");
+  } catch (error) {
+    toast.error("Failed to update profile");
+  } finally {
+    setIsSaving(false);
+  }
+}, [
+  profile,
+  selectedCountry,
+  navigate,
+  activeTab,
+  validateBasicInfo,
+  validateSkills,
+  validateExperience,
+  fetchProfile,
+]);
 
   const handleSkillInput = useCallback(
     (value: string) => {

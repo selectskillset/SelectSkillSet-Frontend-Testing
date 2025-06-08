@@ -16,6 +16,7 @@ import { jobTitles } from "../../components/common/JobTitles";
 import { countryData } from "../../components/common/countryData";
 import { useNavigate } from "react-router-dom";
 import Loader from "../../components/ui/Loader";
+import { useCandidate } from "../../context/CandidateContext";
 
 // Types
 type Experience = {
@@ -693,6 +694,7 @@ const EditCandidateProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const { fetchProfile } = useCandidate();
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -794,7 +796,7 @@ const EditCandidateProfile = () => {
     }));
   }, []);
 
-  const validateForm = useCallback(() => {
+  const validateBasicInfo = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
     if (!profile.firstName.trim()) {
       newErrors.firstName = "First name is required";
@@ -808,10 +810,6 @@ const EditCandidateProfile = () => {
       newErrors.jobTitle = "Job title is required";
       toast.error("Job title is required");
     }
-    if (!profile.skills.length) {
-      newErrors.skills = "At least one skill is required";
-      toast.error("At least one skill is required");
-    }
     if (!profile.phoneNumber) {
       newErrors.phoneNumber = "Phone number is required";
       toast.error("Phone number is required");
@@ -819,6 +817,24 @@ const EditCandidateProfile = () => {
       newErrors.phoneNumber = `Phone number must be ${selectedCountry.maxLength} digits`;
       toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
     }
+
+    setErrors(newErrors);
+    return !Object.keys(newErrors).length;
+  }, [profile, selectedCountry]);
+
+  const validateSkills = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
+    if (!profile.skills.length) {
+      newErrors.skills = "At least one skill is required";
+      toast.error("At least one skill is required");
+    }
+
+    setErrors(newErrors);
+    return !Object.keys(newErrors).length;
+  }, [profile.skills]);
+
+  const validateExperience = useCallback(() => {
+    const newErrors: { [key: string]: string } = {};
 
     profile.experiences.forEach((exp, index) => {
       if (!exp.company.trim()) {
@@ -850,10 +866,19 @@ const EditCandidateProfile = () => {
 
     setErrors(newErrors);
     return !Object.keys(newErrors).length;
-  }, [profile, selectedCountry]);
+  }, [profile.experiences]);
 
   const handleSave = useCallback(async () => {
-    if (!validateForm()) return;
+    let isValid = false;
+    if (activeTab === "basic") {
+      isValid = validateBasicInfo();
+    } else if (activeTab === "skills") {
+      isValid = validateSkills();
+    } else if (activeTab === "experience") {
+      isValid = validateExperience();
+    }
+
+    if (!isValid) return;
 
     const formData = new FormData();
     const payload = {
@@ -889,14 +914,24 @@ const EditCandidateProfile = () => {
       await axiosInstance.put("/candidate/updateProfile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+
       toast.success("Profile updated successfully");
+      fetchProfile(true);
       navigate("/candidate-dashboard");
     } catch (error) {
       toast.error("Failed to update profile");
     } finally {
       setIsSaving(false);
     }
-  }, [profile, selectedCountry, navigate, validateForm]);
+  }, [
+    profile,
+    selectedCountry,
+    navigate,
+    activeTab,
+    validateBasicInfo,
+    validateSkills,
+    validateExperience,
+  ]);
 
   const handleSkillInput = useCallback(
     (value: string) => {
