@@ -7,7 +7,6 @@ import {
   Camera,
   Trash2,
   UploadCloud,
-  FileText,
   User,
   AlertCircle,
   AlertTriangle,

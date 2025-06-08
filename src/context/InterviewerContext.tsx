@@ -233,7 +233,6 @@ export const InterviewerProvider: React.FC<{ children: React.ReactNode }> = ({
         await axiosInstance.put("/interviewer/updateProfile", formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-        lastFetchedRef.current = 0; // Invalidate cache
         await fetchProfile(true);
       }, "profile");
     },
