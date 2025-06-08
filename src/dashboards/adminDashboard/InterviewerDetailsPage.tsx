@@ -283,7 +283,7 @@ const InterviewerDetailsPage: React.FC = () => {
                 <div className="relative">
                   <img
                     src={
-                      state.interviewer.profilePhoto || "/default-avatar.jpg"
+                      state.interviewer.profilePhoto || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
                     }
                     alt={`${state.interviewer.firstName} ${state.interviewer.lastName}`}
                     className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"

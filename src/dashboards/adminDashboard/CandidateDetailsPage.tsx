@@ -271,11 +271,11 @@ const CandidateDetailsPage: React.FC = () => {
           <div className="flex items-center gap-5 flex-1 min-w-[300px]">
             <div className="relative">
               <img
-                src={state.candidate.profilePhoto || "/default-avatar.jpg"}
+                src={state.candidate.profilePhoto || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                 alt={`${state.candidate.firstName} ${state.candidate.lastName}`}
                 className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "/default-avatar.jpg";
+                  (e.target as HTMLImageElement).src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
                 }}
               />
               {state.candidate.isSuspended && (

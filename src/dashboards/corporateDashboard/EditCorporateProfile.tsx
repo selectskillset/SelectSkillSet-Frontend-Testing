@@ -6,6 +6,7 @@ import axiosInstance from "../../components/common/axiosConfig";
 import { countryData } from "../../components/common/countryData";
 import { Camera, Pencil, ChevronDown } from "lucide-react";
 import Loader from "../../components/ui/Loader";
+import { useCorporate } from "../../context/CorporateContext";
 
 type ProfileState = {
   contactName: string;
@@ -33,6 +34,7 @@ const EditCorporateProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [selectedCountry, setSelectedCountry] = useState(countryData[0]);
+  const {fetchProfile} = useCorporate()
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -149,6 +151,7 @@ const EditCorporateProfile = () => {
         timeout: 10000, // Add timeout
       });
       toast.success("Profile updated successfully");
+      fetchProfile(true)
       navigate("/corporate-dashboard");
     } catch (error) {
       if (error.code === "ECONNABORTED") {
