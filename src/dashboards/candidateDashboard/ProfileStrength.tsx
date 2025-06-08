@@ -1,4 +1,4 @@
-import React, { memo, useMemo, useCallback, useEffect, useState } from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FileText,
@@ -7,10 +7,9 @@ import {
   Star,
   CheckCircle,
   AlertCircle,
-  Pencil,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../components/common/axiosConfig";
+import { useCandidate } from "../../context/CandidateContext";
 
 type MissingSection = {
   section: string;
@@ -48,26 +47,7 @@ const ProgressPulse = memo(({ active }: { active: boolean }) => (
 
 const ProfileStrength: React.FC = () => {
   const navigate = useNavigate();
-  const [completion, setCompletion] = useState<CompletionData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchCompletionData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await axiosInstance.get("/candidate/profile-completion");
-      setCompletion(response.data);
-    } catch (err) {
-      console.error("Error fetching completion data:", err);
-      setError("Failed to load profile strength data");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCompletionData();
-  }, [fetchCompletionData]);
+  const { completion, loading, error, fetchProfile } = useCandidate();
 
   const hasMissingSections = useMemo(
     () => completion?.missingSections && completion.missingSections.length > 0,
@@ -87,7 +67,7 @@ const ProfileStrength: React.FC = () => {
     [navigate]
   );
 
-  if (loading) {
+  if (loading.profile) {
     return (
       <div className="p-4 md:p-6 bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto flex justify-center items-center h-40">
         <div className="flex flex-col items-center gap-2">
@@ -106,7 +86,7 @@ const ProfileStrength: React.FC = () => {
           <span>{error}</span>
         </div>
         <button
-          onClick={fetchCompletionData}
+          onClick={fetchProfile}
           className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors"
         >
           Retry
@@ -122,10 +102,10 @@ const ProfileStrength: React.FC = () => {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="p-4  bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto"
+      className="p-4 bg-white rounded-xl border border-gray-100 shadow-sm w-full max-w-md mx-auto"
     >
       {/* Header Section */}
-      <div className="flex  xs:flex-row items-start xs:items-center justify-between gap-2 mb-4">
+      <div className="flex xs:flex-row items-start xs:items-center justify-between gap-2 mb-4">
         <h3 className="text-sm md:text-base font-semibold text-gray-900">
           Profile Strength
         </h3>

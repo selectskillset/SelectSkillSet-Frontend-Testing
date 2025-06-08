@@ -1,4 +1,3 @@
-// CandidateContext.tsx
 import {
   createContext,
   useContext,
@@ -252,7 +251,7 @@ export const CandidateProvider = ({
 
         if (!(updatedData instanceof FormData)) {
           Object.entries(updatedData).forEach(([key, value]) => {
-            if (value !== undefined) formData.append(key, value);
+            if (value !== undefined) formData.append(key, String(value));
           });
         }
 
