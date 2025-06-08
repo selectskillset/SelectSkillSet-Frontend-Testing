@@ -15,6 +15,14 @@ import { useCandidate } from "../../context/CandidateContext";
 import { useNavigate } from "react-router-dom";
 import { countryData } from "../../components/common/countryData";
 
+// Function to generate the UI Avatars URL
+const getAvatarUrl = (name) => {
+  return `https://ui-avatars.com/api/?name=${name.replace(
+    /\s+/g,
+    "+"
+  )}&background=0D8ABC&color=fff&size=128`;
+};
+
 // Custom Hooks
 const useOutsideClick = (ref, callback) => {
   useEffect(() => {
@@ -39,7 +47,7 @@ const useEscapeKey = (callback) => {
 };
 
 // Profile Photo Modal Component
-const ProfilePhotoModal = memo(({ photoUrl, onClose, onRemove, onUpload }) => {
+const ProfilePhotoModal = memo(({ photoUrl, onClose, onRemove, onUpload, name }) => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const modalRef = useRef(null);
@@ -98,10 +106,14 @@ const ProfilePhotoModal = memo(({ photoUrl, onClose, onRemove, onUpload }) => {
               src={
                 selectedFile
                   ? URL.createObjectURL(selectedFile)
-                  : photoUrl || "/default-profile.png"
+                  : photoUrl || getAvatarUrl(name)
               }
               alt="Profile preview"
               className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = getAvatarUrl(name);
+              }}
             />
           </div>
 
@@ -551,9 +563,8 @@ const CandidateProfile = () => {
 
   const handlePhotoRemove = useCallback(async () => {
     try {
-      const formData = new FormData();
-      formData.append("removeProfilePhoto", "true");
-      await updateProfile(formData);
+      const payload = { profilePhoto: "" };
+      await updateProfile(payload);
       toast.success("Profile photo removed");
     } catch (error) {
       toast.error("Failed to remove photo");
@@ -608,6 +619,7 @@ const CandidateProfile = () => {
         {modals.photo && (
           <ProfilePhotoModal
             photoUrl={profile.profilePhoto}
+            name={profile.name}
             onClose={() => toggleModal("photo")}
             onRemove={handlePhotoRemove}
             onUpload={handlePhotoUpload}
@@ -649,9 +661,17 @@ const CandidateProfile = () => {
               onClick={() => toggleModal("photo")}
             >
               <img
-                src={profile.profilePhoto || "/default-profile.png"}
+                src={
+                  profile.profilePhoto
+                    ? profile.profilePhoto
+                    : getAvatarUrl(profile.name)
+                }
                 alt="Profile"
                 className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md cursor-pointer hover:opacity-90 transition-opacity"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = getAvatarUrl(profile.name);
+                }}
               />
               <div className="absolute inset-0 rounded-full bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity cursor-pointer">
                 <Camera className="text-white" size={20} />

@@ -98,14 +98,25 @@ const EditCorporateProfile = () => {
 
   const validateForm = useCallback(() => {
     const newErrors: { [key: string]: string } = {};
-    if (!profile.contactName.trim())
+    if (!profile.contactName.trim()) {
       newErrors.contactName = "Contact name required";
-    if (!profile.email.trim()) newErrors.email = "Email required";
-    if (!profile.companyName.trim())
+      toast.error("Contact name is required");
+    }
+    if (!profile.email.trim()) {
+      newErrors.email = "Email required";
+      toast.error("Email is required");
+    }
+    if (!profile.companyName.trim()) {
       newErrors.companyName = "Company name required";
-    if (!profile.phoneNumber) newErrors.phoneNumber = "Phone number required";
+      toast.error("Company name is required");
+    }
+    if (!profile.phoneNumber) {
+      newErrors.phoneNumber = "Phone number required";
+      toast.error("Phone number is required");
+    }
     if (profile.phoneNumber.length !== selectedCountry.maxLength) {
       newErrors.phoneNumber = `Must be ${selectedCountry.maxLength} digits`;
+      toast.error(`Phone number must be ${selectedCountry.maxLength} digits`);
     }
 
     setErrors(newErrors);

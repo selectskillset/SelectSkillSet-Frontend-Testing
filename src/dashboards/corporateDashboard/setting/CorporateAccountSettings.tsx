@@ -71,7 +71,7 @@ const CorporateAccountSettings: React.FC = () => {
       </div>
 
       {/* Danger Zone */}
-      <div className="border-t border-gray-200 pt-8">
+      {/* <div className="border-t border-gray-200 pt-8">
         <h2 className="text-lg font-medium text-gray-800 mb-6">Danger Zone</h2>
 
         <div className="space-y-4">
@@ -93,7 +93,7 @@ const CorporateAccountSettings: React.FC = () => {
         </div>
       </div>
 
-      {/* Delete Account Confirmation Modal */}
+      
       {isDeleteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-md">
@@ -134,7 +134,7 @@ const CorporateAccountSettings: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };
