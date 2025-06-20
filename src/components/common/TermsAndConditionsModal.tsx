@@ -53,10 +53,10 @@ const TermsAndConditionsModal: React.FC<TermsAndConditionsModalProps> = ({ onClo
           <p className="text-gray-700 mb-4">
             You have the right to withdraw your consent at any time by contacting us at{" "}
             <a
-              href="mailto:contact@selectskillset.com"
+              href="mailto:support@selectskillset.com"
               className="text-primary underline hover:text-primary transition duration-300"
             >
-              contact@selectskillset.com
+              support@selectskillset.com
             </a>{" "}
             or adjusting your privacy settings in your account. For more details on how we handle
             your data, please refer to our Privacy Policy.
