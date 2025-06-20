@@ -161,10 +161,10 @@ const termsData = [
       <p className="text-gray-700">
         For any questions, please email us at{" "}
         <a
-          href="mailto:contact@selectskillset.com"
+          href="mailto:support@selectskillset.com"
           className="text-primary hover:underline transition-colors duration-300"
         >
-          contact@selectskillset.com
+          support@selectskillset.com
         </a>
         .
       </p>

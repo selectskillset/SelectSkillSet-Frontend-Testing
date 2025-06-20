@@ -119,18 +119,18 @@ const PrivacyPolicyModal: React.FC<PrivacyPolicyModalProps> = ({ onClose }) => {
             <p className="text-gray-700">
               Data Protection Officer:{" "}
               <a
-                href="mailto:dpo@selectskillset.com"
+                href="mailto:support@selectskillset.com"
                 className="text-primary underline hover:text-primary transition duration-300"
               >
-                dpo@selectskillset.com
+                support@selectskillset.com
               </a>
               <br />
               EU Representative:{" "}
               <a
-                href="mailto:eu-rep@selectskillset.com"
+                href="mailto:support@selectskillset.com"
                 className="text-primary underline hover:text-primary transition duration-300"
               >
-                eu-rep@selectskillset.com
+                support@selectskillset.com
               </a>
             </p>
             <p className="text-gray-700 mt-4 text-sm">
