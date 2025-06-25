@@ -1,7 +1,18 @@
 import axios from "axios";
 
+
+// Production BaseURL 👇👇👇
+// const axiosInstance = axios.create({
+//   baseURL: "https://select-skill-set-backend-nine.vercel.app/",
+
+//   headers: {
+//     "Content-Type": "application/json",
+//   },
+// });
+
+// Development BaseURL 👇👇👇
 const axiosInstance = axios.create({
-  baseURL: "https://select-skill-set-backend-nine.vercel.app/",
+  baseURL: "https://selectskillset-backend.onrender.com/",
 
   headers: {
     "Content-Type": "application/json",
