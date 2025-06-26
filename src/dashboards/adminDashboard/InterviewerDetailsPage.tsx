@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
 import { format, parse } from "date-fns";
+import { toast } from "sonner";
 
 interface Experience {
   company: string;
@@ -90,6 +91,7 @@ const InterviewerDetailsPage: React.FC = () => {
       }
     } catch (error) {
       console.error("Error fetching interviewer:", error);
+      toast.error("Failed to load interviewer details");
     } finally {
       setState((prev) => ({ ...prev, isLoading: false }));
     }
@@ -116,11 +118,35 @@ const InterviewerDetailsPage: React.FC = () => {
           },
           isVerifyModalOpen: false,
         }));
+        toast.success(
+          `Interviewer account ${
+            !state.interviewer.isVerified ? "verified" : "unverified"
+          } successfully`
+        );
       }
+    } catch (error) {
+      toast.error("Failed to update verification status");
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
   }, [state.interviewer, id]);
+
+  const handleDeleteInterviewer = useCallback(async () => {
+    setState((prev) => ({ ...prev, isUpdating: true }));
+    try {
+      await axiosInstance.delete(`/admin/deleteOneInterviewer/${id}`);
+      toast.success("Interviewer deleted successfully");
+      navigate("/admin/dashboard");
+    } catch (error) {
+      toast.error("Failed to delete interviewer");
+    } finally {
+      setState((prev) => ({
+        ...prev,
+        isUpdating: false,
+        isDeleteModalOpen: false,
+      }));
+    }
+  }, [id, navigate]);
 
   const formatDate = useCallback((dateString: string): string => {
     try {
@@ -195,9 +221,14 @@ const InterviewerDetailsPage: React.FC = () => {
           suspensionReason: "",
           isSuspendModalOpen: false,
         }));
+        toast.success(
+          `Interviewer account ${
+            action === "suspend" ? "suspended" : "activated"
+          } successfully`
+        );
       }
     } catch (error) {
-      console.error("Error updating status:", error);
+      toast.error("Failed to update interviewer status");
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
@@ -283,17 +314,18 @@ const InterviewerDetailsPage: React.FC = () => {
                 <div className="relative">
                   <img
                     src={
-                      state.interviewer.profilePhoto || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                      state.interviewer.profilePhoto ||
+                      "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
                     }
                     alt={`${state.interviewer.firstName} ${state.interviewer.lastName}`}
                     className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
                   />
                   {state.interviewer.isVerified ? (
-                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white  rounded-full">
+                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full">
                       <BadgeCheck size={30} />
                     </div>
                   ) : (
-                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white  rounded-full">
+                    <div className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full">
                       <AlertCircle size={30} />
                     </div>
                   )}
@@ -346,7 +378,20 @@ const InterviewerDetailsPage: React.FC = () => {
                           onClick={() =>
                             setState((prev) => ({
                               ...prev,
+                              isDeleteModalOpen: true,
+                              isDropdownOpen: false,
+                            }))
+                          }
+                          className="w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 text-left flex items-center gap-2"
+                        >
+                          Delete Account
+                        </button>
+                        <button
+                          onClick={() =>
+                            setState((prev) => ({
+                              ...prev,
                               isVerifyModalOpen: true,
+                              isDropdownOpen: false,
                             }))
                           }
                           className="w-full px-4 py-2.5 text-sm text-blue-600 hover:bg-blue-50 text-left"
@@ -359,18 +404,8 @@ const InterviewerDetailsPage: React.FC = () => {
                           onClick={() =>
                             setState((prev) => ({
                               ...prev,
-                              isDeleteModalOpen: true,
-                            }))
-                          }
-                          className="w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 text-left"
-                        >
-                          Delete Account
-                        </button>
-                        <button
-                          onClick={() =>
-                            setState((prev) => ({
-                              ...prev,
                               isSuspendModalOpen: true,
+                              isDropdownOpen: false,
                             }))
                           }
                           className="w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left"
@@ -510,215 +545,272 @@ const InterviewerDetailsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Interview Requests */}
-              <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-gray-500" /> Interview
-                  Requests
-                </h2>
-                {currentRequests.length > 0 ? (
-                  <>
-                    <div className="divide-y divide-gray-100">
-                      {currentRequests.map((request) => (
-                        <motion.div
-                          key={request._id}
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="py-4"
+            {/* Interview Requests */}
+            <div className="bg-white rounded-xl shadow-sm p-6 md:col-span-2">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-gray-500" /> Interview
+                Requests
+              </h2>
+              {currentRequests.length > 0 ? (
+                <>
+                  <div className="divide-y divide-gray-100">
+                    {currentRequests.map((request) => (
+                      <motion.div
+                        key={request._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="py-4"
+                      >
+                        <div className="flex flex-wrap items-center gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {formatDate(request.date)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Clock className="w-4 h-4 text-gray-400" />
+                            <span className="text-gray-600">
+                              {formatTime(request.time)}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(request.status)}
+                            <span className="capitalize text-gray-700">
+                              {request.status.toLowerCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-2 space-y-1">
+                          <p className="text-sm text-gray-600">
+                            Candidate: {request.candidateName}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Position: {request.position}
+                          </p>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex justify-center gap-1">
+                      {Array.from({ length: totalPages }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() =>
+                            setState((prev) => ({
+                              ...prev,
+                              currentPage: idx + 1,
+                            }))
+                          }
+                          className={`w-9 h-9 rounded-lg flex items-center justify-center ${
+                            state.currentPage === idx + 1
+                              ? "bg-indigo-600 text-white"
+                              : "text-gray-600 hover:bg-gray-100"
+                          }`}
                         >
-                          <div className="flex flex-wrap items-center gap-4 text-sm">
-                            <div className="flex items-center gap-2">
-                              <Calendar className="w-4 h-4 text-gray-400" />
-                              <span className="text-gray-600">
-                                {formatDate(request.date)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Clock className="w-4 h-4 text-gray-400" />
-                              <span className="text-gray-600">
-                                {formatTime(request.time)}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              {getStatusIcon(request.status)}
-                              <span className="capitalize text-gray-700">
-                                {request.status.toLowerCase()}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="mt-2 space-y-1">
-                            <p className="text-sm text-gray-600">
-                              Candidate: {request.candidateName}
-                            </p>
-                            <p className="text-sm text-gray-600">
-                              Position: {request.position}
-                            </p>
-                          </div>
-                        </motion.div>
+                          {idx + 1}
+                        </button>
                       ))}
                     </div>
-
-                    {totalPages > 1 && (
-                      <div className="mt-6 flex justify-center gap-1">
-                        {Array.from({ length: totalPages }).map((_, idx) => (
-                          <button
-                            key={idx}
-                            onClick={() =>
-                              setState((prev) => ({
-                                ...prev,
-                                currentPage: idx + 1,
-                              }))
-                            }
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                              state.currentPage === idx + 1
-                                ? "bg-indigo-600 text-white"
-                                : "text-gray-600 hover:bg-gray-100"
-                            }`}
-                          >
-                            {idx + 1}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-6 text-gray-500">
-                    No interview requests found
-                  </div>
-                )}
-              </div>
+                  )}
+                </>
+              ) : (
+                <div className="text-center py-6 text-gray-500">
+                  No interview requests found
+                </div>
+              )}
             </div>
           </div>
         )}
+      </main>
 
-        {/* Verification Modal */}
-        <AnimatePresence>
-          {state.isVerifyModalOpen && (
+      {/* Modals */}
+      <AnimatePresence>
+        {/* Delete Modal */}
+        {state.isDeleteModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50"
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-              onClick={() =>
-                setState((prev) => ({ ...prev, isVerifyModalOpen: false }))
-              }
+              initial={{ scale: 0.95 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.95 }}
+              className="bg-white rounded-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
             >
-              <div className="bg-white rounded-xl max-w-md w-full p-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  {state.interviewer?.isVerified
-                    ? "Unverify Account"
-                    : "Verify Account"}
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  {state.interviewer?.isVerified
-                    ? "This will mark the interviewer's profile as unverified."
-                    : "This will mark the interviewer's profile as verified."}
-                </p>
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() =>
-                      setState((prev) => ({
-                        ...prev,
-                        isVerifyModalOpen: false,
-                      }))
-                    }
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleVerification}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    disabled={state.isUpdating}
-                  >
-                    {state.isUpdating
-                      ? "Processing..."
-                      : state.interviewer?.isVerified
-                      ? "Confirm Unverify"
-                      : "Confirm Verify"}
-                  </button>
-                </div>
+              <h3 className="text-lg font-semibold mb-4">
+                Delete Interviewer Account
+              </h3>
+              <p className="text-gray-600 mb-6">
+                This action will permanently delete the interviewer account and
+                all associated data. This cannot be undone.
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() =>
+                    setState((prev) => ({
+                      ...prev,
+                      isDeleteModalOpen: false,
+                    }))
+                  }
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  disabled={state.isUpdating}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteInterviewer}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:bg-red-400"
+                  disabled={state.isUpdating}
+                >
+                  {state.isUpdating ? "Deleting..." : "Confirm Delete"}
+                </button>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
+          </motion.div>
+        )}
+
+        {/* Verification Modal */}
+        {state.isVerifyModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+            onClick={() =>
+              setState((prev) => ({ ...prev, isVerifyModalOpen: false }))
+            }
+          >
+            <div className="bg-white rounded-xl max-w-md w-full p-6">
+              <h3 className="text-lg font-semibold mb-4">
+                {state.interviewer?.isVerified
+                  ? "Unverify Account"
+                  : "Verify Account"}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {state.interviewer?.isVerified
+                  ? "This will mark the interviewer's profile as unverified."
+                  : "This will mark the interviewer's profile as verified."}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() =>
+                    setState((prev) => ({
+                      ...prev,
+                      isVerifyModalOpen: false,
+                    }))
+                  }
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleVerification}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  disabled={state.isUpdating}
+                >
+                  {state.isUpdating
+                    ? "Processing..."
+                    : state.interviewer?.isVerified
+                    ? "Confirm Unverify"
+                    : "Confirm Verify"}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Suspend/Activate Modal */}
-        <AnimatePresence>
-          {state.isSuspendModalOpen && (
+        {state.isSuspendModalOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
+            onClick={() =>
+              setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
+            }
+          >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 flex items-center justify-center p-4"
-              onClick={() =>
-                setState((prev) => ({ ...prev, isSuspendModalOpen: false }))
-              }
+              className="bg-white rounded-xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
             >
-              <motion.div 
-                className="bg-white rounded-xl max-w-md w-full p-6"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <h3 className="text-lg font-semibold mb-4">
-                  {state.interviewer?.isSuspended ? "Activate Account" : "Suspend Account"}
-                </h3>
-                
-                {!state.interviewer?.isSuspended && (
-                  <div className="mb-4">
-                    <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-1">
-                      Suspension Reason
-                    </label>
-                    <input
-                      type="text"
-                      id="reason"
-                      value={state.suspensionReason}
-                      onChange={(e) => setState(prev => ({
+              <h3 className="text-lg font-semibold mb-4">
+                {state.interviewer?.isSuspended
+                  ? "Activate Account"
+                  : "Suspend Account"}
+              </h3>
+
+              {!state.interviewer?.isSuspended && (
+                <div className="mb-4">
+                  <label
+                    htmlFor="reason"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Suspension Reason
+                  </label>
+                  <input
+                    type="text"
+                    id="reason"
+                    value={state.suspensionReason}
+                    onChange={(e) =>
+                      setState((prev) => ({
                         ...prev,
-                        suspensionReason: e.target.value
-                      }))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                      placeholder="Enter reason for suspension"
-                      required
-                    />
-                  </div>
-                )}
-                
-                <p className="text-gray-600 mb-6">
-                  {state.interviewer?.isSuspended
-                    ? "This will reactivate the interviewer's account."
-                    : "This will suspend the interviewer's account and pause all interview requests."}
-                </p>
-                
-                <div className="flex justify-end gap-3">
-                  <button
-                    onClick={() => setState(prev => ({
+                        suspensionReason: e.target.value,
+                      }))
+                    }
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    placeholder="Enter reason for suspension"
+                    required
+                  />
+                </div>
+              )}
+
+              <p className="text-gray-600 mb-6">
+                {state.interviewer?.isSuspended
+                  ? "This will reactivate the interviewer's account."
+                  : "This will suspend the interviewer's account and pause all interview requests."}
+              </p>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() =>
+                    setState((prev) => ({
                       ...prev,
                       isSuspendModalOpen: false,
-                      suspensionReason: ""
-                    }))}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleStatusUpdate}
-                    className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
-                    disabled={state.isUpdating || 
-                      (!state.interviewer?.isSuspended && !state.suspensionReason)}
-                  >
-                    {state.isUpdating 
-                      ? "Processing..." 
-                      : state.interviewer?.isSuspended 
-                        ? "Activate Account" 
-                        : "Suspend Account"}
-                  </button>
-                </div>
-              </motion.div>
+                      suspensionReason: "",
+                    }))
+                  }
+                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleStatusUpdate}
+                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  disabled={
+                    state.isUpdating ||
+                    (!state.interviewer?.isSuspended && !state.suspensionReason)
+                  }
+                >
+                  {state.isUpdating
+                    ? "Processing..."
+                    : state.interviewer?.isSuspended
+                    ? "Activate Account"
+                    : "Suspend Account"}
+                </button>
+              </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-      </main>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
