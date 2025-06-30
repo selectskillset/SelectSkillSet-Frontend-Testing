@@ -1,5 +1,4 @@
-// AdminContext.tsx
-import {
+import React, {
   createContext,
   useContext,
   useEffect,
@@ -12,6 +11,7 @@ interface AdminContextType {
   data: any;
   loading: boolean;
   error: string | null;
+  refetch: () => void;
 }
 
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
@@ -46,12 +46,16 @@ export const AdminProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, []);
 
+  const refetch = useCallback(() => {
+    fetchData();
+  }, [fetchData]);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   return (
-    <AdminContext.Provider value={{ data, loading, error }}>
+    <AdminContext.Provider value={{ data, loading, error, refetch }}>
       {children}
     </AdminContext.Provider>
   );

@@ -2,9 +2,15 @@ import { useAdminContext } from "../../context/AdminContext";
 import { AdminDashboardSkeleton } from "../../components/ui/AdminDashboardSkeleton";
 import DashboardStats from "./DashboardStats";
 import DashboardCharts from "./DashboardCharts";
+import { useEffect } from "react";
 
 const AdminDashboard = () => {
-  const { data, loading } = useAdminContext();
+  const { data, loading, refetch } = useAdminContext();
+
+  useEffect(() => {
+    // This will refetch data when the component mounts
+    refetch();
+  }, [refetch]);
 
   if (loading) {
     return <AdminDashboardSkeleton />;
@@ -12,7 +18,7 @@ const AdminDashboard = () => {
 
   if (!data) {
     return (
-      <div className="min-h-screen ">
+      <div className="min-h-screen">
         <div className="max-w-7xl mx-auto">
           <div className="text-red-500">No data available</div>
         </div>
@@ -30,7 +36,7 @@ const AdminDashboard = () => {
   } = data;
 
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Dashboard Stats */}
         <DashboardStats
