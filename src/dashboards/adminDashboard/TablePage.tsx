@@ -100,10 +100,10 @@ const TablePage = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="min-h-screen "
+      className="min-h-screen p-4"
     >
       <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-        <h1 className="text-3xl font-bold text-gray-800 px-6 py-4 border-b border-gray-100">
+        <h1 className="text-2xl font-bold text-gray-800 px-6 py-4 border-b border-gray-200">
           {tablesConfig[userType].title}
         </h1>
 
@@ -118,24 +118,27 @@ const TablePage = () => {
               placeholder={`Search ${userType}...`}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
             />
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left text-gray-700">
-            <thead className="bg-gray-50 text-gray-600 uppercase tracking-wider">
+          <table className="min-w-full divide-y divide-gray-200">
+            <thead className="bg-gray-50">
               <tr>
                 {tablesConfig[userType].columns.map((column) => (
-                  <th key={column} className="px-6 py-3 font-medium">
+                  <th
+                    key={column}
+                    scope="col"
+                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  >
                     {column}
                   </th>
                 ))}
               </tr>
             </thead>
-
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="bg-white divide-y divide-gray-200">
               {filteredData.data.length > 0 ? (
                 filteredData.data.map((item) => (
                   <motion.tr
@@ -145,55 +148,47 @@ const TablePage = () => {
                     transition={{ duration: 0.3 }}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    {/* Name Column */}
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {highlightText(
                         item.firstName || item.contactName,
                         search
                       )}
                     </td>
-
-                    {/* Verification Status Column (Only for Interviewers) */}
                     {userType === "interviewers" && (
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="relative group">
-                          {item.isVerified ? (
-                            <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
-                              Verified
-                            </span>
-                          ) : (
-                            <span className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
-                              Not Verified
-                            </span>
-                          )}
-                        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {item.isVerified ? (
+                          <span className="px-2 py-1 text-xs font-medium text-green-800 bg-green-100 rounded-full">
+                            Verified
+                          </span>
+                        ) : (
+                          <span className="px-2 py-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">
+                            Not Verified
+                          </span>
+                        )}
                       </td>
                     )}
-
-                    {/* Remaining Columns */}
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {highlightText(item.email, search)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {highlightText(
                         item.jobTitle || item.companyName || "N/A",
                         search
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {highlightText(item.location || "N/A", search)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {userType === "interviewers"
                         ? item.interviewRequests?.length || 0
                         : item.scheduledInterviews?.length || 0}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <button
                         onClick={() =>
-                          navigate(`/admin/${userType}/${item._id}`)
-                        }
-                        className="px-3 py-1.5 text-sm font-medium text-primary bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                          navigate(`/admin/${userType}/${item._id}`)}
+                        className="text-blue-600 hover:text-blue-900"
                       >
                         View Profile
                       </button>
@@ -204,7 +199,7 @@ const TablePage = () => {
                 <tr>
                   <td
                     colSpan={tablesConfig[userType].columns.length}
-                    className="px-6 py-4 text-center text-gray-500"
+                    className="px-6 py-4 text-center text-sm text-gray-500"
                   >
                     No results found
                   </td>
@@ -214,7 +209,7 @@ const TablePage = () => {
           </table>
         </div>
 
-        <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-t border-gray-200">
           <button
             onClick={() => setPage((prev) => Math.max(1, prev - 1))}
             disabled={page === 1}

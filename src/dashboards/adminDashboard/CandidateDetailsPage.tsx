@@ -21,9 +21,11 @@ import {
   AlertTriangle,
   MoreVertical,
   Briefcase,
+  Trash,
 } from "lucide-react";
 import ProfileSkeletonLoader from "../../components/ui/ProfileSkeletonLoader";
 import { format, parse } from "date-fns";
+import { toast } from "sonner";
 
 interface Experience {
   company: string;
@@ -178,7 +180,7 @@ const CandidateDetailsPage: React.FC = () => {
         );
       }
     } catch (error) {
-      toast.error(`Failed to update candidate status`);
+      toast.error("Failed to update candidate status");
     } finally {
       setState((prev) => ({ ...prev, isUpdating: false }));
     }
@@ -271,11 +273,15 @@ const CandidateDetailsPage: React.FC = () => {
           <div className="flex items-center gap-5 flex-1 min-w-[300px]">
             <div className="relative">
               <img
-                src={state.candidate.profilePhoto || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                src={
+                  state.candidate.profilePhoto ||
+                  "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"
+                }
                 alt={`${state.candidate.firstName} ${state.candidate.lastName}`}
                 className="w-20 h-20 rounded-full object-cover border-4 border-indigo-100"
                 onError={(e) => {
-                  (e.target as HTMLImageElement).src = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+                  (e.target as HTMLImageElement).src =
+                    "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
                 }}
               />
               {state.candidate.isSuspended && (
@@ -383,7 +389,7 @@ const CandidateDetailsPage: React.FC = () => {
               </div>
               {state.candidate.linkedIn && (
                 <div className="flex items-center gap-3">
-                  <Linkedin className="w-4 h-4 text-gray-400" />
+                  <Linkedin className="w-8 h-8 text-gray-400" />
                   <a
                     href={state.candidate.linkedIn}
                     target="_blank"
@@ -490,7 +496,6 @@ const CandidateDetailsPage: React.FC = () => {
                             )}
                           </div>
                         </div>
-
                         {exp.description && (
                           <p className="mt-3 text-gray-600 text-sm">
                             {exp.description}
